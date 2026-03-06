@@ -7,6 +7,7 @@ using MiniMapGame.Runtime;
 using MiniMapGame.Player;
 using MiniMapGame.Data;
 using MiniMapGame.GameLoop;
+using MiniMapGame.UI;
 
 namespace MiniMapGame.EditorTools
 {
@@ -130,6 +131,9 @@ namespace MiniMapGame.EditorTools
             var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
             var gameLoopUI = SetupGameLoopUI(canvas);
             SetupGameLoopController(mapManager, eventBus, gameLoopUI);
+
+            // 9. MiniMap
+            SetupMiniMap(canvas, mapManager, playerGo.transform);
 
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
@@ -367,6 +371,75 @@ namespace MiniMapGame.EditorTools
                 AssetDatabase.LoadAssetAtPath<GameObject>($"{GameLoopPrefabFolder}/EncounterZone.prefab");
             controller.extractionPointPrefab =
                 AssetDatabase.LoadAssetAtPath<GameObject>($"{GameLoopPrefabFolder}/ExtractionPoint.prefab");
+
+            EditorUtility.SetDirty(controller);
+        }
+
+        // ── MiniMap ──
+
+        private static void SetupMiniMap(Canvas canvas, MapManager mapManager, Transform playerTransform)
+        {
+            EnsureFolder("Assets/Resources/RenderTextures");
+
+            // RenderTexture (860:580 aspect ratio → 512x346)
+            string rtPath = "Assets/Resources/RenderTextures/MiniMapRT.renderTexture";
+            var rt = AssetDatabase.LoadAssetAtPath<RenderTexture>(rtPath);
+            if (rt == null)
+            {
+                rt = new RenderTexture(512, 346, 16, RenderTextureFormat.ARGB32);
+                rt.name = "MiniMapRT";
+                rt.filterMode = FilterMode.Bilinear;
+                AssetDatabase.CreateAsset(rt, rtPath);
+            }
+
+            // MiniMap Camera
+            var camGo = FindOrCreate("MiniMapCamera");
+            var miniCam = EnsureComponent<Camera>(camGo);
+            miniCam.orthographic = true;
+            miniCam.orthographicSize = 290f; // worldHeight / 2
+            miniCam.transform.position = new Vector3(430f, 500f, 290f);
+            miniCam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            miniCam.clearFlags = CameraClearFlags.SolidColor;
+            miniCam.backgroundColor = new Color(0.02f, 0.03f, 0.05f);
+            miniCam.depth = -1;
+            miniCam.targetTexture = rt;
+
+            // RawImage in Canvas (bottom-right corner)
+            var mapImageGo = FindOrCreate("MiniMapImage", canvas.transform);
+            var rawImage = EnsureComponent<RawImage>(mapImageGo);
+            rawImage.texture = rt;
+            rawImage.color = Color.white;
+
+            var mapRect = mapImageGo.GetComponent<RectTransform>();
+            mapRect.anchorMin = new Vector2(0.72f, 0.02f);
+            mapRect.anchorMax = new Vector2(0.98f, 0.32f);
+            mapRect.offsetMin = Vector2.zero;
+            mapRect.offsetMax = Vector2.zero;
+
+            // Border outline
+            var borderImg = EnsureComponent<Image>(mapImageGo);
+            // Image is behind RawImage — use Outline component instead
+            var outline = EnsureComponent<Outline>(mapImageGo);
+            outline.effectColor = new Color(0.3f, 0.45f, 0.6f, 0.8f);
+            outline.effectDistance = new Vector2(2, 2);
+
+            // Player indicator (small triangle/arrow)
+            var indicatorGo = FindOrCreate("MiniMapPlayerIndicator", mapImageGo.transform);
+            var indicatorImg = EnsureComponent<Image>(indicatorGo);
+            indicatorImg.color = new Color(0.2f, 1f, 0.4f, 1f);
+
+            var indicatorRect = indicatorGo.GetComponent<RectTransform>();
+            indicatorRect.sizeDelta = new Vector2(10, 14);
+            indicatorRect.anchoredPosition = Vector2.zero;
+
+            // MiniMapController
+            var controllerGo = FindOrCreate("MiniMapSystem");
+            var controller = EnsureComponent<MiniMapController>(controllerGo);
+            controller.miniMapCamera = miniCam;
+            controller.miniMapImage = rawImage;
+            controller.playerIndicator = indicatorRect;
+            controller.playerTransform = playerTransform;
+            controller.mapManager = mapManager;
 
             EditorUtility.SetDirty(controller);
         }
