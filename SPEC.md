@@ -819,10 +819,16 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 
 ---
 
-## 17. 未決定事項
+## 17. 設計決定事項 (2026-03-07 確定)
 
-1. **ナビゲーション方式**: NavMeshをマップ生成後に動的ベイクするか、ノードベースのパスファインディングに切り替えるか
-2. **カメラ視点**: トップダウン固定 vs 自由軌道（現CameraControllerは自由軌道）
-3. **スケール**: JSXの1px = Unity何unit? (暫定1:1だが要調整)
-4. **建物の3D表現**: シンプルボックス vs モジュラープレハブ
-5. **インテリア生成アルゴリズム**: BSP分割 vs ランダムウォーク vs Wave Function Collapse
+1. **ナビゲーション方式**: **NavMesh動的ベイク** — マップ生成後にNavMeshSurface.BuildNavMesh()。既存PlayerMovement(NavMeshAgent)をそのまま活用。
+2. **カメラ視点**: **自由軌道カメラ維持** — 現CameraController(Perspective orbit/pan/zoom/follow)をそのまま使用。
+3. **スケール**: **1:1** — JSX 1px = Unity 1unit。マップは860x580ユニット。
+4. **建物の3D表現**: **シンプルボックス(Cube)** → 将来的にモジュラープレハブ化。鳥瞰図なのでプリミティブ組み合わせで十分。
+5. **インテリア生成**: **BSP分割** — 現在の実装を維持。部屋=ノード、廊下=エッジ、行き止まり=隠し小部屋。
+
+### 次のマイルストーン: Phase E (Unity統合テスト)
+- NavMeshSurface動的ベイク実装
+- MapPresetアセット4種作成 (coastal, rural, grid, mountain)
+- ビルディングプレハブ (Cube) 作成
+- エディタ上で生成→可視化→プレイヤー歩行テスト
