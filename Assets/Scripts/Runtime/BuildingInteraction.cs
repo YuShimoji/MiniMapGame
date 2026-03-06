@@ -9,9 +9,16 @@ namespace MiniMapGame.Runtime
     public class BuildingInteraction : MonoBehaviour
     {
         [HideInInspector] public string buildingId;
+        [HideInInspector] public bool isLandmark;
 
-        public void OnClick()
+        public string GetInteractionMessage()
         {
+            return isLandmark ? $"Enter {buildingId}" : buildingId;
+        }
+
+        public void Interact()
+        {
+            if (!isLandmark) return;
             int interiorSeed = buildingId.GetHashCode();
             var interiorData = InteriorMapGenerator.Generate(interiorSeed);
             Debug.Log($"[BuildingInteraction] Generated interior for {buildingId}: " +

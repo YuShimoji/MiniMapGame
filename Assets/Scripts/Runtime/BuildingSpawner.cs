@@ -40,11 +40,9 @@ namespace MiniMapGame.Runtime
                 go.transform.localScale = new Vector3(b.width, yHeight, b.height);
                 go.name = b.id;
 
-                if (b.isLandmark)
-                {
-                    var interaction = go.AddComponent<BuildingInteraction>();
-                    interaction.buildingId = b.id;
-                }
+                var interaction = go.AddComponent<BuildingInteraction>();
+                interaction.buildingId = b.id;
+                interaction.isLandmark = b.isLandmark;
 
                 _spawnedBuildings.Add(go);
             }

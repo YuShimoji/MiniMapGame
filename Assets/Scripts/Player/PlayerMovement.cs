@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using TMPro;
+using MiniMapGame.Runtime;
 
 namespace MiniMapGame.Player
 {
@@ -20,7 +21,11 @@ namespace MiniMapGame.Player
         [Header("Interaction UI")]
         public TextMeshProUGUI interactionMessageText;
 
+        [Header("Interaction")]
+        public KeyCode interactKey = KeyCode.E;
+
         private Collider _currentInteractionCollider;
+        private BuildingInteraction _currentBuilding;
 
         void Start()
         {
@@ -67,6 +72,12 @@ namespace MiniMapGame.Player
                 }
             }
 
+            // Interact with building
+            if (_currentBuilding != null && Input.GetKeyDown(interactKey))
+            {
+                _currentBuilding.Interact();
+            }
+
             // Face movement direction
             if (_agent.velocity.sqrMagnitude > 0.01f)
             {
@@ -78,26 +89,26 @@ namespace MiniMapGame.Player
 
         void OnTriggerEnter(Collider other)
         {
-            if (!other.CompareTag("InteractionPointTag")) return;
             if (_currentInteractionCollider == other) return;
 
-            // Support both old InteractionPointController and new BuildingInteraction
-            var point = other.GetComponent<InteractionPointController>();
-            if (point != null && interactionMessageText != null)
+            var building = other.GetComponent<BuildingInteraction>();
+            if (building != null && interactionMessageText != null)
             {
-                interactionMessageText.text = point.GetInteractionMessage();
+                interactionMessageText.text = building.GetInteractionMessage();
                 interactionMessageText.gameObject.SetActive(true);
                 _currentInteractionCollider = other;
+                _currentBuilding = building;
             }
         }
 
         void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("InteractionPointTag") && other == _currentInteractionCollider)
+            if (other == _currentInteractionCollider)
             {
                 if (interactionMessageText != null)
                     interactionMessageText.gameObject.SetActive(false);
                 _currentInteractionCollider = null;
+                _currentBuilding = null;
             }
         }
     }
