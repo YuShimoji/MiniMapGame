@@ -36,6 +36,14 @@ namespace MiniMapGame.GameLoop
     }
 
     [System.Serializable]
+    public struct PlayerDamagedEvent
+    {
+        public int damage;
+        public int remainingHP;
+        public int maxHP;
+    }
+
+    [System.Serializable]
     public struct GameLoopEndedEvent
     {
         public int finalValue;

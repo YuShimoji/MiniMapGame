@@ -14,6 +14,7 @@ namespace MiniMapGame.GameLoop
         private bool _triggered;
 
         public float triggerRadius = 5f;
+        public int damageAmount = 15;
 
         public void Initialize(int edgeIndex, MapEdge chokeEdge, MapData mapData,
             GameLoopController controller, MapEventBus eventBus)
@@ -48,6 +49,7 @@ namespace MiniMapGame.GameLoop
             _triggered = true;
 
             _controller.State.RecordEncounter();
+            _controller.State.stats.TakeDamage(damageAmount);
 
             _eventBus?.Publish(new EncounterTriggeredEvent
             {
@@ -56,8 +58,15 @@ namespace MiniMapGame.GameLoop
                 encounterNumber = _controller.State.encounterCount
             });
 
+            _eventBus?.Publish(new PlayerDamagedEvent
+            {
+                damage = damageAmount,
+                remainingHP = _controller.State.stats.currentHP,
+                maxHP = _controller.State.stats.maxHP
+            });
+
             _controller.gameLoopUI?.ShowEncounterMessage(
-                $"Encounter #{_controller.State.encounterCount}!");
+                $"Encounter #{_controller.State.encounterCount}! (-{damageAmount} HP)");
 
             var r = GetComponent<Renderer>();
             if (r != null)

@@ -148,6 +148,9 @@ namespace MiniMapGame.EditorTools
             MapThemeCreator.CreateDefaultThemes();
             SetupThemeManager(mapManager, mapRenderer, buildingSpawner, viz, cam);
 
+            // 13. Player HUD
+            SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
+
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
@@ -661,6 +664,72 @@ namespace MiniMapGame.EditorTools
             }
 
             EditorUtility.SetDirty(tm);
+        }
+
+        // ── Player HUD ──
+
+        private static void SetupPlayerHUD(Canvas canvas, MapManager mapManager,
+            MapEventBus eventBus, Transform playerTransform)
+        {
+            var hudGo = FindOrCreate("PlayerHUD", canvas.transform);
+            var hud = EnsureComponent<PlayerHUD>(hudGo);
+            hud.mapManager = mapManager;
+            hud.eventBus = eventBus;
+            hud.playerTransform = playerTransform;
+            SetRect(hudGo, Vector2.zero, Vector2.one);
+
+            // HP Bar — top-left area
+            var hpBarGo = FindOrCreate("HPBar", hudGo.transform);
+            SetRect(hpBarGo, new Vector2(0.01f, 0.93f), new Vector2(0.2f, 0.97f));
+
+            var hpBg = EnsureComponent<Image>(hpBarGo);
+            hpBg.color = new Color(0.1f, 0.08f, 0.08f, 0.8f);
+
+            var hpSlider = EnsureComponent<Slider>(hpBarGo);
+            hpSlider.minValue = 0f;
+            hpSlider.maxValue = 1f;
+            hpSlider.value = 1f;
+            hpSlider.interactable = false;
+
+            // Fill area
+            var fillAreaGo = FindOrCreate("HP Fill Area", hpBarGo.transform);
+            SetRect(fillAreaGo, new Vector2(0.02f, 0.1f), new Vector2(0.98f, 0.9f));
+
+            var fillGo = FindOrCreate("HP Fill", fillAreaGo.transform);
+            var fillImg = EnsureComponent<Image>(fillGo);
+            fillImg.color = new Color(0.2f, 0.85f, 0.3f);
+            SetRect(fillGo, Vector2.zero, Vector2.one);
+
+            hpSlider.fillRect = fillGo.GetComponent<RectTransform>();
+            hud.hpSlider = hpSlider;
+            hud.hpFillImage = fillImg;
+
+            // HP text
+            hud.hpText = CreateTMPChild(hudGo.transform, "HPText", "HP: 100/100",
+                new Vector2(0.01f, 0.89f), new Vector2(0.2f, 0.93f), TextAlignmentOptions.MiddleLeft);
+            hud.hpText.fontSize = 13f;
+            hud.hpText.color = new Color(0.9f, 0.95f, 1f, 0.9f);
+
+            // Compass — top center
+            hud.compassText = CreateTMPChild(hudGo.transform, "CompassText", "N",
+                new Vector2(0.46f, 0.93f), new Vector2(0.54f, 0.99f), TextAlignmentOptions.Center);
+            hud.compassText.fontSize = 28f;
+            hud.compassText.color = new Color(0.85f, 0.9f, 1f, 0.95f);
+            hud.compassText.fontStyle = FontStyles.Bold;
+
+            // Proximity info — below compass
+            hud.proximityText = CreateTMPChild(hudGo.transform, "ProximityText", "Exit: ---",
+                new Vector2(0.42f, 0.89f), new Vector2(0.58f, 0.93f), TextAlignmentOptions.Center);
+            hud.proximityText.fontSize = 12f;
+            hud.proximityText.color = new Color(0.6f, 0.8f, 0.6f, 0.85f);
+
+            // Inventory summary — top-right
+            hud.inventoryText = CreateTMPChild(hudGo.transform, "InventoryText", "V:0  Items:0  Left:0",
+                new Vector2(0.75f, 0.93f), new Vector2(0.99f, 0.97f), TextAlignmentOptions.MiddleRight);
+            hud.inventoryText.fontSize = 12f;
+            hud.inventoryText.color = new Color(0.9f, 0.85f, 0.6f, 0.9f);
+
+            EditorUtility.SetDirty(hud);
         }
 
         // ── Helpers ──

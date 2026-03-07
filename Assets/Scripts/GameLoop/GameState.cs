@@ -8,12 +8,14 @@ namespace MiniMapGame.GameLoop
         public int collectedValue;
         public int encounterCount;
         public List<string> collectedItemIds = new();
+        public PlayerStats stats = new();
 
         public void Reset()
         {
             collectedValue = 0;
             encounterCount = 0;
             collectedItemIds.Clear();
+            stats.Reset();
         }
 
         public bool HasCollected(string objectId)

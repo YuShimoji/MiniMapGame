@@ -21,6 +21,10 @@ namespace MiniMapGame.GameLoop
         public int baseValueMin = 10;
         public int baseValueMax = 50;
 
+        [Header("Encounter Settings")]
+        public int encounterDamageMin = 10;
+        public int encounterDamageMax = 30;
+
         [Header("UI")]
         public GameLoopUI gameLoopUI;
 
@@ -35,6 +39,7 @@ namespace MiniMapGame.GameLoop
                 mapManager.OnMapGenerated += OnMapGenerated;
             eventBus?.Subscribe<ValueCollectedEvent>(OnValueCollected);
             eventBus?.Subscribe<EncounterTriggeredEvent>(OnEncounterTriggered);
+            eventBus?.Subscribe<PlayerDamagedEvent>(OnPlayerDamaged);
         }
 
         void OnDisable()
@@ -43,6 +48,7 @@ namespace MiniMapGame.GameLoop
                 mapManager.OnMapGenerated -= OnMapGenerated;
             eventBus?.Unsubscribe<ValueCollectedEvent>(OnValueCollected);
             eventBus?.Unsubscribe<EncounterTriggeredEvent>(OnEncounterTriggered);
+            eventBus?.Unsubscribe<PlayerDamagedEvent>(OnPlayerDamaged);
         }
 
         private void OnMapGenerated(MapData mapData)
@@ -91,6 +97,7 @@ namespace MiniMapGame.GameLoop
         private void SpawnEncounterZones(MapData mapData)
         {
             if (encounterZonePrefab == null) return;
+            var rng = new SeededRng(mapData.seed + 2000);
 
             foreach (int edgeIdx in mapData.analysis.chokeEdgeIndices)
             {
@@ -107,6 +114,7 @@ namespace MiniMapGame.GameLoop
 
                 var ez = go.GetComponent<EncounterZone>();
                 if (ez == null) ez = go.AddComponent<EncounterZone>();
+                ez.damageAmount = rng.Range(encounterDamageMin, encounterDamageMax + 1);
                 ez.Initialize(edgeIdx, edge, mapData, this, eventBus);
 
                 _spawnedEntities.Add(go);
@@ -171,6 +179,12 @@ namespace MiniMapGame.GameLoop
         private void OnEncounterTriggered(EncounterTriggeredEvent evt)
         {
             gameLoopUI?.UpdateHUD(State);
+        }
+
+        private void OnPlayerDamaged(PlayerDamagedEvent evt)
+        {
+            if (!State.stats.IsAlive)
+                HandleExtraction(false);
         }
 
         private void ClearEntities()
