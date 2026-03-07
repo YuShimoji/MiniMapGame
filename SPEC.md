@@ -1,6 +1,6 @@
 # MiniMapGame — Technical Specification
 
-> Version: 2.0.0
+> Version: 3.0.0
 > Date: 2026-03-08
 > Reference: map-generator-v3.jsx (React/Canvas prototype, 793 lines)
 
@@ -8,15 +8,21 @@
 
 ## 1. ゲーム概要
 
-ミニマリスト抽象タクティカルゲーム。手続き型で生成される都市マップ上をプレイヤーが移動し、
-建物に侵入（インテリアマップ生成）、遭遇イベント、価値物回収、脱出判断を行う。
+手続き型マップ探索ゲーム。プロシージャル生成される都市・地形マップ上をプレイヤーが自由に移動し、
+建物内部の探索や発見物の収集を行う。
 
-**コアループ**:
-1. マップ生成（シード指定） → 都市構造の探索
-2. ランドマーク建物に接近 → インテリアマップ自動生成
-3. チョークポイントで遭遇イベント発火
-4. 行き止まりに価値物配置 → 回収判断
-5. 出口ノードで脱出判断
+**コア体験**: 未知のマップを歩き回り、地形・建物・隠し要素を発見すること。
+
+**現行コアループ**:
+1. マップ生成（シード指定 or ランダム） → 都市構造の自由探索
+2. ランドマーク建物に接近 → インテリアマップ自動生成 → 内部探索
+3. 発見物の収集（配置ロジックは再設計予定）
+
+> **凍結中の機能** (コード残存・開発対象外):
+> - エンカウントシステム（EncounterZone: チョークポイント自動ダメージ）
+> - 脱出判断システム（ExtractionPoint）
+> - HPシステム（PlayerStats）
+> - 将来候補: 追跡者（対処不可能な敵）による探索の緊張感
 
 ---
 
@@ -75,12 +81,11 @@ public struct MapNode
     public int degree;         // 接続エッジ数 (0で初期化、エッジ追加時にインクリメント)
     public string label;       // "市中心", "門1", "" etc.
     public NodeType type;      // enum: None, Hub, Gate, Shelter, Farm
+    public float elevation;    // 高度 (ElevationMap.ApplyToNodesで設定)
 }
 
 public enum NodeType { None, Hub, Gate, Shelter, Farm }
 ```
-
-**JSX対応**: `{...p, degree:0, label, type}` → position は `cpt()` でクランプ済み
 
 ### 3.2 MapEdge
 
@@ -92,10 +97,10 @@ public struct MapEdge
     public int nodeB;          // nodes配列のインデックス
     public int tier;           // 0=幹線, 1=街路, 2=路地
     public Vector2 controlPoint; // ベジェ制御点 (quadratic bezier)
+    public int layer;          // 0=地上, 1=橋, -1=トンネル (BridgeTunnelDetectorで設定)
 }
 ```
 
-**JSX対応**: `{a, b, tier, ctrl:{x,y}}`
 - tier 0: 幹線道路（最も太い、中央破線あり）
 - tier 1: 街路（中間幅）
 - tier 2: 路地（最も細い）
@@ -104,7 +109,7 @@ public struct MapEdge
 
 ```csharp
 [System.Serializable]
-public struct MapBuilding
+public struct MapBuilding : ISpatialBounds
 {
     public Vector2 position;   // ワールド座標 (X, Z)
     public float width;
@@ -112,13 +117,15 @@ public struct MapBuilding
     public float angle;        // ラジアン。道路方向に沿った回転
     public int tier;           // 配置されたエッジのtier
     public bool isLandmark;    // true=ランドマーク（インテリア生成対象）
+    public int floors;         // 階数 (tier別レンジ: tier0=3-8, tier1=2-5, tier2=1-3)
+    public int shapeType;      // 0=Box, 1=L-shape, 2=Cylinder, 3=Stepped
     public string id;          // "B0", "B1", ... ユニークID（シーン検索用）
 }
 ```
 
-**JSX対応**: `{x, y, w, h, angle, tier, landmark, id}`
 - ランドマーク: 5%確率 && tier==0 のエッジ沿い
 - ランドマークは通常建物の1.9倍サイズ
+- 建物Y高さ: floors × floorHeight (1.2f)
 
 ### 3.4 MapTerrain
 
@@ -129,6 +136,7 @@ public class MapTerrain
     public List<Vector2> coastPoints;  // 海岸線ポリゴン頂点
     public List<Vector2> riverPoints;  // 河川中心線
     public List<HillData> hills;       // 丘陵/等高線
+    public int coastSide;              // 海岸方向: 0=右, 1=下, 2=左, 3=上, -1=なし
 }
 
 [System.Serializable]
@@ -166,6 +174,7 @@ public class MapData
     public List<MapNode> nodes;
     public List<MapEdge> edges;
     public List<MapBuilding> buildings;
+    public List<MapDecoration> decorations;  // 装飾オブジェクト
     public MapTerrain terrain;
     public MapAnalysis analysis;
     public Vector2 center;    // マップ中心点 (cx, cy)
@@ -559,18 +568,18 @@ namespace MiniMapGame.Runtime
 namespace MiniMapGame.Runtime
 {
     /// <summary>
-    /// 道路ネットワークをLineRendererで描画。
-    /// 3段階の幅でtierを表現。
+    /// 道路ネットワークをプロシージャルメッシュで描画。
+    /// tier×layer 別にバッチ化し、per-tier マテリアルを適用。
     /// </summary>
     public class MapRenderer : MonoBehaviour
     {
         [Header("Road Width by Tier")]
-        public float[] outerWidths = { 14f, 9f, 5f };  // ケーシング幅
-        public float[] innerWidths = { 9f, 5.5f, 2.8f }; // 内部幅
+        public float[] outerWidths = { 14f, 9f, 5f };
+        public float[] innerWidths = { 9f, 5.5f, 2.8f };
 
-        [Header("Materials")]
-        public Material roadOuterMaterial;
-        public Material roadInnerMaterial;
+        [Header("Materials (per-tier: 3 outer + 3 inner)")]
+        public Material[] roadOuterMaterials;  // [3]
+        public Material[] roadInnerMaterials;  // [3]
 
         public void Render(MapData data);
         public void Clear();
@@ -579,10 +588,10 @@ namespace MiniMapGame.Runtime
 ```
 
 **レンダリング手法**:
-- エッジごとに2つのLineRenderer (outer casing + inner fill)
-- ベジェ曲線を10-20セグメントに分割して頂点列化
-- ノード交差点は半径に応じたスプライト表示
-- tier 0エッジには中央破線 (dash) 用LineRenderer追加
+- tier×layer の組み合わせ別にメッシュをバッチ生成（LineRenderer不使用）
+- ベジェ曲線を分割し、ribbon形状のMeshを構築
+- outer (ケーシング) + inner (フィル) の2層メッシュ
+- 橋 (layer=1) は高度オフセット + ピラー生成
 
 ### 10.3 BuildingSpawner (MonoBehaviour)
 
@@ -591,10 +600,6 @@ namespace MiniMapGame.Runtime
 {
     public class BuildingSpawner : MonoBehaviour
     {
-        [Header("Prefabs")]
-        public GameObject normalBuildingPrefab;
-        public GameObject landmarkBuildingPrefab;
-
         public void Spawn(MapData data);
         public void Clear();
     }
@@ -602,11 +607,11 @@ namespace MiniMapGame.Runtime
 ```
 
 **スポーンロジック**:
-- `MapBuilding` ごとにプレハブをインスタンス化
-- position → `new Vector3(position.x, 0, position.y)` (Y=0, XZ平面)
-- rotation → `Quaternion.Euler(0, angle * Mathf.Rad2Deg, 0)`
-- scale → `new Vector3(width, buildingHeight, height)` (heightは固定 or tier依存)
-- isLandmark → landmarkBuildingPrefab使用、BuildingInteractionコンポーネント追加
+- `MapBuilding` ごとにプロシージャルメッシュを生成（プレハブ不使用）
+- 4形状: Box / L-shape / Cylinder / Stepped (`shapeType` フィールドで決定)
+- Y高さ: `floors × floorHeight (1.2f)`, Y座標は `ElevationMap.Sample` で高度追従
+- マテリアルは色別Dictionary キャッシュで再利用
+- isLandmark → BuildingInteractionコンポーネント追加
 
 ### 10.4 BuildingInteraction (MonoBehaviour)
 
@@ -614,15 +619,13 @@ namespace MiniMapGame.Runtime
 namespace MiniMapGame.Runtime
 {
     /// <summary>
-    /// ランドマーク建物クリック時にインテリアシーンをロード。
+    /// ランドマーク建物近接時にインテリア進入を処理。
+    /// InteriorControllerと連携。
     /// </summary>
     public class BuildingInteraction : MonoBehaviour
     {
         public string buildingId;    // "B42" etc.
-        // BuildingPreset は将来のインテリア種別定義用
-        // public BuildingPreset interiorPreset;
-
-        public void OnClick();  // → InteriorMapGenerator.Generate()
+        // トリガーベースの近接検出 → InteriorController.EnterBuilding()
     }
 }
 ```
@@ -640,8 +643,9 @@ namespace MiniMapGame.Interior
     {
         /// <summary>
         /// 建物IDからシードを生成し、部屋・廊下構造を返す。
+        /// BSP分割 + ランダム分岐で4-8部屋を生成。
         /// </summary>
-        public static InteriorMapData Generate(int seed, BuildingPreset preset);
+        public static InteriorMapData Generate(int seed);
     }
 
     [System.Serializable]
@@ -683,7 +687,9 @@ namespace MiniMapGame.Interior
 
 ## 12. ゲームループインターフェース
 
-全てインターフェーススタブのみ。ロジック実装は後続フェーズ。
+> **注意**: 以下のインターフェースおよび実装クラスは完全に実装済みだが、
+> ジャンル再定義（探索・発見ゲーム）に伴い**凍結中**。
+> 追跡者システム導入時に再設計する可能性がある。
 
 ```csharp
 namespace MiniMapGame.GameLoop
@@ -749,89 +755,6 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 ```
 
 ---
-
-## 14. ファイル一覧と実装順序
-
-| # | ファイル | パス | 依存 |
-|---|---------|------|------|
-| 1 | `NodeType.cs` | Data/ | なし |
-| 2 | `GeneratorType.cs` | Data/ | なし |
-| 3 | `MapNode.cs` | Data/ | NodeType |
-| 4 | `MapEdge.cs` | Data/ | なし |
-| 5 | `MapBuilding.cs` | Data/ | ISpatialBounds |
-| 6 | `HillData.cs` | Data/ | なし |
-| 7 | `MapTerrain.cs` | Data/ | HillData |
-| 8 | `MapAnalysis.cs` | Data/ | なし |
-| 9 | `MapData.cs` | Data/ | 1-8 |
-| 10 | `MapPreset.cs` | Data/ | GeneratorType |
-| 11 | `SeededRng.cs` | Core/ | なし |
-| 12 | `ISpatialBounds.cs` | Core/ | なし |
-| 13 | `SpatialHash.cs` | Core/ | ISpatialBounds |
-| 14 | `MapGenUtils.cs` | Core/ | Data types |
-| 15 | `IMapGenerator.cs` | MapGen/ | Data types, SeededRng |
-| 16 | `OrganicGenerator.cs` | MapGen/ | IMapGenerator, MapGenUtils |
-| 17 | `GridGenerator.cs` | MapGen/ | IMapGenerator, MapGenUtils |
-| 18 | `MountainGenerator.cs` | MapGen/ | IMapGenerator, MapGenUtils |
-| 19 | `RuralGenerator.cs` | MapGen/ | IMapGenerator, MapGenUtils |
-| 20 | `TerrainGenerator.cs` | Core/ | Data types, SeededRng |
-| 21 | `BuildingPlacer.cs` | Core/ | SpatialHash, MapGenUtils |
-| 22 | `MapAnalyzer.cs` | Core/ | Data types |
-| 23 | `MapManager.cs` | Runtime/ | 全Core + MapGen |
-| 24 | `MapRenderer.cs` | Runtime/ | MapData |
-| 25 | `BuildingSpawner.cs` | Runtime/ | MapData |
-| 26 | `InteriorMapGenerator.cs` | Interior/ | SeededRng |
-| 27 | `BuildingInteraction.cs` | Runtime/ | InteriorMapGenerator |
-| 28-31 | Interface stubs | GameLoop/ | Data types |
-
----
-
-## 15. 既存コードの扱い
-
-| ファイル | 判断 | 理由 |
-|----------|------|------|
-| PlayerMovement.cs | **リファクタ** | Orthographic依存 → Perspective対応。NavMeshは維持。 |
-| CameraController.cs | **維持** | 既にPerspective対応済み。微調整のみ。 |
-| InteractionPointController.cs | **吸収→削除** | BuildingInteraction に機能統合。 |
-| WorldPositionTrackerUI.cs | **維持** | 汎用UI追従。変更不要。 |
-| LabelController.cs | **リファクタ** | orthographicSize → カメラ距離ベースに変更。 |
-
----
-
-## 16. フェーズ計画
-
-### Phase A: データ基盤 (Day 1-2)
-- #1-14: 全データ構造 + SeededRng + SpatialHash + ユーティリティ
-
-### Phase B: ジェネレータ (Day 3-4)
-- #15-22: 4種ジェネレータ + 地形 + 建物配置 + 分析
-
-### Phase C: Unity統合 (Day 5-7)
-- #23-25: MapManager + Renderer + Spawner
-- 既存コードリファクタ (PlayerMovement, LabelController)
-
-### Phase D: インテリア + ゲームループ (Week 2)
-- #26-31: InteriorMapGenerator + BuildingInteraction + Interface stubs
-
-### Phase E: ビジュアル + ポリッシュ (Week 3-4)
-- テーマシステム移植
-- シェーダー/マテリアル調整
-- UI統合
-
----
-
-## 17. 設計決定事項 (2026-03-08 更新)
-
-1. **ナビゲーション方式**: NavMesh動的ベイク (NavMeshSurface.BuildNavMesh) ✅実装済
-2. **カメラ視点**: Perspective orbit/pan/zoom/follow。Interior時Orthographic切替 ✅実装済
-3. **スケール**: 1:1 (JSX 1px = Unity 1unit, 860×580) ✅実装済
-4. **建物3D**: 4プロシージャル形状 (Box/L-shape/Cylinder/Stepped) × floor-based高さ ✅実装済
-5. **インテリア**: BSP分割 + ミニゲーム (Boss/Treasure/Alcove部屋) ✅実装済
-6. **高低差**: ElevationMap (Gaussian falloff) → 道路/建物/水面が追従 ✅実装済
-7. **橋**: BridgeTunnelDetector (道路交差+河川交差→layer割当+ピラー生成) ✅実装済
-8. **水面**: WaterRenderer (river ribbon + coast fan polygon) ✅実装済
-9. **装飾**: DecorationPlacer/Spawner (4種) + LOD 3段階 ✅実装済
-10. **テーマ**: MapTheme SO (Dark/Parchment), Per-tier road colors ✅実装済
-11. **地形シェーダー**: GridGround.shader (elevation色/slope色ブレンド) ✅実装済
 
 ---
 

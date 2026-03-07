@@ -2,11 +2,11 @@
   {
     "id": "SP-001",
     "title": "ゲーム概要・コアループ",
-    "status": "done",
-    "pct": 100,
+    "status": "partial",
+    "pct": 60,
     "cat": "core",
     "file": "SPEC.md#1-ゲーム概要",
-    "summary": "コアループ定義（マップ生成→探索→インテリア→遭遇→回収→脱出）"
+    "summary": "探索・発見ゲーム。コアループ再定義済み。凍結中機能あり（エンカウント/脱出/HP）"
   },
   {
     "id": "SP-002",
@@ -24,7 +24,7 @@
     "pct": 100,
     "cat": "data",
     "file": "SPEC.md#3-データ構造",
-    "summary": "MapNode/MapEdge/MapBuilding/MapTerrain/MapData/MapAnalysis/MapDecoration"
+    "summary": "MapNode/MapEdge/MapBuilding/MapTerrain/MapData/MapAnalysis/MapDecoration（実コード同期済み）"
   },
   {
     "id": "SP-004",
@@ -33,7 +33,7 @@
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#4-seededrng-決定論的乱数",
-    "summary": "System.Random ラッパー、全生成を同一seedで決定論的再現"
+    "summary": "XOR-shift PRNG、全生成を同一seedで決定論的再現"
   },
   {
     "id": "SP-005",
@@ -78,7 +78,7 @@
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#9-地形生成",
-    "summary": "TerrainGenerator: 海岸・河川・丘陵の生成"
+    "summary": "TerrainGenerator: 海岸(4方向)・河川・丘陵の生成"
   },
   {
     "id": "SP-010",
@@ -87,7 +87,7 @@
     "pct": 100,
     "cat": "system",
     "file": "SPEC.md#10-unity-シーンアーキテクチャ",
-    "summary": "MapManager統合、14ステップ生成パイプライン、レンダリング構成"
+    "summary": "MapManager統合、14ステップ生成パイプライン、プロシージャルメッシュレンダリング"
   },
   {
     "id": "SP-011",
@@ -100,12 +100,12 @@
   },
   {
     "id": "SP-012",
-    "title": "ゲームループインターフェース",
-    "status": "done",
+    "title": "ゲームループ（凍結中）",
+    "status": "partial",
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#12-ゲームループインターフェース",
-    "summary": "GameState/PlayerStats/EncounterZone/ExtractionPoint/MapEventBus"
+    "summary": "実装済みだがジャンル再定義に伴い凍結。追跡者システム導入時に再設計予定"
   },
   {
     "id": "SP-013",
@@ -145,12 +145,12 @@
   },
   {
     "id": "SP-017",
-    "title": "ミニゲームシステム",
+    "title": "ミニゲームシステム（凍結検討中）",
     "status": "done",
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種、RoomTrigger連携"
+    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種。探索ゲームでの位置づけは再検討予定"
   },
   {
     "id": "SP-018",
@@ -172,12 +172,12 @@
   },
   {
     "id": "SP-020",
-    "title": "プレイヤー体験ポリッシュ",
+    "title": "探索体験ポリッシュ",
     "status": "todo",
     "pct": 0,
     "cat": "ui",
     "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "エンカウント演出、収集エフェクト、脱出カウントダウン"
+    "summary": "発見物エフェクト、探索UI、地形ビジュアル改善"
   },
   {
     "id": "SP-021",
