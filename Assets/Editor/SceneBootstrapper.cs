@@ -165,7 +165,7 @@ namespace MiniMapGame.EditorTools
             var urpCamData = cam.GetUniversalAdditionalCameraData();
             if (urpCamData != null)
             {
-                urpCamData.antialiasing = AntialiasingMode.SubPixelMorphologicalAntiAliasing;
+                urpCamData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
                 urpCamData.antialiasingQuality = AntialiasingQuality.Low;
             }
 
@@ -511,7 +511,7 @@ namespace MiniMapGame.EditorTools
 
             // Title
             var titleTmp = CreateTMPChild(panelGo.transform, "CtrlTitle", "Map Control (F1)",
-                new Vector2(0.05f, yPos - rowH), new Vector2(0.95f, yPos), TextAlignmentOptions.TopCenter);
+                new Vector2(0.05f, yPos - rowH), new Vector2(0.95f, yPos), TextAlignmentOptions.Top);
             titleTmp.fontSize = 14f;
             yPos -= rowH + 0.02f;
 
@@ -542,7 +542,7 @@ namespace MiniMapGame.EditorTools
 
             // Seed input
             CreateTMPChild(panelGo.transform, "SeedLabel", "Seed:",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MiddleLeft);
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MidlineLeft);
 
             var seedGo = FindOrCreate("SeedInput", panelGo.transform);
             var seedInput = EnsureComponent<TMP_InputField>(seedGo);
@@ -555,7 +555,7 @@ namespace MiniMapGame.EditorTools
 
             // Density slider
             controlUI.densityLabel = CreateTMPChild(panelGo.transform, "DensityLabel", "Building Density: 80%",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.95f, yPos), TextAlignmentOptions.MiddleLeft);
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.95f, yPos), TextAlignmentOptions.MidlineLeft);
             yPos -= 0.05f;
 
             var sliderGo = FindOrCreate("DensitySlider", panelGo.transform);
@@ -577,7 +577,7 @@ namespace MiniMapGame.EditorTools
 
             // Theme buttons
             CreateTMPChild(panelGo.transform, "ThemeLabel", "Theme:",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MiddleLeft);
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MidlineLeft);
             yPos -= 0.05f;
 
             controlUI.darkThemeButton = CreateButton(panelGo.transform, "BtnDark", "ダーク",
@@ -591,7 +591,7 @@ namespace MiniMapGame.EditorTools
 
             // Save/Load buttons
             CreateTMPChild(panelGo.transform, "SaveLoadLabel", "Save/Load:",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.4f, yPos), TextAlignmentOptions.MiddleLeft);
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.4f, yPos), TextAlignmentOptions.MidlineLeft);
             yPos -= 0.05f;
 
             controlUI.saveButton = CreateButton(panelGo.transform, "BtnSave", "Save",
@@ -819,7 +819,7 @@ namespace MiniMapGame.EditorTools
 
             // HP text
             hud.hpText = CreateTMPChild(hudGo.transform, "HPText", "HP: 100/100",
-                new Vector2(0.01f, 0.89f), new Vector2(0.2f, 0.93f), TextAlignmentOptions.MiddleLeft);
+                new Vector2(0.01f, 0.89f), new Vector2(0.2f, 0.93f), TextAlignmentOptions.MidlineLeft);
             hud.hpText.fontSize = 13f;
             hud.hpText.color = new Color(0.9f, 0.95f, 1f, 0.9f);
 
@@ -838,7 +838,7 @@ namespace MiniMapGame.EditorTools
 
             // Inventory summary — top-right
             hud.inventoryText = CreateTMPChild(hudGo.transform, "InventoryText", "V:0  Items:0  Left:0",
-                new Vector2(0.75f, 0.93f), new Vector2(0.99f, 0.97f), TextAlignmentOptions.MiddleRight);
+                new Vector2(0.75f, 0.93f), new Vector2(0.99f, 0.97f), TextAlignmentOptions.MidlineRight);
             hud.inventoryText.fontSize = 12f;
             hud.inventoryText.color = new Color(0.9f, 0.85f, 0.6f, 0.9f);
 

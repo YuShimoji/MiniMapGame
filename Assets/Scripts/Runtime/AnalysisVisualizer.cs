@@ -40,7 +40,6 @@ namespace MiniMapGame.Runtime
         private MapData _mapData;
         private MapPreset _preset;
         private readonly List<GameObject> _visualObjects = new();
-        private bool _built;
         private readonly Dictionary<Color, Material> _materialCache = new();
 
         void OnEnable()
@@ -124,7 +123,6 @@ namespace MiniMapGame.Runtime
                 CreateSquare(worldPos, plazaSize, plazaColor, "Plaza");
             }
 
-            _built = true;
             SetVisibility(isEnabled);
         }
 
@@ -259,7 +257,6 @@ namespace MiniMapGame.Runtime
             foreach (var mat in _materialCache.Values)
                 if (mat != null) Destroy(mat);
             _materialCache.Clear();
-            _built = false;
         }
     }
 }

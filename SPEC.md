@@ -1,7 +1,7 @@
 # MiniMapGame — Technical Specification
 
-> Version: 1.0.0-draft
-> Date: 2026-03-07
+> Version: 2.0.0
+> Date: 2026-03-08
 > Reference: map-generator-v3.jsx (React/Canvas prototype, 793 lines)
 
 ---
@@ -819,16 +819,140 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 
 ---
 
-## 17. 設計決定事項 (2026-03-07 確定)
+## 17. 設計決定事項 (2026-03-08 更新)
 
-1. **ナビゲーション方式**: **NavMesh動的ベイク** — マップ生成後にNavMeshSurface.BuildNavMesh()。既存PlayerMovement(NavMeshAgent)をそのまま活用。
-2. **カメラ視点**: **自由軌道カメラ維持** — 現CameraController(Perspective orbit/pan/zoom/follow)をそのまま使用。
-3. **スケール**: **1:1** — JSX 1px = Unity 1unit。マップは860x580ユニット。
-4. **建物の3D表現**: **シンプルボックス(Cube)** → 将来的にモジュラープレハブ化。鳥瞰図なのでプリミティブ組み合わせで十分。
-5. **インテリア生成**: **BSP分割** — 現在の実装を維持。部屋=ノード、廊下=エッジ、行き止まり=隠し小部屋。
+1. **ナビゲーション方式**: NavMesh動的ベイク (NavMeshSurface.BuildNavMesh) ✅実装済
+2. **カメラ視点**: Perspective orbit/pan/zoom/follow。Interior時Orthographic切替 ✅実装済
+3. **スケール**: 1:1 (JSX 1px = Unity 1unit, 860×580) ✅実装済
+4. **建物3D**: 4プロシージャル形状 (Box/L-shape/Cylinder/Stepped) × floor-based高さ ✅実装済
+5. **インテリア**: BSP分割 + ミニゲーム (Boss/Treasure/Alcove部屋) ✅実装済
+6. **高低差**: ElevationMap (Gaussian falloff) → 道路/建物/水面が追従 ✅実装済
+7. **橋**: BridgeTunnelDetector (道路交差+河川交差→layer割当+ピラー生成) ✅実装済
+8. **水面**: WaterRenderer (river ribbon + coast fan polygon) ✅実装済
+9. **装飾**: DecorationPlacer/Spawner (4種) + LOD 3段階 ✅実装済
+10. **テーマ**: MapTheme SO (Dark/Parchment), Per-tier road colors ✅実装済
+11. **地形シェーダー**: GridGround.shader (elevation色/slope色ブレンド) ✅実装済
 
-### 次のマイルストーン: Phase E (Unity統合テスト)
-- NavMeshSurface動的ベイク実装
-- MapPresetアセット4種作成 (coastal, rural, grid, mountain)
-- ビルディングプレハブ (Cube) 作成
-- エディタ上で生成→可視化→プレイヤー歩行テスト
+---
+
+## 18. 実装済み機能一覧 (2026-03-08 時点)
+
+### Phase A-D: 基盤 (完了)
+- データ構造全種、SeededRng、SpatialHash
+- 4ジェネレータ (Organic/Grid/Mountain/Rural)
+- MapManager統合、MapRenderer、BuildingSpawner
+- InteriorController + BSP部屋生成
+- GameLoop (遭遇/回収/脱出) + セーブ/ロード
+- ミニゲーム3種 (TimingCombat/MemoryMatch/TrapDodge)
+
+### Phase E: ビジュアル (完了)
+- ライティング/ポストプロセス/フォグ/パーティクル
+- GridGround shader (グリッド線 + 高度色 + 斜面色)
+- テーマシステム (Dark/Parchment)
+
+### 高低差システム (完了)
+- ElevationMap: HillData から Gaussian falloff でサンプリング
+- 道路: ベジェ制御点を高度追従
+- 建物: Y座標を ElevationMap.Sample で設定
+- 地面メッシュ: 20×20 グリッド、各頂点が高度追従
+- 橋/トンネル: BridgeTunnelDetector (edge.layer = -1/0/1)
+
+### 水面レンダリング (完了)
+- River: ribbonメッシュ (幅が下流に向け1.8倍増大)
+- Coast: fan三角形分割ポリゴン
+- Water.shader: UVスクロール半透明
+
+### 装飾・LOD (完了)
+- DecorationPlacer: 道路沿い配置 (SpatialHash衝突回避)
+- 4種: StreetLight(Cylinder+Sphere), Tree(Cylinder+Sphere), Bench(Cube), Bollard(Cylinder)
+- LOD 3段階: <12f=全表示, <30f=LOD0+1, ≥30f=LOD0のみ
+
+### P1改善 (完了, commit 6438fc4)
+- 建物高さ: floors フィールド (tier別レンジ) × floorHeight 1.2f
+- プリセット個別調整: maxElevation/elevationScale/enableBridges/riverWidth/decorationDensity
+- 河川-道路橋: BridgeTunnelDetector.DetectRiverCrossings
+- 海岸方向ランダム: 4方向 (Right/Bottom/Left/Top)
+
+### P2改善 (完了, commit f7d410c)
+- 建物形状: 4種 (Box/L-shape/Cylinder/Stepped), shapeType フィールド
+- Per-tier道路マテリアル: 3 outer + 3 inner (roadOuterMaterials[3])
+- 地形テクスチャ: GridGround.shader に elevation/slope ブレンド追加
+- 川幅変化: riverWidthGrowth = 1.8f (上流→下流)
+
+### P3改善 (完了, commit a25d4ec)
+- Rural閉路: 隣接スポーク間クロスリンク (距離<200f, 70%確率)
+- Mountain副峰: 1-2本の二次尾根 (spine 40-80%から分岐)
+- Grid大通り: 2本の斜め大通り + 中心Hub ノード
+- 海岸-建物排除: ray-cast point-in-polygon テスト
+- 丘陵-道路協調: 丘陵中心を道路ノードから最低30f離す (3回ナッジ)
+
+---
+
+## 19. ジェネレータ詳細仕様 (現行実装)
+
+### 19.1 OrganicGenerator (港湾都市)
+- Hub中心 → N本幹線放射 (arterialRange制御)
+- 各幹線: 3-5ステップ、角度偏向+近接スナップ
+- 環状道路: hasRingRoad=true時、終端atan2ソート接続
+- 二次道路: tier 0 midpoint分岐 → tier 1 → tier 2
+- ラベル: 中心="市中心", 終端="門N"
+
+### 19.2 GridGenerator (NYCグリッド)
+- 等間隔グリッド (spacing=42+rng*10, jitter付き)
+- 水平/垂直エッジ: 中央・端=tier 0, 4n間隔=tier 1, 残=tier 2
+- 斜め大通り2本: CreateDiagonalAvenue (tier 0, curveAmount=0.12)
+- 中心ノード: NodeType.Hub, ラベル="中心街"
+
+### 19.3 MountainGenerator (山道)
+- 蛇行spine (上→下, curveAmount制御)
+- 高度プロファイル: bell curve (peakPos=0.65付近)
+- 副峰: 1-2本 (spine 40-80%分岐, 3-5ステップ, 高度=親の70%-40%)
+- Dead-end枝: 40%確率, tier 1-2
+- ラベル: "登山口"/"山頂"/"峠"/"避難小屋"/"副峰"
+
+### 19.4 RuralGenerator (田舎町)
+- Hub中心="村" → N本放射道路
+- 各spoke: 4-8ステップ, 前半tier 0, 後半tier 1
+- 横枝: 25%確率 tier 2
+- クロスリンク: 隣接spoke間 mid-level接続 (距離<200f, 70%)
+- ラベル: 終端="農場"(60%)
+
+---
+
+## 20. MapPreset 全フィールド (現行)
+
+| フィールド | 型 | 説明 | Coastal | Rural | Grid | Mountain |
+|-----------|------|------|---------|-------|------|----------|
+| displayName | string | 表示名 | 港湾都市 | 田舎町 | NYCグリッド | 山道 |
+| generatorType | enum | 生成器 | Organic | Rural | Grid | Mountain |
+| arterialRange | V2Int | 幹線数 | 6,8 | 3,4 | 5,7 | 2,3 |
+| hasRingRoad | bool | 環状 | ✓ | ✗ | ✗ | ✗ |
+| curveAmount | float | 曲率 | 0.50 | 0.70 | 0.06 | 0.88 |
+| buildingDensity | float | 建物密度 | 0.80 | 0.25 | 0.95 | 0.18 |
+| hasCoast | bool | 海岸 | ✓ | ✗ | ✗ | ✗ |
+| hasRiver | bool | 河川 | ✓ | ✓ | ✗ | ✗ |
+| hillDensity | float | 丘陵 | 0.30 | 0.75 | 0.00 | 0.95 |
+| riverWidth | float | 川幅 | 14 | 10 | 12 | 8 |
+| decorationDensity | float | 装飾 | 0.6 | 0.3 | 0.7 | 0.2 |
+| maxElevation | float | 最大高度 | 10 | 12 | 0 | 40 |
+| elevationScale | float | 高度倍率 | 0.8 | 1.0 | 0.0 | 1.5 |
+| enableBridges | bool | 橋有効 | ✓ | ✓ | ✗ | ✓ |
+| worldWidth/Height | float | ワールドサイズ | 860×580 | 860×580 | 860×580 | 860×580 |
+
+---
+
+## 21. 今後の方針・ユーザー要望
+
+### 開発方針
+- **速度重視**: テスト最小限、実装優先
+- **自律実行**: 推奨選択肢・改善提案を順次実行。意思決定またはテストが必要になるまで前進
+- **日本語**: コミュニケーションは日本語
+- **並列処理**: 可能な限りタスクを並列実行
+
+### 未実装・次期候補
+- **パフォーマンス最適化**: メッシュ結合、GPU instancing、オブジェクトプール
+- **プレイヤー体験**: エンカウント演出、アイテム収集エフェクト、脱出カウントダウン
+- **マップ多様性**: 新ジェネレータ追加 (Island, Maze等)
+- **建物内装**: インテリア装飾のバリエーション強化
+- **オーディオ**: 環境音、BGM、SE
+- **モバイル対応**: タッチ操作、UI最適化

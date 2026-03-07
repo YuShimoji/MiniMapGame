@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Unity.AI.Navigation;
 using MiniMapGame.Runtime;
 using MiniMapGame.Player;
 using MiniMapGame.MiniGame;
