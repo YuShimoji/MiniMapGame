@@ -27,9 +27,14 @@ namespace MiniMapGame.Runtime
         public int bezierSegments = 16;
         public float roadYOffset = 0.01f;
 
+        [Header("Bridge")]
+        public Material bridgePillarMaterial;
+
         [Header("Node Markers")]
         public GameObject intersectionMarkerPrefab;
         public GameObject plazaMarkerPrefab;
+
+        public ElevationMap ElevMap { get; set; }
 
         private readonly List<GameObject> _spawnedObjects = new();
 
@@ -37,6 +42,7 @@ namespace MiniMapGame.Runtime
         {
             Clear();
             RenderEdges(data);
+            RenderBridgePillars(data);
             RenderNodeMarkers(data);
         }
 
@@ -54,46 +60,70 @@ namespace MiniMapGame.Runtime
             var preset = mapManager != null ? mapManager.activePreset : null;
             if (preset == null) return;
 
-            var outerVerts = new List<Vector3>();
-            var outerTris = new List<int>();
-            var innerVerts = new List<Vector3>();
-            var innerTris = new List<int>();
+            // Layer-separated vertex/triangle buffers: ground(0), bridge(1), tunnel(-1)
+            var buffers = new Dictionary<int, (List<Vector3> outerV, List<int> outerT,
+                List<Vector3> innerV, List<int> innerT)>
+            {
+                [0] = (new(), new(), new(), new()),
+                [1] = (new(), new(), new(), new()),
+                [-1] = (new(), new(), new(), new()),
+            };
 
             foreach (var edge in data.edges)
             {
-                var na = data.nodes[edge.nodeA];
-                var nb = data.nodes[edge.nodeB];
                 int ti = Mathf.Clamp(edge.tier, 0, 2);
+                int layer = Mathf.Clamp(edge.layer, -1, 1);
+                if (!buffers.ContainsKey(layer)) layer = 0;
+                var buf = buffers[layer];
 
-                GenerateRoadStrip(na.position, nb.position, edge.controlPoint,
-                    outerWidths[ti], preset, roadYOffset, outerVerts, outerTris);
-                GenerateRoadStrip(na.position, nb.position, edge.controlPoint,
-                    innerWidths[ti], preset, roadYOffset + 0.005f, innerVerts, innerTris);
+                GenerateRoadStrip(edge, data.nodes, preset, outerWidths[ti],
+                    roadYOffset, buf.outerV, buf.outerT);
+                GenerateRoadStrip(edge, data.nodes, preset, innerWidths[ti],
+                    roadYOffset + 0.005f, buf.innerV, buf.innerT);
             }
 
-            CreateRoadMesh(outerVerts, outerTris, roadOuterMaterial, "Roads_Outer");
-            CreateRoadMesh(innerVerts, innerTris, roadInnerMaterial, "Roads_Inner");
+            // Create meshes (skip empty)
+            string[] layerNames = { "Ground", "Bridge", "Tunnel" };
+            int[] layerKeys = { 0, 1, -1 };
+            for (int i = 0; i < layerKeys.Length; i++)
+            {
+                var buf = buffers[layerKeys[i]];
+                CreateRoadMesh(buf.outerV, buf.outerT, roadOuterMaterial,
+                    $"Roads_{layerNames[i]}_Outer");
+                CreateRoadMesh(buf.innerV, buf.innerT, roadInnerMaterial,
+                    $"Roads_{layerNames[i]}_Inner");
+            }
         }
 
-        private void GenerateRoadStrip(Vector2 posA, Vector2 posB, Vector2 ctrl,
-            float width, MapPreset preset, float yOffset, List<Vector3> verts, List<int> tris)
+        private void GenerateRoadStrip(MapEdge edge, List<MapNode> nodes,
+            MapPreset preset, float width, float yOffset,
+            List<Vector3> verts, List<int> tris)
         {
             float halfW = width * 0.5f;
             int baseIdx = verts.Count;
+            var posA = nodes[edge.nodeA].position;
+            var posB = nodes[edge.nodeB].position;
+            var ctrl = edge.controlPoint;
 
             for (int i = 0; i <= bezierSegments; i++)
             {
                 float t = i / (float)bezierSegments;
                 var p2d = MapGenUtils.BezierPoint(posA, ctrl, posB, t);
-                var worldPos = MapGenUtils.ToWorldPosition(p2d, preset) + Vector3.up * yOffset;
 
-                // Tangent via finite difference
+                // Elevation-aware Y position
+                float elev = MapGenUtils.SampleEdgeElevation(edge, nodes, t, ElevMap);
+                var worldPos = MapGenUtils.ToWorldPosition(p2d, elev, preset)
+                    + Vector3.up * yOffset;
+
+                // Tangent via finite difference (also elevation-aware)
                 float tA = Mathf.Max(t - 0.01f, 0f);
                 float tB = Mathf.Min(t + 0.01f, 1f);
+                float elevA = MapGenUtils.SampleEdgeElevation(edge, nodes, tA, ElevMap);
+                float elevB = MapGenUtils.SampleEdgeElevation(edge, nodes, tB, ElevMap);
                 var pA = MapGenUtils.ToWorldPosition(
-                    MapGenUtils.BezierPoint(posA, ctrl, posB, tA), preset);
+                    MapGenUtils.BezierPoint(posA, ctrl, posB, tA), elevA, preset);
                 var pB = MapGenUtils.ToWorldPosition(
-                    MapGenUtils.BezierPoint(posA, ctrl, posB, tB), preset);
+                    MapGenUtils.BezierPoint(posA, ctrl, posB, tB), elevB, preset);
                 var tangent = (pB - pA).normalized;
                 var right = Vector3.Cross(Vector3.up, tangent).normalized;
 
@@ -110,6 +140,41 @@ namespace MiniMapGame.Runtime
                 tris.Add(idx + 1);
                 tris.Add(idx + 2);
                 tris.Add(idx + 3);
+            }
+        }
+
+        private void RenderBridgePillars(MapData data)
+        {
+            var preset = mapManager != null ? mapManager.activePreset : null;
+            if (preset == null) return;
+
+            foreach (var edge in data.edges)
+            {
+                if (edge.layer != 1) continue;
+
+                // Place a pillar at the midpoint of the bridge
+                var posA = data.nodes[edge.nodeA].position;
+                var posB = data.nodes[edge.nodeB].position;
+                var midPoint = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, 0.5f);
+                float midElev = MapGenUtils.SampleEdgeElevation(edge, data.nodes, 0.5f, ElevMap);
+
+                if (midElev < 0.5f) continue;
+
+                var worldPos = MapGenUtils.ToWorldPosition(midPoint, midElev * 0.5f, preset);
+                var pillar = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                pillar.name = $"BridgePillar_{edge.nodeA}_{edge.nodeB}";
+                pillar.transform.SetParent(transform);
+                pillar.transform.position = worldPos;
+                pillar.transform.localScale = new Vector3(0.4f, midElev * 0.5f, 0.4f);
+
+                // Remove collider to avoid NavMesh interference
+                var col = pillar.GetComponent<Collider>();
+                if (col != null) Destroy(col);
+
+                if (bridgePillarMaterial != null)
+                    pillar.GetComponent<Renderer>().sharedMaterial = bridgePillarMaterial;
+
+                _spawnedObjects.Add(pillar);
             }
         }
 
@@ -142,7 +207,7 @@ namespace MiniMapGame.Runtime
                 if (plazaMarkerPrefab == null) break;
                 var node = data.nodes[idx];
                 var go = Instantiate(plazaMarkerPrefab,
-                    MapGenUtils.ToWorldPosition(node.position, preset),
+                    MapGenUtils.ToWorldPosition(node.position, node.elevation, preset),
                     Quaternion.identity, transform);
                 _spawnedObjects.Add(go);
             }
@@ -153,7 +218,7 @@ namespace MiniMapGame.Runtime
                 if (data.analysis.plazaIndices.Contains(idx)) continue;
                 var node = data.nodes[idx];
                 var go = Instantiate(intersectionMarkerPrefab,
-                    MapGenUtils.ToWorldPosition(node.position, preset),
+                    MapGenUtils.ToWorldPosition(node.position, node.elevation, preset),
                     Quaternion.identity, transform);
                 _spawnedObjects.Add(go);
             }

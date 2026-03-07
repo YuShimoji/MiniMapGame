@@ -75,6 +75,8 @@ namespace MiniMapGame.EditorTools
                 mapRenderer.roadOuterMaterial = CreateUnlitMaterial("RoadOuter", new Color(0.17f, 0.24f, 0.35f));
             if (mapRenderer.roadInnerMaterial == null)
                 mapRenderer.roadInnerMaterial = CreateUnlitMaterial("RoadInner", new Color(0.22f, 0.31f, 0.41f));
+            if (mapRenderer.bridgePillarMaterial == null)
+                mapRenderer.bridgePillarMaterial = CreateLitMaterial("BridgePillar", new Color(0.35f, 0.35f, 0.38f));
 
             // 3. BuildingSpawner
             var buildingSpawnerGo = FindOrCreate("BuildingSpawner", mapManagerGo.transform);

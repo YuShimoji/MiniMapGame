@@ -9,5 +9,6 @@ namespace MiniMapGame.Data
         public int nodeB;
         public int tier;
         public Vector2 controlPoint;
+        public int layer; // 0=ground, 1=bridge, -1=tunnel
     }
 }

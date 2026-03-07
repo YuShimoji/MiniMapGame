@@ -75,5 +75,47 @@ namespace MiniMapGame.Core
         {
             return new Vector3(coord.x, 0f, preset.worldHeight - coord.y);
         }
+
+        /// <summary>Convert 2D coord to world position with elevation.</summary>
+        public static Vector3 ToWorldPosition(Vector2 coord, float elevation, MapPreset preset)
+        {
+            return new Vector3(coord.x, elevation, preset.worldHeight - coord.y);
+        }
+
+        /// <summary>
+        /// Sample elevation at parameter t along an edge, accounting for layer type.
+        /// layer=0: terrain-following (lerp between node elevations or ElevationMap sample).
+        /// layer=1: bridge arch (sinusoidal bulge above node elevations).
+        /// layer=-1: tunnel dip (sinusoidal dip below node elevations).
+        /// </summary>
+        public static float SampleEdgeElevation(MapEdge edge, List<MapNode> nodes,
+            float t, ElevationMap elevMap)
+        {
+            float elevA = nodes[edge.nodeA].elevation;
+            float elevB = nodes[edge.nodeB].elevation;
+            float baseElev = Mathf.Lerp(elevA, elevB, t);
+
+            if (edge.layer == 0 && elevMap != null)
+            {
+                var p2d = BezierPoint(
+                    nodes[edge.nodeA].position, edge.controlPoint,
+                    nodes[edge.nodeB].position, t);
+                baseElev = elevMap.Sample(p2d);
+            }
+
+            if (edge.layer == 1) // bridge
+            {
+                float arch = Mathf.Sin(t * Mathf.PI) * 4f;
+                return baseElev + arch;
+            }
+
+            if (edge.layer == -1) // tunnel
+            {
+                float dip = Mathf.Sin(t * Mathf.PI) * 3f;
+                return baseElev - dip;
+            }
+
+            return baseElev;
+        }
     }
 }

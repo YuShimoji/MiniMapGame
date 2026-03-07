@@ -31,6 +31,20 @@ namespace MiniMapGame.MapGen
             for (int i = 0; i < spine.Count - 1; i++)
                 MapGenUtils.AddEdge(nodes, edges, spine[i], spine[i + 1], 0, rng, ca);
 
+            // 1b. Elevation profile along spine
+            float maxElev = preset.maxElevation;
+            float peakPos = 0.5f + (rng.Next() - 0.5f) * 0.3f; // Peak at 35-65% along spine
+            for (int i = 0; i < spine.Count; i++)
+            {
+                float t = spine.Count > 1 ? i / (float)(spine.Count - 1) : 0f;
+                // Smooth bell curve peaking at peakPos
+                float dist = Mathf.Abs(t - peakPos) / Mathf.Max(peakPos, 1f - peakPos);
+                float elev = maxElev * Mathf.Exp(-dist * dist * 3f);
+                var node = nodes[spine[i]];
+                node.elevation = elev;
+                nodes[spine[i]] = node;
+            }
+
             // 2. Dead-end branches
             foreach (int si in spine)
             {
@@ -45,6 +59,10 @@ namespace MiniMapGame.MapGen
 
                 string bLabel = rng.Next() > 0.8f ? "避難小屋" : "";
                 int bn = MapGenUtils.AddNode(nodes, bx, by, preset, bLabel, NodeType.Shelter);
+                // Branch elevation: parent ± small random
+                var branchNode = nodes[bn];
+                branchNode.elevation = nodes[si].elevation * (0.6f + rng.Next() * 0.3f);
+                nodes[bn] = branchNode;
                 MapGenUtils.AddEdge(nodes, edges, si, bn, 1, rng, ca);
 
                 // Sub-branch
@@ -55,6 +73,9 @@ namespace MiniMapGame.MapGen
                     if (bx2 > 50f && bx2 < w - 50f && by2 > 30f && by2 < h - 30f)
                     {
                         int bn2 = MapGenUtils.AddNode(nodes, bx2, by2, preset);
+                        var subNode = nodes[bn2];
+                        subNode.elevation = branchNode.elevation * (0.5f + rng.Next() * 0.3f);
+                        nodes[bn2] = subNode;
                         MapGenUtils.AddEdge(nodes, edges, bn, bn2, 2, rng, ca);
                     }
                 }

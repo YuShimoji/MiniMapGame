@@ -44,9 +44,14 @@ namespace MiniMapGame.Runtime
                 var prefab = b.isLandmark ? landmarkBuildingPrefab : normalBuildingPrefab;
                 if (prefab == null) continue;
 
-                var worldPos = MapGenUtils.ToWorldPosition(b.position, preset);
+                // Sample terrain elevation for building Y position
+                float terrainElev = 0f;
+                if (mapManager != null && mapManager.CurrentElevationMap != null)
+                    terrainElev = mapManager.CurrentElevationMap.Sample(b.position);
+
+                var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
                 float yHeight = b.isLandmark ? landmarkHeight : normalHeight;
-                worldPos.y = yHeight * 0.5f;
+                worldPos.y = terrainElev + yHeight * 0.5f;
 
                 var rotation = Quaternion.Euler(0f, b.angle * Mathf.Rad2Deg, 0f);
                 var go = Instantiate(prefab, worldPos, rotation, transform);

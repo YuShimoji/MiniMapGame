@@ -82,8 +82,8 @@ namespace MiniMapGame.GameLoop
             foreach (int idx in mapData.analysis.deadEndIndices)
             {
                 var node = mapData.nodes[idx];
-                var worldPos = MapGenUtils.ToWorldPosition(node.position, _currentPreset);
-                worldPos.y = 0.5f;
+                var worldPos = MapGenUtils.ToWorldPosition(node.position, node.elevation, _currentPreset);
+                worldPos.y += 0.5f;
 
                 var go = Instantiate(valueObjectPrefab, worldPos, Quaternion.identity, transform);
                 go.name = $"ValueObj_N{idx}";
@@ -109,7 +109,9 @@ namespace MiniMapGame.GameLoop
 
                 var mid2D = MapGenUtils.BezierPoint(
                     nodeA.position, edge.controlPoint, nodeB.position, 0.5f);
-                var worldPos = MapGenUtils.ToWorldPosition(mid2D, _currentPreset);
+                float midElev = MapGenUtils.SampleEdgeElevation(edge, mapData.nodes, 0.5f,
+                    mapManager != null ? mapManager.CurrentElevationMap : null);
+                var worldPos = MapGenUtils.ToWorldPosition(mid2D, midElev, _currentPreset);
 
                 var go = Instantiate(encounterZonePrefab, worldPos, Quaternion.identity, transform);
                 go.name = $"Encounter_E{edgeIdx}";
@@ -132,7 +134,7 @@ namespace MiniMapGame.GameLoop
                 var node = mapData.nodes[i];
                 if (!IsExtractionNode(node)) continue;
 
-                var worldPos = MapGenUtils.ToWorldPosition(node.position, _currentPreset);
+                var worldPos = MapGenUtils.ToWorldPosition(node.position, node.elevation, _currentPreset);
 
                 var go = Instantiate(extractionPointPrefab, worldPos, Quaternion.identity, transform);
                 go.name = $"Extract_N{i}";

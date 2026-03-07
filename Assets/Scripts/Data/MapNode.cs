@@ -9,5 +9,6 @@ namespace MiniMapGame.Data
         public int degree;
         public string label;
         public NodeType type;
+        public float elevation;
     }
 }

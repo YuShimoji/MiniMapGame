@@ -19,5 +19,11 @@ namespace MiniMapGame.Data
         public float worldWidth = 860f;
         public float worldHeight = 580f;
         public float borderPadding = 50f;
+
+        [Header("Elevation")]
+        public float maxElevation = 15f;
+        public float elevationScale = 1f;
+        public bool enableBridges = true;
+        public bool enableTunnels = false;
     }
 }

@@ -83,8 +83,8 @@ namespace MiniMapGame.Runtime
             foreach (int idx in analysis.deadEndIndices)
             {
                 var node = _mapData.nodes[idx];
-                var worldPos = MapGenUtils.ToWorldPosition(node.position, _preset);
-                worldPos.y = yLine;
+                var worldPos = MapGenUtils.ToWorldPosition(node.position, node.elevation, _preset);
+                worldPos.y += yLine;
                 CreateCircle(worldPos, deadEndRadius, deadEndColor, deadEndSegments, "DeadEnd");
             }
 
@@ -94,12 +94,14 @@ namespace MiniMapGame.Runtime
                 var edge = _mapData.edges[edgeIdx];
                 var nodeA = _mapData.nodes[edge.nodeA];
                 var nodeB = _mapData.nodes[edge.nodeB];
-                CreateChokeLine(nodeA.position, nodeB.position, edge.controlPoint, yLine);
+                CreateChokeLine(nodeA.position, nodeB.position, edge.controlPoint,
+                    nodeA.elevation, nodeB.elevation, yLine);
 
                 // Diamond marker at midpoint
                 var mid2D = MapGenUtils.BezierPoint(nodeA.position, edge.controlPoint, nodeB.position, 0.5f);
-                var midWorld = MapGenUtils.ToWorldPosition(mid2D, _preset);
-                midWorld.y = yLine;
+                float midElev = (nodeA.elevation + nodeB.elevation) * 0.5f;
+                var midWorld = MapGenUtils.ToWorldPosition(mid2D, midElev, _preset);
+                midWorld.y += yLine;
                 CreateDiamond(midWorld, 1.5f, chokeColor, "ChokeMid");
             }
 
@@ -108,8 +110,8 @@ namespace MiniMapGame.Runtime
             {
                 if (analysis.plazaIndices.Contains(idx)) continue;
                 var node = _mapData.nodes[idx];
-                var worldPos = MapGenUtils.ToWorldPosition(node.position, _preset);
-                worldPos.y = yLine;
+                var worldPos = MapGenUtils.ToWorldPosition(node.position, node.elevation, _preset);
+                worldPos.y += yLine;
                 CreateCross(worldPos, intersectionSize, intersectionColor, "Intersection");
             }
 
@@ -117,8 +119,8 @@ namespace MiniMapGame.Runtime
             foreach (int idx in analysis.plazaIndices)
             {
                 var node = _mapData.nodes[idx];
-                var worldPos = MapGenUtils.ToWorldPosition(node.position, _preset);
-                worldPos.y = yLine;
+                var worldPos = MapGenUtils.ToWorldPosition(node.position, node.elevation, _preset);
+                worldPos.y += yLine;
                 CreateSquare(worldPos, plazaSize, plazaColor, "Plaza");
             }
 
@@ -145,7 +147,8 @@ namespace MiniMapGame.Runtime
             _visualObjects.Add(go);
         }
 
-        private void CreateChokeLine(Vector2 posA, Vector2 posB, Vector2 ctrl, float y)
+        private void CreateChokeLine(Vector2 posA, Vector2 posB, Vector2 ctrl,
+            float elevA, float elevB, float yOffset)
         {
             var go = new GameObject("Viz_ChokeEdge");
             go.transform.SetParent(transform);
@@ -157,8 +160,9 @@ namespace MiniMapGame.Runtime
             {
                 float t = i / (float)chokeBezierSegments;
                 var p2d = MapGenUtils.BezierPoint(posA, ctrl, posB, t);
-                var wp = MapGenUtils.ToWorldPosition(p2d, _preset);
-                wp.y = y;
+                float elev = Mathf.Lerp(elevA, elevB, t);
+                var wp = MapGenUtils.ToWorldPosition(p2d, elev, _preset);
+                wp.y += yOffset;
                 lr.SetPosition(i, wp);
             }
 
