@@ -20,6 +20,8 @@ namespace MiniMapGame.Runtime
         [Header("Settings")]
         public float waterYOffset = 0.02f;
         public float coastY = 0.01f;
+        [Tooltip("River width multiplier at the downstream end (1.0 = no change)")]
+        public float riverWidthGrowth = 1.8f;
 
         private readonly List<GameObject> _spawnedObjects = new();
 
@@ -44,7 +46,7 @@ namespace MiniMapGame.Runtime
         {
             if (terrain.riverPoints == null || terrain.riverPoints.Count < 2) return;
 
-            float halfW = preset.riverWidth * 0.5f;
+            float baseHalfW = preset.riverWidth * 0.5f;
             var points = terrain.riverPoints;
             int segCount = points.Count - 1;
 
@@ -55,6 +57,10 @@ namespace MiniMapGame.Runtime
             for (int i = 0; i < points.Count; i++)
             {
                 var p = points[i];
+                float t = segCount > 0 ? i / (float)segCount : 0f;
+
+                // Width grows from upstream to downstream
+                float halfW = baseHalfW * Mathf.Lerp(1f, riverWidthGrowth, t);
 
                 // Sample terrain elevation, river sits slightly below
                 float terrainElev = 0f;
@@ -80,7 +86,7 @@ namespace MiniMapGame.Runtime
                 verts.Add(worldPos - right * halfW);
                 verts.Add(worldPos + right * halfW);
 
-                float v = i / (float)Mathf.Max(segCount, 1);
+                float v = t;
                 uvs.Add(new Vector2(0f, v));
                 uvs.Add(new Vector2(1f, v));
             }

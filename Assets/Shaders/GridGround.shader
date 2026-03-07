@@ -6,6 +6,13 @@ Shader "MiniMapGame/GridGround"
         _GridColor ("Grid Color", Color) = (0.06, 0.08, 0.12, 1)
         _GridSize ("Grid Size", Float) = 20
         _GridOpacity ("Grid Opacity", Range(0, 1)) = 0.15
+        _MidColor ("Mid Elevation Color", Color) = (0.08, 0.06, 0.04, 1)
+        _HighColor ("High Elevation Color", Color) = (0.10, 0.09, 0.08, 1)
+        _ElevMidThreshold ("Mid Elevation Threshold", Float) = 3.0
+        _ElevHighThreshold ("High Elevation Threshold", Float) = 8.0
+        _ElevBlendRange ("Elevation Blend Range", Float) = 2.0
+        _SlopeColor ("Slope Tint", Color) = (0.06, 0.05, 0.04, 1)
+        _SlopeThreshold ("Slope Threshold", Range(0, 1)) = 0.3
     }
 
     SubShader
@@ -37,6 +44,13 @@ Shader "MiniMapGame/GridGround"
                 half4 _GridColor;
                 float _GridSize;
                 half _GridOpacity;
+                half4 _MidColor;
+                half4 _HighColor;
+                float _ElevMidThreshold;
+                float _ElevHighThreshold;
+                float _ElevBlendRange;
+                half4 _SlopeColor;
+                half _SlopeThreshold;
             CBUFFER_END
 
             struct Attributes
@@ -72,8 +86,20 @@ Shader "MiniMapGame/GridGround"
                 float line = min(grid.x, grid.y);
                 float gridMask = 1.0 - saturate(line);
 
-                // Blend base and grid colors
-                half3 color = lerp(_BaseColor.rgb, _GridColor.rgb, gridMask * _GridOpacity);
+                // Elevation-based color blending
+                float elev = input.positionWS.y;
+                float midBlend = saturate((elev - _ElevMidThreshold) / max(_ElevBlendRange, 0.01));
+                float highBlend = saturate((elev - _ElevHighThreshold) / max(_ElevBlendRange, 0.01));
+                half3 terrainColor = lerp(_BaseColor.rgb, _MidColor.rgb, midBlend);
+                terrainColor = lerp(terrainColor, _HighColor.rgb, highBlend);
+
+                // Slope-based tinting (steep = rocky)
+                float slopeFactor = 1.0 - saturate(dot(normalize(input.normalWS), float3(0, 1, 0)));
+                float slopeMask = saturate((slopeFactor - _SlopeThreshold) / (1.0 - _SlopeThreshold));
+                terrainColor = lerp(terrainColor, _SlopeColor.rgb, slopeMask * 0.6);
+
+                // Blend terrain and grid colors
+                half3 color = lerp(terrainColor, _GridColor.rgb, gridMask * _GridOpacity);
 
                 // Simple Lambert lighting
                 Light mainLight = GetMainLight();

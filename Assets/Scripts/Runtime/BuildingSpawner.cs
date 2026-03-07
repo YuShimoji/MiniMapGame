@@ -40,21 +40,32 @@ namespace MiniMapGame.Runtime
 
             foreach (var b in data.buildings)
             {
-                var prefab = b.isLandmark ? landmarkBuildingPrefab : normalBuildingPrefab;
-                if (prefab == null) continue;
-
                 // Sample terrain elevation for building Y position
                 float terrainElev = 0f;
                 if (mapManager != null && mapManager.CurrentElevationMap != null)
                     terrainElev = mapManager.CurrentElevationMap.Sample(b.position);
 
-                var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
                 float yHeight = Mathf.Max(b.floors, 1) * floorHeight;
-                worldPos.y = terrainElev + yHeight * 0.5f;
-
                 var rotation = Quaternion.Euler(0f, b.angle * Mathf.Rad2Deg, 0f);
-                var go = Instantiate(prefab, worldPos, rotation, transform);
-                go.transform.localScale = new Vector3(b.width, yHeight, b.height);
+
+                GameObject go;
+                switch (b.shapeType)
+                {
+                    case 1: // L-shape: two boxes
+                        go = CreateLShape(b, terrainElev, yHeight, rotation, preset);
+                        break;
+                    case 2: // Cylinder
+                        go = CreateCylinder(b, terrainElev, yHeight, rotation, preset);
+                        break;
+                    case 3: // Stepped: base + taller tower
+                        go = CreateStepped(b, terrainElev, yHeight, rotation, preset);
+                        break;
+                    default: // 0 = Box (original)
+                        go = CreateBox(b, terrainElev, yHeight, rotation, preset);
+                        break;
+                }
+
+                if (go == null) continue;
                 go.name = b.id;
 
                 var interaction = go.AddComponent<BuildingInteraction>();
@@ -66,11 +77,92 @@ namespace MiniMapGame.Runtime
             }
         }
 
+        private GameObject CreateBox(MapBuilding b, float terrainElev, float yHeight,
+            Quaternion rotation, MapPreset preset)
+        {
+            var prefab = b.isLandmark ? landmarkBuildingPrefab : normalBuildingPrefab;
+            if (prefab == null) return null;
+            var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
+            worldPos.y = terrainElev + yHeight * 0.5f;
+            var go = Instantiate(prefab, worldPos, rotation, transform);
+            go.transform.localScale = new Vector3(b.width, yHeight, b.height);
+            return go;
+        }
+
+        private GameObject CreateLShape(MapBuilding b, float terrainElev, float yHeight,
+            Quaternion rotation, MapPreset preset)
+        {
+            var prefab = b.isLandmark ? landmarkBuildingPrefab : normalBuildingPrefab;
+            if (prefab == null) return null;
+            var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
+
+            var root = new GameObject();
+            root.transform.SetParent(transform);
+            root.transform.position = worldPos;
+            root.transform.rotation = rotation;
+
+            // Main block
+            var main = Instantiate(prefab, root.transform);
+            main.transform.localPosition = new Vector3(0, yHeight * 0.5f, 0);
+            main.transform.localScale = new Vector3(b.width, yHeight, b.height * 0.6f);
+            main.transform.localRotation = Quaternion.identity;
+
+            // Wing block
+            var wing = Instantiate(prefab, root.transform);
+            wing.transform.localPosition = new Vector3(b.width * 0.25f, yHeight * 0.35f, b.height * 0.2f);
+            wing.transform.localScale = new Vector3(b.width * 0.5f, yHeight * 0.7f, b.height * 0.5f);
+            wing.transform.localRotation = Quaternion.identity;
+
+            return root;
+        }
+
+        private GameObject CreateCylinder(MapBuilding b, float terrainElev, float yHeight,
+            Quaternion rotation, MapPreset preset)
+        {
+            var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
+            worldPos.y = terrainElev + yHeight * 0.5f;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.transform.SetParent(transform);
+            go.transform.position = worldPos;
+            go.transform.rotation = rotation;
+            float radius = Mathf.Min(b.width, b.height) * 0.5f;
+            go.transform.localScale = new Vector3(radius, yHeight * 0.5f, radius);
+            var col = go.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+            return go;
+        }
+
+        private GameObject CreateStepped(MapBuilding b, float terrainElev, float yHeight,
+            Quaternion rotation, MapPreset preset)
+        {
+            var prefab = b.isLandmark ? landmarkBuildingPrefab : normalBuildingPrefab;
+            if (prefab == null) return null;
+            var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
+
+            var root = new GameObject();
+            root.transform.SetParent(transform);
+            root.transform.position = worldPos;
+            root.transform.rotation = rotation;
+
+            // Base (wide, shorter)
+            float baseH = yHeight * 0.5f;
+            var basePart = Instantiate(prefab, root.transform);
+            basePart.transform.localPosition = new Vector3(0, baseH * 0.5f, 0);
+            basePart.transform.localScale = new Vector3(b.width, baseH, b.height);
+            basePart.transform.localRotation = Quaternion.identity;
+
+            // Tower (narrower, taller)
+            float towerH = yHeight;
+            var tower = Instantiate(prefab, root.transform);
+            tower.transform.localPosition = new Vector3(0, towerH * 0.5f, 0);
+            tower.transform.localScale = new Vector3(b.width * 0.55f, towerH, b.height * 0.55f);
+            tower.transform.localRotation = Quaternion.identity;
+
+            return root;
+        }
+
         private void ApplyBuildingVariation(GameObject go, string buildingId, bool isLandmark)
         {
-            var r = go.GetComponent<Renderer>();
-            if (r == null) return;
-
             int hash = buildingId.GetHashCode();
             float rv = ((hash & 0xFF) / 255f - 0.5f) * 0.06f;
             float gv = (((hash >> 8) & 0xFF) / 255f - 0.5f) * 0.06f;
@@ -88,7 +180,10 @@ namespace MiniMapGame.Runtime
             else
                 _propBlock.SetColor("_EmissionColor", Color.black);
 
-            r.SetPropertyBlock(_propBlock);
+            // Apply to self and all children with renderers
+            var renderers = go.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+                r.SetPropertyBlock(_propBlock);
         }
 
         private void RefreshBuildingColors()

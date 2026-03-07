@@ -19,9 +19,9 @@ namespace MiniMapGame.Runtime
         [Header("Road Width by Tier (inner fill)")]
         public float[] innerWidths = { 0.9f, 0.55f, 0.28f };
 
-        [Header("Materials")]
-        public Material roadOuterMaterial;
-        public Material roadInnerMaterial;
+        [Header("Materials (per tier)")]
+        public Material[] roadOuterMaterials = new Material[3]; // tier 0,1,2
+        public Material[] roadInnerMaterials = new Material[3]; // tier 0,1,2
 
         [Header("Rendering")]
         public int bezierSegments = 16;
@@ -60,21 +60,19 @@ namespace MiniMapGame.Runtime
             var preset = mapManager != null ? mapManager.activePreset : null;
             if (preset == null) return;
 
-            // Layer-separated vertex/triangle buffers: ground(0), bridge(1), tunnel(-1)
-            var buffers = new Dictionary<int, (List<Vector3> outerV, List<int> outerT,
-                List<Vector3> innerV, List<int> innerT)>
-            {
-                [0] = (new(), new(), new(), new()),
-                [1] = (new(), new(), new(), new()),
-                [-1] = (new(), new(), new(), new()),
-            };
+            // Buffer key: (tier, layer) → separate mesh per tier for tier-colored materials
+            var buffers = new Dictionary<(int tier, int layer),
+                (List<Vector3> outerV, List<int> outerT, List<Vector3> innerV, List<int> innerT)>();
 
             foreach (var edge in data.edges)
             {
                 int ti = Mathf.Clamp(edge.tier, 0, 2);
                 int layer = Mathf.Clamp(edge.layer, -1, 1);
-                if (!buffers.ContainsKey(layer)) layer = 0;
-                var buf = buffers[layer];
+                var key = (ti, layer);
+
+                if (!buffers.ContainsKey(key))
+                    buffers[key] = (new(), new(), new(), new());
+                var buf = buffers[key];
 
                 GenerateRoadStrip(edge, data.nodes, preset, outerWidths[ti],
                     roadYOffset, buf.outerV, buf.outerT);
@@ -82,16 +80,21 @@ namespace MiniMapGame.Runtime
                     roadYOffset + 0.005f, buf.innerV, buf.innerT);
             }
 
-            // Create meshes (skip empty)
-            string[] layerNames = { "Ground", "Bridge", "Tunnel" };
-            int[] layerKeys = { 0, 1, -1 };
-            for (int i = 0; i < layerKeys.Length; i++)
+            string[] layerNames = { "Tunnel", "Ground", "Bridge" };
+            foreach (var kvp in buffers)
             {
-                var buf = buffers[layerKeys[i]];
-                CreateRoadMesh(buf.outerV, buf.outerT, roadOuterMaterial,
-                    $"Roads_{layerNames[i]}_Outer");
-                CreateRoadMesh(buf.innerV, buf.innerT, roadInnerMaterial,
-                    $"Roads_{layerNames[i]}_Inner");
+                int ti = kvp.Key.tier;
+                int layer = kvp.Key.layer;
+                string layerName = layerNames[layer + 1];
+                var outerMat = ti < roadOuterMaterials.Length && roadOuterMaterials[ti] != null
+                    ? roadOuterMaterials[ti] : roadOuterMaterials[0];
+                var innerMat = ti < roadInnerMaterials.Length && roadInnerMaterials[ti] != null
+                    ? roadInnerMaterials[ti] : roadInnerMaterials[0];
+
+                CreateRoadMesh(kvp.Value.outerV, kvp.Value.outerT, outerMat,
+                    $"Roads_{layerName}_T{ti}_Outer");
+                CreateRoadMesh(kvp.Value.innerV, kvp.Value.innerT, innerMat,
+                    $"Roads_{layerName}_T{ti}_Inner");
             }
         }
 

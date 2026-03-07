@@ -64,10 +64,16 @@ namespace MiniMapGame.Runtime
         private void ApplyRoadMaterials(MapTheme theme)
         {
             if (mapRenderer == null) return;
-            if (mapRenderer.roadOuterMaterial != null)
-                mapRenderer.roadOuterMaterial.color = theme.roadOuter0;
-            if (mapRenderer.roadInnerMaterial != null)
-                mapRenderer.roadInnerMaterial.color = theme.roadFill0;
+            Color[] outerColors = { theme.roadOuter0, theme.roadOuter1, theme.roadOuter2 };
+            Color[] innerColors = { theme.roadFill0, theme.roadFill1, theme.roadFill2 };
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (i < mapRenderer.roadOuterMaterials.Length && mapRenderer.roadOuterMaterials[i] != null)
+                    mapRenderer.roadOuterMaterials[i].color = outerColors[i];
+                if (i < mapRenderer.roadInnerMaterials.Length && mapRenderer.roadInnerMaterials[i] != null)
+                    mapRenderer.roadInnerMaterials[i].color = innerColors[i];
+            }
         }
 
         private void ApplyBuildingColors(MapTheme theme)

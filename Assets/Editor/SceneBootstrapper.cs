@@ -71,10 +71,21 @@ namespace MiniMapGame.EditorTools
             mapManager.mapRenderer = mapRenderer;
             mapRenderer.mapManager = mapManager;
 
-            if (mapRenderer.roadOuterMaterial == null)
-                mapRenderer.roadOuterMaterial = CreateUnlitMaterial("RoadOuter", new Color(0.17f, 0.24f, 0.35f));
-            if (mapRenderer.roadInnerMaterial == null)
-                mapRenderer.roadInnerMaterial = CreateUnlitMaterial("RoadInner", new Color(0.22f, 0.31f, 0.41f));
+            // Per-tier road materials
+            if (mapRenderer.roadOuterMaterials == null || mapRenderer.roadOuterMaterials.Length < 3)
+                mapRenderer.roadOuterMaterials = new Material[3];
+            if (mapRenderer.roadInnerMaterials == null || mapRenderer.roadInnerMaterials.Length < 3)
+                mapRenderer.roadInnerMaterials = new Material[3];
+
+            Color[] defaultOuter = { new(0.17f, 0.24f, 0.35f), new(0.20f, 0.27f, 0.36f), new(0.24f, 0.30f, 0.38f) };
+            Color[] defaultInner = { new(0.22f, 0.31f, 0.41f), new(0.26f, 0.34f, 0.42f), new(0.30f, 0.37f, 0.44f) };
+            for (int i = 0; i < 3; i++)
+            {
+                if (mapRenderer.roadOuterMaterials[i] == null)
+                    mapRenderer.roadOuterMaterials[i] = CreateUnlitMaterial($"RoadOuter_T{i}", defaultOuter[i]);
+                if (mapRenderer.roadInnerMaterials[i] == null)
+                    mapRenderer.roadInnerMaterials[i] = CreateUnlitMaterial($"RoadInner_T{i}", defaultInner[i]);
+            }
             if (mapRenderer.bridgePillarMaterial == null)
                 mapRenderer.bridgePillarMaterial = CreateLitMaterial("BridgePillar", new Color(0.35f, 0.35f, 0.38f));
 

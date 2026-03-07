@@ -79,6 +79,15 @@ namespace MiniMapGame.Core
                         else
                             floors = 1 + Mathf.FloorToInt(rng.Next() * 2f);
 
+                        // Shape type: landmarks=3(stepped), tier0=0-2 weighted, tier1-2=mostly 0(box)
+                        int shapeType;
+                        if (isLm)
+                            shapeType = 3;
+                        else if (ti == 0)
+                            shapeType = Mathf.FloorToInt(rng.Next() * 3f); // 0,1,2
+                        else
+                            shapeType = rng.Next() > 0.85f ? Mathf.FloorToInt(rng.Next() * 2f) : 0;
+
                         var b = new MapBuilding
                         {
                             position = new Vector2(bx, by),
@@ -88,6 +97,7 @@ namespace MiniMapGame.Core
                             tier = seg.tier,
                             isLandmark = isLm,
                             floors = floors,
+                            shapeType = shapeType,
                             id = $"B{bldId++}"
                         };
 
