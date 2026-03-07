@@ -141,6 +141,9 @@ namespace MiniMapGame.EditorTools
             viz.mapManager = mapManager;
             EditorUtility.SetDirty(viz);
 
+            // 11. Map Control UI (F1 to toggle)
+            SetupMapControlUI(canvas, mapManager, viz);
+
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
@@ -379,6 +382,167 @@ namespace MiniMapGame.EditorTools
                 AssetDatabase.LoadAssetAtPath<GameObject>($"{GameLoopPrefabFolder}/ExtractionPoint.prefab");
 
             EditorUtility.SetDirty(controller);
+        }
+
+        // ── Map Control UI ──
+
+        private static void SetupMapControlUI(Canvas canvas, MapManager mapManager, AnalysisVisualizer viz)
+        {
+            var panelGo = FindOrCreate("MapControlPanel", canvas.transform);
+            var controlUI = EnsureComponent<MiniMapGame.UI.MapControlUI>(panelGo);
+            controlUI.controlPanel = panelGo;
+            controlUI.mapManager = mapManager;
+            controlUI.analysisVisualizer = viz;
+
+            // Background
+            var panelBg = EnsureComponent<Image>(panelGo);
+            panelBg.color = new Color(0.04f, 0.06f, 0.1f, 0.92f);
+            SetRect(panelGo, new Vector2(0f, 0.3f), new Vector2(0.18f, 0.95f));
+
+            float yPos = 0.92f;
+            float rowH = 0.065f;
+
+            // Title
+            var titleTmp = CreateTMPChild(panelGo.transform, "CtrlTitle", "Map Control (F1)",
+                new Vector2(0.05f, yPos - rowH), new Vector2(0.95f, yPos), TextAlignmentOptions.TopCenter);
+            titleTmp.fontSize = 14f;
+            yPos -= rowH + 0.02f;
+
+            // Preset name
+            controlUI.presetNameText = CreateTMPChild(panelGo.transform, "PresetName", "---",
+                new Vector2(0.05f, yPos - rowH), new Vector2(0.95f, yPos), TextAlignmentOptions.Center);
+            controlUI.presetNameText.fontSize = 16f;
+            controlUI.presetNameText.color = new Color(0.9f, 0.85f, 0.6f);
+            yPos -= rowH + 0.01f;
+
+            // Preset buttons (2x2 grid)
+            controlUI.coastalPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Coastal.asset");
+            controlUI.ruralPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Rural.asset");
+            controlUI.gridPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Grid.asset");
+            controlUI.mountainPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Mountain.asset");
+
+            float btnH = 0.055f;
+            controlUI.coastalButton = CreateButton(panelGo.transform, "BtnCoastal", "港湾都市",
+                new Vector2(0.05f, yPos - btnH), new Vector2(0.48f, yPos), new Color(0.15f, 0.35f, 0.55f)).GetComponent<Button>();
+            controlUI.ruralButton = CreateButton(panelGo.transform, "BtnRural", "田舎町",
+                new Vector2(0.52f, yPos - btnH), new Vector2(0.95f, yPos), new Color(0.35f, 0.45f, 0.2f)).GetComponent<Button>();
+            yPos -= btnH + 0.01f;
+            controlUI.gridButton = CreateButton(panelGo.transform, "BtnGrid", "NYC Grid",
+                new Vector2(0.05f, yPos - btnH), new Vector2(0.48f, yPos), new Color(0.4f, 0.35f, 0.25f)).GetComponent<Button>();
+            controlUI.mountainButton = CreateButton(panelGo.transform, "BtnMountain", "山道",
+                new Vector2(0.52f, yPos - btnH), new Vector2(0.95f, yPos), new Color(0.3f, 0.3f, 0.35f)).GetComponent<Button>();
+            yPos -= btnH + 0.02f;
+
+            // Seed input
+            CreateTMPChild(panelGo.transform, "SeedLabel", "Seed:",
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MiddleLeft);
+
+            var seedGo = FindOrCreate("SeedInput", panelGo.transform);
+            var seedInput = EnsureComponent<TMP_InputField>(seedGo);
+            seedInput.contentType = TMP_InputField.ContentType.IntegerNumber;
+            SetRect(seedGo, new Vector2(0.32f, yPos - 0.05f), new Vector2(0.95f, yPos));
+            // Input field requires text and placeholder children
+            EnsureInputFieldChildren(seedGo);
+            controlUI.seedInput = seedInput;
+            yPos -= 0.07f;
+
+            // Density slider
+            controlUI.densityLabel = CreateTMPChild(panelGo.transform, "DensityLabel", "Building Density: 80%",
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.95f, yPos), TextAlignmentOptions.MiddleLeft);
+            yPos -= 0.05f;
+
+            var sliderGo = FindOrCreate("DensitySlider", panelGo.transform);
+            var slider = EnsureComponent<Slider>(sliderGo);
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = 0.8f;
+            SetRect(sliderGo, new Vector2(0.05f, yPos - 0.05f), new Vector2(0.95f, yPos));
+            EnsureSliderChildren(sliderGo);
+            controlUI.buildingDensitySlider = slider;
+            yPos -= 0.07f;
+
+            // Regenerate + Random buttons
+            controlUI.regenerateButton = CreateButton(panelGo.transform, "BtnRegenerate", "Regenerate",
+                new Vector2(0.05f, yPos - 0.06f), new Vector2(0.48f, yPos), new Color(0.25f, 0.5f, 0.35f)).GetComponent<Button>();
+            controlUI.randomButton = CreateButton(panelGo.transform, "BtnRandom", "Random",
+                new Vector2(0.52f, yPos - 0.06f), new Vector2(0.95f, yPos), new Color(0.4f, 0.3f, 0.5f)).GetComponent<Button>();
+            yPos -= 0.08f;
+
+            // Stats text
+            controlUI.statsText = CreateTMPChild(panelGo.transform, "StatsText", "",
+                new Vector2(0.05f, 0.02f), new Vector2(0.95f, yPos), TextAlignmentOptions.TopLeft);
+            controlUI.statsText.fontSize = 11f;
+            controlUI.statsText.color = new Color(0.5f, 0.6f, 0.7f, 0.8f);
+
+            EditorUtility.SetDirty(controlUI);
+        }
+
+        private static void EnsureInputFieldChildren(GameObject inputGo)
+        {
+            // TMP_InputField requires TextArea > Text children
+            var textAreaGo = FindOrCreate("Text Area", inputGo.transform);
+            SetRect(textAreaGo, Vector2.zero, Vector2.one);
+            var textGo = FindOrCreate("Text", textAreaGo.transform);
+            var tmp = EnsureComponent<TextMeshProUGUI>(textGo);
+            tmp.fontSize = 14f;
+            tmp.color = new Color(0.8f, 0.9f, 1f);
+            SetRect(textGo, Vector2.zero, Vector2.one);
+
+            var placeholderGo = FindOrCreate("Placeholder", textAreaGo.transform);
+            var phTmp = EnsureComponent<TextMeshProUGUI>(placeholderGo);
+            phTmp.text = "12345";
+            phTmp.fontSize = 14f;
+            phTmp.color = new Color(0.4f, 0.5f, 0.6f, 0.5f);
+            SetRect(placeholderGo, Vector2.zero, Vector2.one);
+
+            var inputField = inputGo.GetComponent<TMP_InputField>();
+            if (inputField != null)
+            {
+                inputField.textViewport = textAreaGo.GetComponent<RectTransform>();
+                inputField.textComponent = tmp;
+                inputField.placeholder = phTmp;
+            }
+
+            // Background
+            var bg = EnsureComponent<Image>(inputGo);
+            bg.color = new Color(0.08f, 0.1f, 0.15f, 0.9f);
+        }
+
+        private static void EnsureSliderChildren(GameObject sliderGo)
+        {
+            // Background
+            var bgGo = FindOrCreate("Background", sliderGo.transform);
+            var bgImg = EnsureComponent<Image>(bgGo);
+            bgImg.color = new Color(0.1f, 0.12f, 0.18f);
+            SetRect(bgGo, Vector2.zero, Vector2.one);
+
+            // Fill Area
+            var fillAreaGo = FindOrCreate("Fill Area", sliderGo.transform);
+            SetRect(fillAreaGo, new Vector2(0, 0.25f), new Vector2(1, 0.75f));
+
+            var fillGo = FindOrCreate("Fill", fillAreaGo.transform);
+            var fillImg = EnsureComponent<Image>(fillGo);
+            fillImg.color = new Color(0.3f, 0.5f, 0.7f);
+            SetRect(fillGo, Vector2.zero, Vector2.one);
+
+            // Handle Slide Area
+            var handleAreaGo = FindOrCreate("Handle Slide Area", sliderGo.transform);
+            SetRect(handleAreaGo, Vector2.zero, Vector2.one);
+
+            var handleGo = FindOrCreate("Handle", handleAreaGo.transform);
+            var handleImg = EnsureComponent<Image>(handleGo);
+            handleImg.color = new Color(0.7f, 0.8f, 0.9f);
+            var handleRect = handleGo.GetComponent<RectTransform>();
+            handleRect.sizeDelta = new Vector2(12, 0);
+
+            // Wire slider references
+            var slider = sliderGo.GetComponent<Slider>();
+            if (slider != null)
+            {
+                slider.fillRect = fillGo.GetComponent<RectTransform>();
+                slider.handleRect = handleGo.GetComponent<RectTransform>();
+                slider.targetGraphic = handleImg;
+            }
         }
 
         // ── MiniMap ──
