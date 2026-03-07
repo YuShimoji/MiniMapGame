@@ -44,6 +44,8 @@ namespace MiniMapGame.Player
         private Vector2 _currentOrbitAngles;
         private Vector2 _orbitVelocity;
 
+        public float CurrentDistance => _currentDistance;
+
         // Saved state for restoring after interior mode
         private Vector2 _savedOrbitAngles;
         private float _savedDistance;

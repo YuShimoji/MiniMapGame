@@ -9,6 +9,7 @@ namespace MiniMapGame.Data
         public List<MapNode> nodes = new();
         public List<MapEdge> edges = new();
         public List<MapBuilding> buildings = new();
+        public List<MapDecoration> decorations = new();
         public MapTerrain terrain = new();
         public MapAnalysis analysis = new();
         public Vector2 center;

@@ -20,6 +20,12 @@ namespace MiniMapGame.Data
         public float worldHeight = 580f;
         public float borderPadding = 50f;
 
+        [Header("Water")]
+        public float riverWidth = 12f;
+
+        [Header("Decoration")]
+        [Range(0f, 1f)] public float decorationDensity = 0.5f;
+
         [Header("Elevation")]
         public float maxElevation = 15f;
         public float elevationScale = 1f;

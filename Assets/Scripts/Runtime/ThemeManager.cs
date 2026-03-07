@@ -17,6 +17,7 @@ namespace MiniMapGame.Runtime
         public BuildingSpawner buildingSpawner;
         public AnalysisVisualizer analysisVisualizer;
         public Camera mainCamera;
+        public WaterRenderer waterRenderer;
 
         [Header("Visual Systems")]
         public Light directionalLight;
@@ -40,6 +41,7 @@ namespace MiniMapGame.Runtime
             ApplyAnalysisColors(theme);
             ApplyLighting(theme);
             ApplyFog(theme);
+            ApplyWater(theme);
             ApplyPostProcessing(theme);
             ApplyParticles(theme);
         }
@@ -118,6 +120,15 @@ namespace MiniMapGame.Runtime
             RenderSettings.fogColor = theme.fogColor;
             RenderSettings.fogStartDistance = theme.fogStartDistance;
             RenderSettings.fogEndDistance = theme.fogEndDistance;
+        }
+
+        private void ApplyWater(MapTheme theme)
+        {
+            if (waterRenderer == null) return;
+            if (waterRenderer.riverMaterial != null)
+                waterRenderer.riverMaterial.SetColor("_BaseColor", theme.riverColor);
+            if (waterRenderer.coastMaterial != null)
+                waterRenderer.coastMaterial.SetColor("_BaseColor", theme.coastColor);
         }
 
         private void ApplyPostProcessing(MapTheme theme)

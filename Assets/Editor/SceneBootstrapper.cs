@@ -89,6 +89,33 @@ namespace MiniMapGame.EditorTools
             buildingSpawner.normalBuildingPrefab = normalPrefab;
             buildingSpawner.landmarkBuildingPrefab = landmarkPrefab;
 
+            // 3b. WaterRenderer
+            var waterRendererGo = FindOrCreate("WaterRenderer", mapManagerGo.transform);
+            var waterRenderer = EnsureComponent<WaterRenderer>(waterRendererGo);
+            mapManager.waterRenderer = waterRenderer;
+            waterRenderer.mapManager = mapManager;
+
+            var waterShader = Shader.Find("MiniMapGame/Water");
+            if (waterShader != null)
+            {
+                if (waterRenderer.riverMaterial == null)
+                {
+                    waterRenderer.riverMaterial = new Material(waterShader);
+                    waterRenderer.riverMaterial.SetColor("_BaseColor", new Color(0.08f, 0.18f, 0.35f, 0.75f));
+                }
+                if (waterRenderer.coastMaterial == null)
+                {
+                    waterRenderer.coastMaterial = new Material(waterShader);
+                    waterRenderer.coastMaterial.SetColor("_BaseColor", new Color(0.06f, 0.14f, 0.30f, 0.80f));
+                }
+            }
+
+            // 3c. DecorationSpawner
+            var decorationSpawnerGo = FindOrCreate("DecorationSpawner", mapManagerGo.transform);
+            var decorationSpawner = EnsureComponent<DecorationSpawner>(decorationSpawnerGo);
+            mapManager.decorationSpawner = decorationSpawner;
+            decorationSpawner.mapManager = mapManager;
+
             // Assign preset
             var preset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Coastal.asset");
             if (preset != null)
@@ -149,6 +176,9 @@ namespace MiniMapGame.EditorTools
 
             playerGo.transform.position = new Vector3(430f, 0f, 290f);
 
+            // Wire camera to decoration spawner for LOD
+            decorationSpawner.cameraController = camCtrl;
+
             // 6. Ensure Ground layer
             EnsureLayerNote("Ground");
 
@@ -175,7 +205,7 @@ namespace MiniMapGame.EditorTools
 
             // 12. Theme System
             MapThemeCreator.CreateDefaultThemes();
-            SetupThemeManager(mapManager, mapRenderer, buildingSpawner, viz, cam);
+            SetupThemeManager(mapManager, mapRenderer, buildingSpawner, waterRenderer, viz, cam);
 
             // 13. Player HUD
             SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
@@ -211,6 +241,8 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
+            EditorUtility.SetDirty(waterRenderer);
+            EditorUtility.SetDirty(decorationSpawner);
             Debug.Log("[SceneBootstrapper] Test scene bootstrapped. Press Play to generate map.");
             Debug.Log("[SceneBootstrapper] NOTE: Ensure 'Ground' layer and 'Player' tag exist in Tags & Layers.");
         }
@@ -706,13 +738,15 @@ namespace MiniMapGame.EditorTools
         // ── Theme Manager ──
 
         private static void SetupThemeManager(MapManager mapManager, MapRenderer mapRenderer,
-            BuildingSpawner buildingSpawner, AnalysisVisualizer viz, Camera mainCam)
+            BuildingSpawner buildingSpawner, WaterRenderer waterRenderer,
+            AnalysisVisualizer viz, Camera mainCam)
         {
             var go = FindOrCreate("ThemeManager");
             var tm = EnsureComponent<ThemeManager>(go);
             tm.mapManager = mapManager;
             tm.mapRenderer = mapRenderer;
             tm.buildingSpawner = buildingSpawner;
+            tm.waterRenderer = waterRenderer;
             tm.analysisVisualizer = viz;
             tm.mainCamera = mainCam;
 
