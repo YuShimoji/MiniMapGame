@@ -144,6 +144,10 @@ namespace MiniMapGame.EditorTools
             // 11. Map Control UI (F1 to toggle)
             SetupMapControlUI(canvas, mapManager, viz);
 
+            // 12. Theme System
+            MapThemeCreator.CreateDefaultThemes();
+            SetupThemeManager(mapManager, mapRenderer, buildingSpawner, viz, cam);
+
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
@@ -468,6 +472,20 @@ namespace MiniMapGame.EditorTools
                 new Vector2(0.52f, yPos - 0.06f), new Vector2(0.95f, yPos), new Color(0.4f, 0.3f, 0.5f)).GetComponent<Button>();
             yPos -= 0.08f;
 
+            // Theme buttons
+            CreateTMPChild(panelGo.transform, "ThemeLabel", "Theme:",
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MiddleLeft);
+            yPos -= 0.05f;
+
+            controlUI.darkThemeButton = CreateButton(panelGo.transform, "BtnDark", "ダーク",
+                new Vector2(0.05f, yPos - 0.055f), new Vector2(0.48f, yPos), new Color(0.08f, 0.1f, 0.16f)).GetComponent<Button>();
+            controlUI.parchmentThemeButton = CreateButton(panelGo.transform, "BtnParchment", "羊皮紙",
+                new Vector2(0.52f, yPos - 0.055f), new Vector2(0.95f, yPos), new Color(0.72f, 0.68f, 0.55f)).GetComponent<Button>();
+            // Set parchment button text to dark color for readability
+            var parchBtnText = controlUI.parchmentThemeButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (parchBtnText != null) parchBtnText.color = new Color(0.2f, 0.18f, 0.12f);
+            yPos -= 0.08f;
+
             // Stats text
             controlUI.statsText = CreateTMPChild(panelGo.transform, "StatsText", "",
                 new Vector2(0.05f, 0.02f), new Vector2(0.95f, yPos), TextAlignmentOptions.TopLeft);
@@ -612,6 +630,37 @@ namespace MiniMapGame.EditorTools
             controller.mapManager = mapManager;
 
             EditorUtility.SetDirty(controller);
+        }
+
+        // ── Theme Manager ──
+
+        private static void SetupThemeManager(MapManager mapManager, MapRenderer mapRenderer,
+            BuildingSpawner buildingSpawner, AnalysisVisualizer viz, Camera mainCam)
+        {
+            var go = FindOrCreate("ThemeManager");
+            var tm = EnsureComponent<ThemeManager>(go);
+            tm.mapManager = mapManager;
+            tm.mapRenderer = mapRenderer;
+            tm.buildingSpawner = buildingSpawner;
+            tm.analysisVisualizer = viz;
+            tm.mainCamera = mainCam;
+
+            var darkTheme = AssetDatabase.LoadAssetAtPath<MapTheme>("Assets/Resources/Themes/Theme_Dark.asset");
+            if (darkTheme != null)
+                tm.activeTheme = darkTheme;
+
+            // Wire themes into MapControlUI
+            var controlUI = Object.FindAnyObjectByType<MapControlUI>();
+            if (controlUI != null)
+            {
+                controlUI.themeManager = tm;
+                controlUI.darkTheme = darkTheme;
+                controlUI.parchmentTheme =
+                    AssetDatabase.LoadAssetAtPath<MapTheme>("Assets/Resources/Themes/Theme_Parchment.asset");
+                EditorUtility.SetDirty(controlUI);
+            }
+
+            EditorUtility.SetDirty(tm);
         }
 
         // ── Helpers ──

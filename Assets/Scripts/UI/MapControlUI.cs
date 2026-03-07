@@ -15,6 +15,15 @@ namespace MiniMapGame.UI
         [Header("References")]
         public MapManager mapManager;
         public AnalysisVisualizer analysisVisualizer;
+        public ThemeManager themeManager;
+
+        [Header("Theme Buttons")]
+        public Button darkThemeButton;
+        public Button parchmentThemeButton;
+
+        [Header("Theme Assets (assign from Resources/Themes/)")]
+        public MapTheme darkTheme;
+        public MapTheme parchmentTheme;
 
         [Header("Preset Buttons")]
         public Button coastalButton;
@@ -55,6 +64,9 @@ namespace MiniMapGame.UI
 
             regenerateButton?.onClick.AddListener(Regenerate);
             randomButton?.onClick.AddListener(RandomGenerate);
+
+            darkThemeButton?.onClick.AddListener(() => SelectTheme(darkTheme));
+            parchmentThemeButton?.onClick.AddListener(() => SelectTheme(parchmentTheme));
 
             if (buildingDensitySlider != null)
             {
@@ -130,6 +142,12 @@ namespace MiniMapGame.UI
                 mapManager.activePreset.buildingDensity = _customDensity.Value;
 
             mapManager.Generate();
+        }
+
+        private void SelectTheme(MapTheme theme)
+        {
+            if (themeManager == null || theme == null) return;
+            themeManager.ApplyTheme(theme);
         }
 
         private void OnDensityChanged(float value)
