@@ -4,20 +4,24 @@ using MiniMapGame.Data;
 namespace MiniMapGame.Runtime
 {
     /// <summary>
-    /// Applies MapTheme colors to MapRenderer, BuildingSpawner, AnalysisVisualizer, and camera.
-    /// Call ApplyTheme() to update all visuals.
+    /// Applies MapTheme to all visual systems: rendering, lighting, fog, post-processing, particles.
     /// </summary>
     public class ThemeManager : MonoBehaviour
     {
         [Header("Theme")]
         public MapTheme activeTheme;
 
-        [Header("References")]
+        [Header("Rendering References")]
         public MapManager mapManager;
         public MapRenderer mapRenderer;
         public BuildingSpawner buildingSpawner;
         public AnalysisVisualizer analysisVisualizer;
         public Camera mainCamera;
+
+        [Header("Visual Systems")]
+        public Light directionalLight;
+        public PostProcessingManager postProcessingManager;
+        public AmbientParticleController ambientParticles;
 
         public void ApplyTheme()
         {
@@ -29,51 +33,45 @@ namespace MiniMapGame.Runtime
             if (theme == null) return;
             activeTheme = theme;
 
-            // Camera background
+            ApplyCamera(theme);
+            ApplyGround(theme);
+            ApplyRoadMaterials(theme);
+            ApplyBuildingColors(theme);
+            ApplyAnalysisColors(theme);
+            ApplyLighting(theme);
+            ApplyFog(theme);
+            ApplyPostProcessing(theme);
+            ApplyParticles(theme);
+        }
+
+        private void ApplyCamera(MapTheme theme)
+        {
             if (mainCamera != null)
                 mainCamera.backgroundColor = theme.backgroundColor;
+        }
 
-            // Ground
-            if (mapManager != null && mapManager.groundMaterial != null)
-                mapManager.groundMaterial.color = theme.groundColor;
-
-            // Road materials — create tier-specific materials
-            if (mapRenderer != null)
-            {
-                ApplyRoadMaterials(theme);
-            }
-
-            // Building colors
-            if (buildingSpawner != null)
-            {
-                ApplyBuildingColors(theme);
-            }
-
-            // Analysis visualizer colors
-            if (analysisVisualizer != null)
-            {
-                analysisVisualizer.deadEndColor = theme.deadEndColor;
-                analysisVisualizer.chokeColor = theme.chokeColor;
-                analysisVisualizer.intersectionColor = theme.intersectionColor;
-                analysisVisualizer.plazaColor = theme.plazaColor;
-            }
+        private void ApplyGround(MapTheme theme)
+        {
+            if (mapManager == null || mapManager.groundMaterial == null) return;
+            mapManager.groundMaterial.SetColor("_BaseColor", theme.groundColor);
+            mapManager.groundMaterial.SetColor("_GridColor", theme.gridLineColor);
+            mapManager.groundMaterial.SetFloat("_GridSize", theme.gridSize);
+            mapManager.groundMaterial.SetFloat("_GridOpacity", theme.gridOpacity);
         }
 
         private void ApplyRoadMaterials(MapTheme theme)
         {
-            // Outer road material — use tier 0 color as base
+            if (mapRenderer == null) return;
             if (mapRenderer.roadOuterMaterial != null)
                 mapRenderer.roadOuterMaterial.color = theme.roadOuter0;
-
-            // Inner road material — use tier 0 fill color as base
             if (mapRenderer.roadInnerMaterial != null)
                 mapRenderer.roadInnerMaterial.color = theme.roadFill0;
         }
 
         private void ApplyBuildingColors(MapTheme theme)
         {
-            // Update prefab materials at runtime via spawned instances
-            // Normal building prefab material
+            if (buildingSpawner == null) return;
+
             if (buildingSpawner.normalBuildingPrefab != null)
             {
                 var r = buildingSpawner.normalBuildingPrefab.GetComponent<Renderer>();
@@ -81,13 +79,57 @@ namespace MiniMapGame.Runtime
                     r.sharedMaterial.color = theme.buildingFill;
             }
 
-            // Landmark building prefab material
             if (buildingSpawner.landmarkBuildingPrefab != null)
             {
                 var r = buildingSpawner.landmarkBuildingPrefab.GetComponent<Renderer>();
                 if (r != null && r.sharedMaterial != null)
                     r.sharedMaterial.color = theme.buildingFillLandmark;
             }
+
+            buildingSpawner.SetThemeColors(theme.buildingFill, theme.buildingFillLandmark);
+        }
+
+        private void ApplyAnalysisColors(MapTheme theme)
+        {
+            if (analysisVisualizer == null) return;
+            analysisVisualizer.deadEndColor = theme.deadEndColor;
+            analysisVisualizer.chokeColor = theme.chokeColor;
+            analysisVisualizer.intersectionColor = theme.intersectionColor;
+            analysisVisualizer.plazaColor = theme.plazaColor;
+        }
+
+        private void ApplyLighting(MapTheme theme)
+        {
+            if (directionalLight != null)
+            {
+                directionalLight.color = theme.directionalLightColor;
+                directionalLight.intensity = theme.directionalLightIntensity;
+                directionalLight.shadowStrength = theme.shadowStrength;
+            }
+
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = theme.ambientColor;
+        }
+
+        private void ApplyFog(MapTheme theme)
+        {
+            RenderSettings.fog = theme.enableFog;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = theme.fogColor;
+            RenderSettings.fogStartDistance = theme.fogStartDistance;
+            RenderSettings.fogEndDistance = theme.fogEndDistance;
+        }
+
+        private void ApplyPostProcessing(MapTheme theme)
+        {
+            if (postProcessingManager != null)
+                postProcessingManager.ApplyTheme(theme);
+        }
+
+        private void ApplyParticles(MapTheme theme)
+        {
+            if (ambientParticles != null)
+                ambientParticles.ApplyTheme(theme);
         }
     }
 }

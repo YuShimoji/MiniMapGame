@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEditor;
 using TMPro;
 using MiniMapGame.Runtime;
@@ -89,7 +91,20 @@ namespace MiniMapGame.EditorTools
             if (preset != null)
                 mapManager.activePreset = preset;
 
-            mapManager.groundMaterial = CreateUnlitMaterial("Ground", new Color(0.035f, 0.047f, 0.07f));
+            // Ground material — use GridGround shader for procedural grid
+            var gridShader = Shader.Find("MiniMapGame/GridGround");
+            if (gridShader != null)
+            {
+                mapManager.groundMaterial = new Material(gridShader);
+                mapManager.groundMaterial.SetColor("_BaseColor", new Color(0.035f, 0.047f, 0.07f));
+                mapManager.groundMaterial.SetColor("_GridColor", new Color(0.06f, 0.08f, 0.12f));
+                mapManager.groundMaterial.SetFloat("_GridSize", 20f);
+                mapManager.groundMaterial.SetFloat("_GridOpacity", 0.15f);
+            }
+            else
+            {
+                mapManager.groundMaterial = CreateLitMaterial("Ground", new Color(0.035f, 0.047f, 0.07f));
+            }
 
             // 4. Camera
             var cam = Camera.main;
@@ -104,6 +119,14 @@ namespace MiniMapGame.EditorTools
             cam.orthographic = false;
             cam.fieldOfView = 60f;
             var camCtrl = EnsureComponent<CameraController>(cam.gameObject);
+
+            // Camera anti-aliasing (SMAA Low)
+            var urpCamData = cam.GetUniversalAdditionalCameraData();
+            if (urpCamData != null)
+            {
+                urpCamData.antialiasing = AntialiasingMode.SubPixelMorphologicalAntiAliasing;
+                urpCamData.antialiasingQuality = AntialiasingQuality.Low;
+            }
 
             // 5. Player
             var playerGo = FindOrCreate("Player");
@@ -159,6 +182,25 @@ namespace MiniMapGame.EditorTools
 
             // 15. Save Manager
             SetupSaveManager(mapManager);
+
+            // 16. Lighting
+            var dirLight = SetupLighting();
+
+            // 17. Post-Processing Volume
+            var ppManager = SetupPostProcessing();
+
+            // 18. Ambient Particles
+            var ambientParticles = SetupAmbientParticles();
+
+            // Wire visual systems into ThemeManager
+            var themeManager = Object.FindAnyObjectByType<ThemeManager>();
+            if (themeManager != null)
+            {
+                themeManager.directionalLight = dirLight;
+                themeManager.postProcessingManager = ppManager;
+                themeManager.ambientParticles = ambientParticles;
+                EditorUtility.SetDirty(themeManager);
+            }
 
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
@@ -895,6 +937,153 @@ namespace MiniMapGame.EditorTools
             var comp = go.GetComponent<T>();
             if (comp == null) comp = go.AddComponent<T>();
             return comp;
+        }
+
+        // ── Lighting ──
+
+        private static Light SetupLighting()
+        {
+            var lightGo = FindOrCreate("Directional Light");
+            var light = EnsureComponent<Light>(lightGo);
+            light.type = LightType.Directional;
+            lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            light.color = new Color(0.85f, 0.9f, 1.0f);
+            light.intensity = 0.8f;
+            light.shadows = LightShadows.Soft;
+            light.shadowStrength = 0.4f;
+
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = new Color(0.04f, 0.06f, 0.1f);
+
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = new Color(0.024f, 0.035f, 0.05f);
+            RenderSettings.fogStartDistance = 100f;
+            RenderSettings.fogEndDistance = 400f;
+
+            return light;
+        }
+
+        // ── Post-Processing ──
+
+        private static PostProcessingManager SetupPostProcessing()
+        {
+            var go = FindOrCreate("PostProcessingVolume");
+            var volume = EnsureComponent<Volume>(go);
+            volume.isGlobal = true;
+            volume.priority = 0;
+
+            if (volume.profile == null)
+            {
+                var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+
+                var bloom = profile.Add<Bloom>(true);
+                bloom.intensity.Override(0.3f);
+                bloom.threshold.Override(0.9f);
+                bloom.scatter.Override(0.65f);
+
+                var vignette = profile.Add<Vignette>(true);
+                vignette.intensity.Override(0.25f);
+                vignette.smoothness.Override(0.4f);
+                vignette.rounded.Override(true);
+
+                var colorAdj = profile.Add<ColorAdjustments>(true);
+                colorAdj.postExposure.Override(0.1f);
+                colorAdj.contrast.Override(8f);
+                colorAdj.saturation.Override(-10f);
+
+                var tonemap = profile.Add<Tonemapping>(true);
+                tonemap.mode.Override(TonemappingMode.ACES);
+
+                volume.profile = profile;
+            }
+
+            var ppManager = EnsureComponent<PostProcessingManager>(go);
+            ppManager.volume = volume;
+
+            EditorUtility.SetDirty(go);
+            return ppManager;
+        }
+
+        // ── Ambient Particles ──
+
+        private static AmbientParticleController SetupAmbientParticles()
+        {
+            var go = FindOrCreate("AmbientDust");
+            var ps = EnsureComponent<ParticleSystem>(go);
+            var controller = EnsureComponent<AmbientParticleController>(go);
+            controller.dustSystem = ps;
+
+            var main = ps.main;
+            main.maxParticles = 50;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(8f, 12f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
+            main.startColor = new Color(0.5f, 0.7f, 1f, 0.15f);
+            main.gravityModifier = 0f;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 5f;
+
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(860f, 20f, 580f);
+            shape.position = new Vector3(430f, 10f, 290f);
+
+            var noise = ps.noise;
+            noise.enabled = true;
+            noise.strength = 0.5f;
+            noise.frequency = 0.3f;
+
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(Color.white, 1f)
+                },
+                new[] {
+                    new GradientAlphaKey(0f, 0f),
+                    new GradientAlphaKey(1f, 0.1f),
+                    new GradientAlphaKey(1f, 0.8f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+            );
+            colorOverLifetime.color = gradient;
+
+            // Use Particles/Standard Unlit material
+            var particleRenderer = go.GetComponent<ParticleSystemRenderer>();
+            if (particleRenderer != null)
+            {
+                var particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+                if (particleShader == null) particleShader = Shader.Find("Particles/Standard Unlit");
+                if (particleShader != null)
+                {
+                    var mat = new Material(particleShader);
+                    mat.SetFloat("_Surface", 1); // Transparent
+                    particleRenderer.material = mat;
+                }
+            }
+
+            EditorUtility.SetDirty(go);
+            return controller;
+        }
+
+        // ── Helpers ──
+
+        private static Material CreateLitMaterial(string name, Color color)
+        {
+            EnsureFolder("Assets/Resources/Materials");
+            string path = $"Assets/Resources/Materials/{name}_Lit_Mat.mat";
+            var existing = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (existing != null) return existing;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = color;
+            AssetDatabase.CreateAsset(mat, path);
+            return mat;
         }
 
         private static void EnsureLayerNote(string layerName)

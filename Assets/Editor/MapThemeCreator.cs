@@ -31,9 +31,13 @@ namespace MiniMapGame.EditorTools
         private static void CreateDarkTheme()
         {
             string path = $"{ThemeFolder}/Theme_Dark.asset";
-            if (AssetDatabase.LoadAssetAtPath<MapTheme>(path) != null) return;
+            var t = AssetDatabase.LoadAssetAtPath<MapTheme>(path);
+            if (t == null)
+            {
+                t = ScriptableObject.CreateInstance<MapTheme>();
+                AssetDatabase.CreateAsset(t, path);
+            }
 
-            var t = ScriptableObject.CreateInstance<MapTheme>();
             t.displayName = "ダーク";
 
             // Background
@@ -70,16 +74,48 @@ namespace MiniMapGame.EditorTools
             t.intersectionColor = new Color(0.3f, 0.8f, 0.4f, 0.8f);
             t.plazaColor = new Color(0.3f, 0.5f, 0.9f, 0.8f);
 
-            AssetDatabase.CreateAsset(t, path);
-            Debug.Log($"[MapThemeCreator] Created {path}");
+            // Lighting
+            t.directionalLightColor = new Color(0.85f, 0.9f, 1.0f);
+            t.directionalLightIntensity = 0.8f;
+            t.ambientColor = new Color(0.04f, 0.06f, 0.1f);
+            t.shadowStrength = 0.4f;
+
+            // Post-Processing
+            t.bloomIntensity = 0.3f;
+            t.bloomThreshold = 0.9f;
+            t.vignetteIntensity = 0.25f;
+            t.vignetteColor = Color.black;
+            t.contrast = 8f;
+            t.saturation = -10f;
+
+            // Fog
+            t.enableFog = true;
+            t.fogColor = HexColor("06090d");
+            t.fogStartDistance = 100f;
+            t.fogEndDistance = 400f;
+
+            // Ambient Particles
+            t.ambientParticleColor = new Color(0.5f, 0.7f, 1f, 0.15f);
+
+            // Ground
+            t.gridLineColor = HexColor("0e1520");
+            t.gridSize = 20f;
+            t.gridOpacity = 0.15f;
+
+            EditorUtility.SetDirty(t);
+            Debug.Log($"[MapThemeCreator] Updated {path}");
         }
 
         private static void CreateParchmentTheme()
         {
             string path = $"{ThemeFolder}/Theme_Parchment.asset";
-            if (AssetDatabase.LoadAssetAtPath<MapTheme>(path) != null) return;
+            var t = AssetDatabase.LoadAssetAtPath<MapTheme>(path);
+            if (t == null)
+            {
+                t = ScriptableObject.CreateInstance<MapTheme>();
+                AssetDatabase.CreateAsset(t, path);
+            }
 
-            var t = ScriptableObject.CreateInstance<MapTheme>();
             t.displayName = "パーチメント";
 
             // Background
@@ -116,8 +152,36 @@ namespace MiniMapGame.EditorTools
             t.intersectionColor = new Color(0.2f, 0.6f, 0.3f, 0.8f);
             t.plazaColor = new Color(0.2f, 0.4f, 0.8f, 0.8f);
 
-            AssetDatabase.CreateAsset(t, path);
-            Debug.Log($"[MapThemeCreator] Created {path}");
+            // Lighting
+            t.directionalLightColor = new Color(1.0f, 0.95f, 0.85f);
+            t.directionalLightIntensity = 1.0f;
+            t.ambientColor = new Color(0.5f, 0.48f, 0.4f);
+            t.shadowStrength = 0.3f;
+
+            // Post-Processing
+            t.bloomIntensity = 0.2f;
+            t.bloomThreshold = 1.2f;
+            t.vignetteIntensity = 0.15f;
+            t.vignetteColor = HexColor("3a2a1a");
+            t.contrast = 5f;
+            t.saturation = -5f;
+
+            // Fog
+            t.enableFog = true;
+            t.fogColor = HexColor("e8e0cc");
+            t.fogStartDistance = 120f;
+            t.fogEndDistance = 450f;
+
+            // Ambient Particles
+            t.ambientParticleColor = new Color(0.7f, 0.6f, 0.4f, 0.12f);
+
+            // Ground
+            t.gridLineColor = HexColor("c8c0a8");
+            t.gridSize = 20f;
+            t.gridOpacity = 0.12f;
+
+            EditorUtility.SetDirty(t);
+            Debug.Log($"[MapThemeCreator] Updated {path}");
         }
 
         private static Color HexColor(string hex)

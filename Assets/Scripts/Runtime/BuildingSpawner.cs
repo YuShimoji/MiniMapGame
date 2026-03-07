@@ -22,6 +22,16 @@ namespace MiniMapGame.Runtime
         public float landmarkHeight = 4f;
 
         private readonly List<GameObject> _spawnedBuildings = new();
+        private Color _normalColor = new(0.22f, 0.28f, 0.38f);
+        private Color _landmarkColor = new(0.10f, 0.16f, 0.25f);
+        private static readonly MaterialPropertyBlock _propBlock = new();
+
+        public void SetThemeColors(Color normal, Color landmark)
+        {
+            _normalColor = normal;
+            _landmarkColor = landmark;
+            RefreshBuildingColors();
+        }
 
         public void Spawn(MapData data)
         {
@@ -47,7 +57,44 @@ namespace MiniMapGame.Runtime
                 interaction.buildingId = b.id;
                 interaction.isLandmark = b.isLandmark;
 
+                ApplyBuildingVariation(go, b.id, b.isLandmark);
                 _spawnedBuildings.Add(go);
+            }
+        }
+
+        private void ApplyBuildingVariation(GameObject go, string buildingId, bool isLandmark)
+        {
+            var r = go.GetComponent<Renderer>();
+            if (r == null) return;
+
+            int hash = buildingId.GetHashCode();
+            float rv = ((hash & 0xFF) / 255f - 0.5f) * 0.06f;
+            float gv = (((hash >> 8) & 0xFF) / 255f - 0.5f) * 0.06f;
+            float bv = (((hash >> 16) & 0xFF) / 255f - 0.5f) * 0.06f;
+
+            Color baseColor = isLandmark ? _landmarkColor : _normalColor;
+            _propBlock.SetColor("_BaseColor", new Color(
+                Mathf.Clamp01(baseColor.r + rv),
+                Mathf.Clamp01(baseColor.g + gv),
+                Mathf.Clamp01(baseColor.b + bv),
+                baseColor.a));
+
+            if (isLandmark)
+                _propBlock.SetColor("_EmissionColor", _landmarkColor * 0.15f);
+            else
+                _propBlock.SetColor("_EmissionColor", Color.black);
+
+            r.SetPropertyBlock(_propBlock);
+        }
+
+        private void RefreshBuildingColors()
+        {
+            foreach (var go in _spawnedBuildings)
+            {
+                if (go == null) continue;
+                var interaction = go.GetComponent<BuildingInteraction>();
+                if (interaction != null)
+                    ApplyBuildingVariation(go, interaction.buildingId, interaction.isLandmark);
             }
         }
 
