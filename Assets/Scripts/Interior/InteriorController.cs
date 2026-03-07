@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using MiniMapGame.Runtime;
 using MiniMapGame.Player;
+using MiniMapGame.MiniGame;
 
 namespace MiniMapGame.Interior
 {
@@ -16,6 +17,9 @@ namespace MiniMapGame.Interior
         public InteriorRenderer interiorRenderer;
         public CameraController cameraController;
         public Transform playerTransform;
+
+        [Header("MiniGame")]
+        public MiniGameManager miniGameManager;
 
         [Header("Interior Camera")]
         public float interiorCameraHeight = 40f;
@@ -55,7 +59,7 @@ namespace MiniMapGame.Interior
 
             // Render interior at building's world position
             var buildingPos = building.transform.position;
-            interiorRenderer.Render(data, buildingPos);
+            interiorRenderer.Render(data, buildingPos, building.buildingId, seed);
 
             // Teleport player to entrance room
             var entrance = data.rooms[0];
@@ -84,6 +88,10 @@ namespace MiniMapGame.Interior
         {
             if (!IsInside) return;
             IsInside = false;
+
+            // Abort any active mini-game
+            if (miniGameManager != null)
+                miniGameManager.AbortIfActive();
 
             // Clear interior
             interiorRenderer.Clear();

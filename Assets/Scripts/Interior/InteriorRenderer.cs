@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using MiniMapGame.MiniGame;
 
 namespace MiniMapGame.Interior
 {
@@ -11,6 +12,9 @@ namespace MiniMapGame.Interior
     {
         [Header("Materials")]
         public Material wallMaterial;
+
+        [Header("MiniGame")]
+        public MiniGameManager miniGameManager;
 
         [Header("Settings")]
         public float floorY = 0.02f;
@@ -33,12 +37,21 @@ namespace MiniMapGame.Interior
         private static readonly Color WallColor = new(0.3f, 0.35f, 0.4f);
         private static readonly Color CorridorColor = new(0.5f, 0.5f, 0.55f);
 
-        public void Render(InteriorMapData data, Vector3 worldOrigin)
+        private string _currentBuildingId;
+        private int _currentSeed;
+
+        public void Render(InteriorMapData data, Vector3 worldOrigin,
+            string buildingId = null, int seed = 0)
         {
             Clear();
+            _currentBuildingId = buildingId;
+            _currentSeed = seed;
 
-            foreach (var room in data.rooms)
-                CreateRoomFloor(room, worldOrigin);
+            for (int i = 0; i < data.rooms.Count; i++)
+            {
+                CreateRoomFloor(data.rooms[i], worldOrigin);
+                AttachRoomTrigger(data.rooms[i], i, worldOrigin);
+            }
 
             foreach (var room in data.rooms)
                 CreateRoomWalls(room, worldOrigin);
@@ -128,6 +141,30 @@ namespace MiniMapGame.Interior
             go.transform.position = new Vector3(midpoint.x, floorY - 0.001f, midpoint.z);
             go.transform.rotation = Quaternion.Euler(90f, angle, 0f);
             go.transform.localScale = new Vector3(corridor.width, length, 1f);
+
+            _spawnedObjects.Add(go);
+        }
+
+        private void AttachRoomTrigger(RoomNode room, int roomIndex, Vector3 origin)
+        {
+            if (miniGameManager == null) return;
+            var gameType = RoomTrigger.GetGameType(room.type);
+            if (gameType == null) return;
+
+            var go = new GameObject($"RoomTrigger_{room.type}_{roomIndex}");
+            go.transform.SetParent(transform);
+            go.transform.position = InteriorToWorld(room.position, origin);
+
+            var col = go.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.size = new Vector3(room.size.x * 0.6f, 2f, room.size.y * 0.6f);
+
+            var trigger = go.AddComponent<RoomTrigger>();
+            trigger.miniGameManager = miniGameManager;
+            trigger.gameType = gameType.Value;
+            trigger.roomIndex = roomIndex;
+            trigger.buildingId = _currentBuildingId ?? "";
+            trigger.seed = _currentSeed + roomIndex;
 
             _spawnedObjects.Add(go);
         }

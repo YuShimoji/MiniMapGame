@@ -11,6 +11,7 @@ using MiniMapGame.Data;
 using MiniMapGame.GameLoop;
 using MiniMapGame.UI;
 using MiniMapGame.Interior;
+using MiniMapGame.MiniGame;
 
 namespace MiniMapGame.EditorTools
 {
@@ -180,16 +181,19 @@ namespace MiniMapGame.EditorTools
             // 14. Interior System
             SetupInteriorSystem(mapManager, camCtrl, playerGo.transform);
 
-            // 15. Save Manager
+            // 15. MiniGame System
+            SetupMiniGameSystem();
+
+            // 16. Save Manager
             SetupSaveManager(mapManager);
 
-            // 16. Lighting
+            // 17. Lighting
             var dirLight = SetupLighting();
 
-            // 17. Post-Processing Volume
+            // 18. Post-Processing Volume
             var ppManager = SetupPostProcessing();
 
-            // 18. Ambient Particles
+            // 19. Ambient Particles
             var ambientParticles = SetupAmbientParticles();
 
             // Wire visual systems into ThemeManager
@@ -825,6 +829,61 @@ namespace MiniMapGame.EditorTools
 
             EditorUtility.SetDirty(renderer);
             EditorUtility.SetDirty(controller);
+        }
+
+        // ── MiniGame System ──
+
+        private static void SetupMiniGameSystem()
+        {
+            // Canvas for mini-game UI (separate overlay)
+            var canvasGo = FindOrCreate("MiniGameCanvas");
+            var canvas = EnsureComponent<Canvas>(canvasGo);
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 10;
+            EnsureComponent<CanvasScaler>(canvasGo);
+            EnsureComponent<GraphicRaycaster>(canvasGo);
+            canvasGo.SetActive(false);
+
+            // UI Root (full-screen RectTransform)
+            var uiRootGo = FindOrCreate("MiniGameUIRoot", canvasGo.transform);
+            var uiRoot = uiRootGo.GetComponent<RectTransform>();
+            if (uiRoot == null) uiRoot = uiRootGo.AddComponent<RectTransform>();
+            uiRoot.anchorMin = Vector2.zero;
+            uiRoot.anchorMax = Vector2.one;
+            uiRoot.sizeDelta = Vector2.zero;
+
+            // MiniGameManager
+            var managerGo = FindOrCreate("MiniGameManager");
+            var manager = EnsureComponent<MiniGameManager>(managerGo);
+            manager.miniGameCanvas = canvas;
+            manager.uiRoot = uiRoot;
+
+            // EventBus
+            var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
+            manager.eventBus = eventBus;
+
+            // Register game instances
+            manager.RegisterGame(new TimingCombatGame());
+            manager.RegisterGame(new MemoryMatchGame());
+            manager.RegisterGame(new TrapDodgeGame());
+
+            // Wire into InteriorRenderer
+            var intRenderer = Object.FindAnyObjectByType<InteriorRenderer>();
+            if (intRenderer != null)
+            {
+                intRenderer.miniGameManager = manager;
+                EditorUtility.SetDirty(intRenderer);
+            }
+
+            // Wire into InteriorController
+            var intController = Object.FindAnyObjectByType<InteriorController>();
+            if (intController != null)
+            {
+                intController.miniGameManager = manager;
+                EditorUtility.SetDirty(intController);
+            }
+
+            EditorUtility.SetDirty(manager);
         }
 
         // ── Save Manager ──

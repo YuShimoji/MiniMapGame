@@ -40,6 +40,7 @@ namespace MiniMapGame.GameLoop
             eventBus?.Subscribe<ValueCollectedEvent>(OnValueCollected);
             eventBus?.Subscribe<EncounterTriggeredEvent>(OnEncounterTriggered);
             eventBus?.Subscribe<PlayerDamagedEvent>(OnPlayerDamaged);
+            eventBus?.Subscribe<MiniGameCompletedEvent>(OnMiniGameCompleted);
         }
 
         void OnDisable()
@@ -49,6 +50,7 @@ namespace MiniMapGame.GameLoop
             eventBus?.Unsubscribe<ValueCollectedEvent>(OnValueCollected);
             eventBus?.Unsubscribe<EncounterTriggeredEvent>(OnEncounterTriggered);
             eventBus?.Unsubscribe<PlayerDamagedEvent>(OnPlayerDamaged);
+            eventBus?.Unsubscribe<MiniGameCompletedEvent>(OnMiniGameCompleted);
         }
 
         private void OnMapGenerated(MapData mapData)
@@ -185,6 +187,29 @@ namespace MiniMapGame.GameLoop
         {
             if (!State.stats.IsAlive)
                 HandleExtraction(false);
+        }
+
+        private void OnMiniGameCompleted(MiniGameCompletedEvent evt)
+        {
+            if (evt.success)
+            {
+                State.collectedValue += evt.score;
+                int heal = evt.score / 4;
+                if (heal > 0)
+                    State.stats.Heal(heal);
+            }
+            else
+            {
+                State.stats.TakeDamage(15);
+                eventBus?.Publish(new PlayerDamagedEvent
+                {
+                    damage = 15,
+                    remainingHP = State.stats.currentHP,
+                    maxHP = State.stats.maxHP
+                });
+            }
+
+            gameLoopUI?.UpdateHUD(State);
         }
 
         public void RestoreState(GameState savedState)

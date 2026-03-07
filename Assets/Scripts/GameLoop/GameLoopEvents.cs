@@ -1,4 +1,5 @@
 using MiniMapGame.Data;
+using MiniMapGame.MiniGame;
 
 namespace MiniMapGame.GameLoop
 {
@@ -50,5 +51,15 @@ namespace MiniMapGame.GameLoop
         public int encounterCount;
         public int itemsCollected;
         public bool extracted;
+    }
+
+    [System.Serializable]
+    public struct MiniGameCompletedEvent
+    {
+        public MiniGameType type;
+        public bool success;
+        public int score;
+        public int roomIndex;
+        public string buildingId;
     }
 }
