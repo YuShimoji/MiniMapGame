@@ -14,6 +14,9 @@ namespace MiniMapGame.Runtime
         public GameObject normalBuildingPrefab;
         public GameObject landmarkBuildingPrefab;
 
+        [Header("References")]
+        public MapManager mapManager;
+
         [Header("Building Height")]
         public float normalHeight = 2f;
         public float landmarkHeight = 4f;
@@ -23,7 +26,7 @@ namespace MiniMapGame.Runtime
         public void Spawn(MapData data)
         {
             Clear();
-            var preset = FindAnyObjectByType<MapManager>()?.activePreset;
+            var preset = mapManager != null ? mapManager.activePreset : null;
             if (preset == null) return;
 
             foreach (var b in data.buildings)

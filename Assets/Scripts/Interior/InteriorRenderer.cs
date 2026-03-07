@@ -17,6 +17,9 @@ namespace MiniMapGame.Interior
         public float wallHeight = 0.2f;
 
         private readonly List<GameObject> _spawnedObjects = new();
+        private readonly Dictionary<Color, Material> _floorMaterialCache = new();
+        private Material _cachedWallMaterial;
+        private Mesh _sharedQuadMesh;
 
         private static readonly Dictionary<RoomType, Color> RoomColors = new()
         {
@@ -49,29 +52,29 @@ namespace MiniMapGame.Interior
             foreach (var obj in _spawnedObjects)
                 if (obj != null) Destroy(obj);
             _spawnedObjects.Clear();
+            foreach (var mat in _floorMaterialCache.Values)
+                if (mat != null) Destroy(mat);
+            _floorMaterialCache.Clear();
+            if (_cachedWallMaterial != null)
+            {
+                Destroy(_cachedWallMaterial);
+                _cachedWallMaterial = null;
+            }
         }
 
         private void CreateRoomFloor(RoomNode room, Vector3 origin)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.name = $"RoomFloor_{room.type}";
+            var go = new GameObject($"RoomFloor_{room.type}");
             go.transform.SetParent(transform);
 
-            // Quad faces +Y when rotated to lay flat
+            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial =
+                GetCachedFloorMaterial(RoomColors.GetValueOrDefault(room.type, Color.white));
+
             var pos = InteriorToWorld(room.position, origin);
             go.transform.position = pos;
             go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             go.transform.localScale = new Vector3(room.size.x, room.size.y, 1f);
-
-            // Disable collider from primitive (NavMesh will re-bake)
-            var col = go.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-
-            var r = go.GetComponent<Renderer>();
-            if (r != null)
-            {
-                r.material = CreateFloorMaterial(RoomColors.GetValueOrDefault(room.type, Color.white));
-            }
 
             _spawnedObjects.Add(go);
         }
@@ -86,7 +89,7 @@ namespace MiniMapGame.Interior
             lr.loop = true;
             lr.startWidth = wallHeight;
             lr.endWidth = wallHeight;
-            lr.material = wallMaterial != null ? wallMaterial : CreateWallMaterial();
+            lr.material = wallMaterial != null ? wallMaterial : GetCachedWallMaterial();
             lr.startColor = WallColor;
             lr.endColor = WallColor;
 
@@ -116,20 +119,15 @@ namespace MiniMapGame.Interior
             float length = Vector3.Distance(posA, posB);
             float angle = Mathf.Atan2(posB.x - posA.x, posB.z - posA.z) * Mathf.Rad2Deg;
 
-            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.name = $"Corridor_{corridor.roomA}_{corridor.roomB}";
+            var go = new GameObject($"Corridor_{corridor.roomA}_{corridor.roomB}");
             go.transform.SetParent(transform);
+
+            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial = GetCachedFloorMaterial(CorridorColor);
 
             go.transform.position = new Vector3(midpoint.x, floorY - 0.001f, midpoint.z);
             go.transform.rotation = Quaternion.Euler(90f, angle, 0f);
             go.transform.localScale = new Vector3(corridor.width, length, 1f);
-
-            var col = go.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-
-            var r = go.GetComponent<Renderer>();
-            if (r != null)
-                r.material = CreateFloorMaterial(CorridorColor);
 
             _spawnedObjects.Add(go);
         }
@@ -139,22 +137,35 @@ namespace MiniMapGame.Interior
             return origin + new Vector3(interiorPos.x, floorY, interiorPos.y);
         }
 
-        private static Material CreateFloorMaterial(Color color)
+        private Material GetCachedFloorMaterial(Color color)
         {
+            if (_floorMaterialCache.TryGetValue(color, out var cached))
+                return cached;
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Standard");
             var mat = new Material(shader);
             mat.color = color;
+            _floorMaterialCache[color] = mat;
             return mat;
         }
 
-        private static Material CreateWallMaterial()
+        private Material GetCachedWallMaterial()
         {
+            if (_cachedWallMaterial != null) return _cachedWallMaterial;
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Standard");
-            var mat = new Material(shader);
-            mat.color = WallColor;
-            return mat;
+            _cachedWallMaterial = new Material(shader);
+            _cachedWallMaterial.color = WallColor;
+            return _cachedWallMaterial;
+        }
+
+        private Mesh GetSharedQuadMesh()
+        {
+            if (_sharedQuadMesh != null) return _sharedQuadMesh;
+            var tmp = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            _sharedQuadMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
+            Destroy(tmp);
+            return _sharedQuadMesh;
         }
     }
 }

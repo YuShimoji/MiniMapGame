@@ -41,6 +41,7 @@ namespace MiniMapGame.Runtime
         private MapPreset _preset;
         private readonly List<GameObject> _visualObjects = new();
         private bool _built;
+        private readonly Dictionary<Color, Material> _materialCache = new();
 
         void OnEnable()
         {
@@ -222,14 +223,19 @@ namespace MiniMapGame.Runtime
             _visualObjects.Add(go);
         }
 
-        private static void ConfigureLine(LineRenderer lr, Color color, float width)
+        private void ConfigureLine(LineRenderer lr, Color color, float width)
         {
             lr.startWidth = width;
             lr.endWidth = width;
             lr.startColor = color;
             lr.endColor = color;
-            lr.material = new Material(Shader.Find("Sprites/Default"));
-            lr.material.color = color;
+            if (!_materialCache.TryGetValue(color, out var mat))
+            {
+                mat = new Material(Shader.Find("Sprites/Default"));
+                mat.color = color;
+                _materialCache[color] = mat;
+            }
+            lr.sharedMaterial = mat;
             lr.useWorldSpace = true;
             lr.numCapVertices = 2;
             lr.numCornerVertices = 2;
@@ -246,6 +252,9 @@ namespace MiniMapGame.Runtime
             foreach (var obj in _visualObjects)
                 if (obj != null) Destroy(obj);
             _visualObjects.Clear();
+            foreach (var mat in _materialCache.Values)
+                if (mat != null) Destroy(mat);
+            _materialCache.Clear();
             _built = false;
         }
     }

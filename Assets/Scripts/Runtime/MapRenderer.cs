@@ -6,10 +6,14 @@ using MiniMapGame.Data;
 namespace MiniMapGame.Runtime
 {
     /// <summary>
-    /// Renders road network using LineRenderers. 3 width tiers.
+    /// Renders road network using batched procedural meshes. 3 width tiers.
+    /// Outer casing and inner fill are each combined into a single mesh for minimal draw calls.
     /// </summary>
     public class MapRenderer : MonoBehaviour
     {
+        [Header("References")]
+        public MapManager mapManager;
+
         [Header("Road Width by Tier (outer casing)")]
         public float[] outerWidths = { 1.4f, 0.9f, 0.5f };
         [Header("Road Width by Tier (inner fill)")]
@@ -47,8 +51,13 @@ namespace MiniMapGame.Runtime
 
         private void RenderEdges(MapData data)
         {
-            var preset = FindAnyObjectByType<MapManager>()?.activePreset;
+            var preset = mapManager != null ? mapManager.activePreset : null;
             if (preset == null) return;
+
+            var outerVerts = new List<Vector3>();
+            var outerTris = new List<int>();
+            var innerVerts = new List<Vector3>();
+            var innerTris = new List<int>();
 
             foreach (var edge in data.edges)
             {
@@ -56,44 +65,76 @@ namespace MiniMapGame.Runtime
                 var nb = data.nodes[edge.nodeB];
                 int ti = Mathf.Clamp(edge.tier, 0, 2);
 
-                // Outer casing
-                CreateRoadLine(na.position, nb.position, edge.controlPoint,
-                    outerWidths[ti], roadOuterMaterial, preset, $"Road_Outer_T{ti}");
-
-                // Inner fill
-                CreateRoadLine(na.position, nb.position, edge.controlPoint,
-                    innerWidths[ti], roadInnerMaterial, preset, $"Road_Inner_T{ti}");
+                GenerateRoadStrip(na.position, nb.position, edge.controlPoint,
+                    outerWidths[ti], preset, roadYOffset, outerVerts, outerTris);
+                GenerateRoadStrip(na.position, nb.position, edge.controlPoint,
+                    innerWidths[ti], preset, roadYOffset + 0.005f, innerVerts, innerTris);
             }
+
+            CreateRoadMesh(outerVerts, outerTris, roadOuterMaterial, "Roads_Outer");
+            CreateRoadMesh(innerVerts, innerTris, roadInnerMaterial, "Roads_Inner");
         }
 
-        private void CreateRoadLine(Vector2 posA, Vector2 posB, Vector2 ctrl,
-            float width, Material mat, MapPreset preset, string name)
+        private void GenerateRoadStrip(Vector2 posA, Vector2 posB, Vector2 ctrl,
+            float width, MapPreset preset, float yOffset, List<Vector3> verts, List<int> tris)
         {
-            var go = new GameObject(name);
-            go.transform.SetParent(transform);
-            _spawnedObjects.Add(go);
-
-            var lr = go.AddComponent<LineRenderer>();
-            lr.positionCount = bezierSegments + 1;
-            lr.startWidth = width;
-            lr.endWidth = width;
-            lr.material = mat;
-            lr.useWorldSpace = true;
-            lr.numCapVertices = 4;
-            lr.numCornerVertices = 4;
+            float halfW = width * 0.5f;
+            int baseIdx = verts.Count;
 
             for (int i = 0; i <= bezierSegments; i++)
             {
                 float t = i / (float)bezierSegments;
                 var p2d = MapGenUtils.BezierPoint(posA, ctrl, posB, t);
-                lr.SetPosition(i, MapGenUtils.ToWorldPosition(p2d, preset)
-                    + Vector3.up * roadYOffset);
+                var worldPos = MapGenUtils.ToWorldPosition(p2d, preset) + Vector3.up * yOffset;
+
+                // Tangent via finite difference
+                float tA = Mathf.Max(t - 0.01f, 0f);
+                float tB = Mathf.Min(t + 0.01f, 1f);
+                var pA = MapGenUtils.ToWorldPosition(
+                    MapGenUtils.BezierPoint(posA, ctrl, posB, tA), preset);
+                var pB = MapGenUtils.ToWorldPosition(
+                    MapGenUtils.BezierPoint(posA, ctrl, posB, tB), preset);
+                var tangent = (pB - pA).normalized;
+                var right = Vector3.Cross(Vector3.up, tangent).normalized;
+
+                verts.Add(worldPos - right * halfW);
+                verts.Add(worldPos + right * halfW);
             }
+
+            for (int i = 0; i < bezierSegments; i++)
+            {
+                int idx = baseIdx + i * 2;
+                tris.Add(idx);
+                tris.Add(idx + 2);
+                tris.Add(idx + 1);
+                tris.Add(idx + 1);
+                tris.Add(idx + 2);
+                tris.Add(idx + 3);
+            }
+        }
+
+        private void CreateRoadMesh(List<Vector3> verts, List<int> tris,
+            Material mat, string name)
+        {
+            if (verts.Count == 0) return;
+
+            var go = new GameObject(name);
+            go.transform.SetParent(transform);
+            _spawnedObjects.Add(go);
+
+            var mesh = new Mesh();
+            mesh.SetVertices(verts);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+
+            go.AddComponent<MeshFilter>().mesh = mesh;
+            go.AddComponent<MeshRenderer>().material = mat;
         }
 
         private void RenderNodeMarkers(MapData data)
         {
-            var preset = FindAnyObjectByType<MapManager>()?.activePreset;
+            var preset = mapManager != null ? mapManager.activePreset : null;
             if (preset == null) return;
 
             foreach (int idx in data.analysis.plazaIndices)

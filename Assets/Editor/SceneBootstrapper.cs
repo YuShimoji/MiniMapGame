@@ -66,6 +66,7 @@ namespace MiniMapGame.EditorTools
             var mapRendererGo = FindOrCreate("MapRenderer", mapManagerGo.transform);
             var mapRenderer = EnsureComponent<MapRenderer>(mapRendererGo);
             mapManager.mapRenderer = mapRenderer;
+            mapRenderer.mapManager = mapManager;
 
             if (mapRenderer.roadOuterMaterial == null)
                 mapRenderer.roadOuterMaterial = CreateUnlitMaterial("RoadOuter", new Color(0.17f, 0.24f, 0.35f));
@@ -76,6 +77,7 @@ namespace MiniMapGame.EditorTools
             var buildingSpawnerGo = FindOrCreate("BuildingSpawner", mapManagerGo.transform);
             var buildingSpawner = EnsureComponent<BuildingSpawner>(buildingSpawnerGo);
             mapManager.buildingSpawner = buildingSpawner;
+            buildingSpawner.mapManager = mapManager;
 
             var normalPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/NormalBuilding.prefab");
             var landmarkPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/LandmarkBuilding.prefab");
