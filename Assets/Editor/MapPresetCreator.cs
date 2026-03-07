@@ -30,6 +30,11 @@ namespace MiniMapGame.EditorTools
                 hasCoast = true,
                 hasRiver = true,
                 hillDensity = 0.30f,
+                maxElevation = 10f,
+                elevationScale = 0.8f,
+                enableBridges = true,
+                riverWidth = 14f,
+                decorationDensity = 0.6f,
                 description = "有機的な港町。入り組んだ路地と港湾区域。"
             });
 
@@ -44,6 +49,11 @@ namespace MiniMapGame.EditorTools
                 hasCoast = false,
                 hasRiver = true,
                 hillDensity = 0.75f,
+                maxElevation = 12f,
+                elevationScale = 1.0f,
+                enableBridges = true,
+                riverWidth = 10f,
+                decorationDensity = 0.3f,
                 description = "疎らな集落。広い農村地帯と川。"
             });
 
@@ -58,6 +68,11 @@ namespace MiniMapGame.EditorTools
                 hasCoast = false,
                 hasRiver = false,
                 hillDensity = 0.00f,
+                maxElevation = 0f,
+                elevationScale = 0f,
+                enableBridges = false,
+                riverWidth = 12f,
+                decorationDensity = 0.7f,
                 description = "整然としたブロック構造。高密度市街地。"
             });
 
@@ -72,6 +87,11 @@ namespace MiniMapGame.EditorTools
                 hasCoast = false,
                 hasRiver = false,
                 hillDensity = 0.95f,
+                maxElevation = 40f,
+                elevationScale = 1.5f,
+                enableBridges = true,
+                riverWidth = 8f,
+                decorationDensity = 0.2f,
                 description = "険しい山岳路。行き止まりと分岐が多い。"
             });
 
@@ -92,6 +112,12 @@ namespace MiniMapGame.EditorTools
             public bool hasRiver;
             public float hillDensity;
             public string description;
+            // Per-preset tuning
+            public float maxElevation;
+            public float elevationScale;
+            public bool enableBridges;
+            public float riverWidth;
+            public float decorationDensity;
         }
 
         private static void CreatePreset(string folder, string fileName, PresetDef def)
@@ -115,6 +141,11 @@ namespace MiniMapGame.EditorTools
             preset.hasRiver = def.hasRiver;
             preset.hillDensity = def.hillDensity;
             preset.description = def.description;
+            preset.maxElevation = def.maxElevation;
+            preset.elevationScale = def.elevationScale;
+            preset.enableBridges = def.enableBridges;
+            preset.riverWidth = def.riverWidth;
+            preset.decorationDensity = def.decorationDensity;
             // worldWidth, worldHeight, borderPadding use defaults (860, 580, 50)
 
             AssetDatabase.CreateAsset(preset, path);

@@ -12,6 +12,7 @@ namespace MiniMapGame.Data
         public float angle;
         public int tier;
         public bool isLandmark;
+        public int floors; // 1-based floor count for height variation
         public string id;
 
         // ISpatialBounds

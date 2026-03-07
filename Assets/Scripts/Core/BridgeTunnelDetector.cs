@@ -17,6 +17,7 @@ namespace MiniMapGame.Core
         {
             if (!preset.enableBridges && !preset.enableTunnels) return;
 
+            // Road-road crossings
             var crossings = FindCrossings(data);
 
             foreach (var (edgeA, edgeB) in crossings)
@@ -46,7 +47,6 @@ namespace MiniMapGame.Core
                     bridge.layer = 1;
                     data.edges[bridgeEdge] = bridge;
 
-                    // Raise bridge endpoint nodes
                     RaiseNode(data.nodes, bridge.nodeA, BridgeHeight);
                     RaiseNode(data.nodes, bridge.nodeB, BridgeHeight);
                 }
@@ -55,6 +55,55 @@ namespace MiniMapGame.Core
                     var tunnel = data.edges[bridgeEdge];
                     tunnel.layer = -1;
                     data.edges[bridgeEdge] = tunnel;
+                }
+            }
+
+            // River-road crossings: edges crossing the river become bridges
+            if (preset.enableBridges && data.terrain.riverPoints.Count >= 2)
+            {
+                DetectRiverCrossings(data, preset);
+            }
+        }
+
+        private static void DetectRiverCrossings(MapData data, MapPreset preset)
+        {
+            var riverPts = data.terrain.riverPoints;
+
+            // Build edge segment lists
+            for (int ei = 0; ei < data.edges.Count; ei++)
+            {
+                var edge = data.edges[ei];
+                if (edge.layer != 0) continue; // Already a bridge/tunnel
+
+                var posA = data.nodes[edge.nodeA].position;
+                var posB = data.nodes[edge.nodeB].position;
+
+                // Check if edge bezier crosses any river segment
+                bool crosses = false;
+                for (int s = 0; s < SegmentsPerEdge && !crosses; s++)
+                {
+                    float t0 = s / (float)SegmentsPerEdge;
+                    float t1 = (s + 1) / (float)SegmentsPerEdge;
+                    var ep0 = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, t0);
+                    var ep1 = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, t1);
+
+                    for (int ri = 0; ri < riverPts.Count - 1; ri++)
+                    {
+                        if (LineSegmentsIntersect(ep0, ep1, riverPts[ri], riverPts[ri + 1]))
+                        {
+                            crosses = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (crosses)
+                {
+                    var bridge = data.edges[ei];
+                    bridge.layer = 1;
+                    data.edges[ei] = bridge;
+                    RaiseNode(data.nodes, bridge.nodeA, BridgeHeight);
+                    RaiseNode(data.nodes, bridge.nodeB, BridgeHeight);
                 }
             }
         }

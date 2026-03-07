@@ -25,18 +25,80 @@ namespace MiniMapGame.Core
             float w = preset.worldWidth;
             float h = preset.worldHeight;
 
-            // Initial polygon points (top-right corner water area)
+            // Randomly choose coast side: 0=right, 1=bottom, 2=left, 3=top
+            int side = Mathf.FloorToInt(rng.Next() * 4f);
+            terrain.coastSide = side;
+
+            switch (side)
+            {
+                case 0: // Right edge (original)
+                    GenerateCoastRight(terrain, rng, w, h);
+                    break;
+                case 1: // Bottom edge
+                    GenerateCoastBottom(terrain, rng, w, h);
+                    break;
+                case 2: // Left edge
+                    GenerateCoastLeft(terrain, rng, w, h);
+                    break;
+                case 3: // Top edge
+                    GenerateCoastTop(terrain, rng, w, h);
+                    break;
+            }
+        }
+
+        private static void GenerateCoastRight(MapTerrain terrain, SeededRng rng, float w, float h)
+        {
             terrain.coastPoints.Add(new Vector2(w * (0.62f + rng.Next() * 0.1f), 0f));
             terrain.coastPoints.Add(new Vector2(w, 0f));
             terrain.coastPoints.Add(new Vector2(w, h));
-
-            // Wavy coastline from bottom to top
             float y = h;
             while (y > 0f)
             {
                 terrain.coastPoints.Add(new Vector2(
                     w * (0.68f + (rng.Next() - 0.5f) * 0.12f), y));
                 y -= 25f + rng.Next() * 30f;
+            }
+        }
+
+        private static void GenerateCoastBottom(MapTerrain terrain, SeededRng rng, float w, float h)
+        {
+            terrain.coastPoints.Add(new Vector2(0f, h * (0.62f + rng.Next() * 0.1f)));
+            terrain.coastPoints.Add(new Vector2(0f, h));
+            terrain.coastPoints.Add(new Vector2(w, h));
+            float x = w;
+            while (x > 0f)
+            {
+                terrain.coastPoints.Add(new Vector2(
+                    x, h * (0.68f + (rng.Next() - 0.5f) * 0.12f)));
+                x -= 25f + rng.Next() * 30f;
+            }
+        }
+
+        private static void GenerateCoastLeft(MapTerrain terrain, SeededRng rng, float w, float h)
+        {
+            terrain.coastPoints.Add(new Vector2(w * (0.38f - rng.Next() * 0.1f), 0f));
+            terrain.coastPoints.Add(new Vector2(0f, 0f));
+            terrain.coastPoints.Add(new Vector2(0f, h));
+            float y = h;
+            while (y > 0f)
+            {
+                terrain.coastPoints.Add(new Vector2(
+                    w * (0.32f + (rng.Next() - 0.5f) * 0.12f), y));
+                y -= 25f + rng.Next() * 30f;
+            }
+        }
+
+        private static void GenerateCoastTop(MapTerrain terrain, SeededRng rng, float w, float h)
+        {
+            terrain.coastPoints.Add(new Vector2(0f, h * (0.38f - rng.Next() * 0.1f)));
+            terrain.coastPoints.Add(new Vector2(0f, 0f));
+            terrain.coastPoints.Add(new Vector2(w, 0f));
+            float x = w;
+            while (x > 0f)
+            {
+                terrain.coastPoints.Add(new Vector2(
+                    x, h * (0.32f + (rng.Next() - 0.5f) * 0.12f)));
+                x -= 25f + rng.Next() * 30f;
             }
         }
 
@@ -67,9 +129,35 @@ namespace MiniMapGame.Core
 
             for (int i = 0; i < numHills; i++)
             {
+                // Generate hill position, avoiding coast side
+                float px, py;
+                switch (terrain.coastSide)
+                {
+                    case 0: // right coast → hills on left 60%
+                        px = rng.Next() * w * 0.6f;
+                        py = rng.Next() * h;
+                        break;
+                    case 1: // bottom coast → hills on top 60%
+                        px = rng.Next() * w;
+                        py = rng.Next() * h * 0.6f;
+                        break;
+                    case 2: // left coast → hills on right 60%
+                        px = w * 0.4f + rng.Next() * w * 0.6f;
+                        py = rng.Next() * h;
+                        break;
+                    case 3: // top coast → hills on bottom 60%
+                        px = rng.Next() * w;
+                        py = h * 0.4f + rng.Next() * h * 0.6f;
+                        break;
+                    default:
+                        px = rng.Next() * w * 0.8f;
+                        py = rng.Next() * h;
+                        break;
+                }
+
                 terrain.hills.Add(new HillData
                 {
-                    position = new Vector2(rng.Next() * w * 0.8f, rng.Next() * h),
+                    position = new Vector2(px, py),
                     radiusX = 35f + rng.Next() * 80f,
                     radiusY = 22f + rng.Next() * 50f,
                     angle = rng.Next() * Mathf.PI,

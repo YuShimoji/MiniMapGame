@@ -18,8 +18,7 @@ namespace MiniMapGame.Runtime
         public MapManager mapManager;
 
         [Header("Building Height")]
-        public float normalHeight = 2f;
-        public float landmarkHeight = 4f;
+        public float floorHeight = 1.2f;
 
         private readonly List<GameObject> _spawnedBuildings = new();
         private Color _normalColor = new(0.22f, 0.28f, 0.38f);
@@ -50,7 +49,7 @@ namespace MiniMapGame.Runtime
                     terrainElev = mapManager.CurrentElevationMap.Sample(b.position);
 
                 var worldPos = MapGenUtils.ToWorldPosition(b.position, terrainElev, preset);
-                float yHeight = b.isLandmark ? landmarkHeight : normalHeight;
+                float yHeight = Mathf.Max(b.floors, 1) * floorHeight;
                 worldPos.y = terrainElev + yHeight * 0.5f;
 
                 var rotation = Quaternion.Euler(0f, b.angle * Mathf.Rad2Deg, 0f);

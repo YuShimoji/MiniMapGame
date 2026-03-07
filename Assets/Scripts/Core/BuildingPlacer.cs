@@ -68,6 +68,17 @@ namespace MiniMapGame.Core
                         float angle = Mathf.Atan2(dir.y, dir.x) + (rng.Next() - 0.5f) * 0.15f;
                         bool isLm = rng.Next() > 0.95f && seg.tier == 0;
 
+                        // Floor count: tier 0 = 2-6, tier 1 = 1-4, tier 2 = 1-2, landmark = 5-10
+                        int floors;
+                        if (isLm)
+                            floors = 5 + Mathf.FloorToInt(rng.Next() * 6f);
+                        else if (ti == 0)
+                            floors = 2 + Mathf.FloorToInt(rng.Next() * 5f);
+                        else if (ti == 1)
+                            floors = 1 + Mathf.FloorToInt(rng.Next() * 4f);
+                        else
+                            floors = 1 + Mathf.FloorToInt(rng.Next() * 2f);
+
                         var b = new MapBuilding
                         {
                             position = new Vector2(bx, by),
@@ -76,6 +87,7 @@ namespace MiniMapGame.Core
                             angle = angle,
                             tier = seg.tier,
                             isLandmark = isLm,
+                            floors = floors,
                             id = $"B{bldId++}"
                         };
 
