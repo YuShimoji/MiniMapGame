@@ -8,6 +8,7 @@ using MiniMapGame.Player;
 using MiniMapGame.Data;
 using MiniMapGame.GameLoop;
 using MiniMapGame.UI;
+using MiniMapGame.Interior;
 
 namespace MiniMapGame.EditorTools
 {
@@ -150,6 +151,9 @@ namespace MiniMapGame.EditorTools
 
             // 13. Player HUD
             SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
+
+            // 14. Interior System
+            SetupInteriorSystem(mapManager, camCtrl, playerGo.transform);
 
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
@@ -730,6 +734,39 @@ namespace MiniMapGame.EditorTools
             hud.inventoryText.color = new Color(0.9f, 0.85f, 0.6f, 0.9f);
 
             EditorUtility.SetDirty(hud);
+        }
+
+        // ── Interior System ──
+
+        private static void SetupInteriorSystem(MapManager mapManager,
+            CameraController cameraController, Transform playerTransform)
+        {
+            var rendererGo = FindOrCreate("InteriorRenderer");
+            var renderer = EnsureComponent<InteriorRenderer>(rendererGo);
+
+            // Create wall material
+            EnsureFolder("Assets/Resources/Materials");
+            string wallMatPath = "Assets/Resources/Materials/InteriorWall_Mat.mat";
+            var wallMat = AssetDatabase.LoadAssetAtPath<Material>(wallMatPath);
+            if (wallMat == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null) shader = Shader.Find("Standard");
+                wallMat = new Material(shader);
+                wallMat.color = new Color(0.3f, 0.35f, 0.4f);
+                AssetDatabase.CreateAsset(wallMat, wallMatPath);
+            }
+            renderer.wallMaterial = wallMat;
+
+            var controllerGo = FindOrCreate("InteriorController");
+            var controller = EnsureComponent<InteriorController>(controllerGo);
+            controller.mapManager = mapManager;
+            controller.interiorRenderer = renderer;
+            controller.cameraController = cameraController;
+            controller.playerTransform = playerTransform;
+
+            EditorUtility.SetDirty(renderer);
+            EditorUtility.SetDirty(controller);
         }
 
         // ── Helpers ──

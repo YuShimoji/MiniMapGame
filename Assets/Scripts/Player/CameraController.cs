@@ -4,7 +4,7 @@ namespace MiniMapGame.Player
 {
     public class CameraController : MonoBehaviour
     {
-        private enum CameraState { Following, ManualOrbit, ManualPan }
+        private enum CameraState { Following, ManualOrbit, ManualPan, Interior }
 
         [Header("Focus Settings")]
         public Transform playerTarget;
@@ -44,6 +44,10 @@ namespace MiniMapGame.Player
         private Vector2 _currentOrbitAngles;
         private Vector2 _orbitVelocity;
 
+        // Saved state for restoring after interior mode
+        private Vector2 _savedOrbitAngles;
+        private float _savedDistance;
+
         void Start()
         {
             _camera = GetComponent<Camera>();
@@ -74,6 +78,8 @@ namespace MiniMapGame.Player
 
         void LateUpdate()
         {
+            if (_state == CameraState.Interior) return;
+
             UpdateState();
             UpdateFocusPoint();
             UpdateCameraOrbitAndDistance();
@@ -158,9 +164,37 @@ namespace MiniMapGame.Player
 
         void ApplyCameraTransform()
         {
+            if (_state == CameraState.Interior) return;
+
             Quaternion rotation = Quaternion.Euler(_currentOrbitAngles.x, _currentOrbitAngles.y, 0);
             transform.position = _focusPoint - (rotation * Vector3.forward * _currentDistance);
             transform.rotation = rotation;
+        }
+
+        public void SetInteriorMode(Vector3 position, float orthoSize)
+        {
+            if (_camera == null) return;
+
+            _savedOrbitAngles = _currentOrbitAngles;
+            _savedDistance = _currentDistance;
+            _state = CameraState.Interior;
+
+            _camera.orthographic = true;
+            _camera.orthographicSize = orthoSize;
+            transform.position = position;
+            transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        }
+
+        public void ResetToFollowMode()
+        {
+            if (_camera == null) return;
+
+            _camera.orthographic = false;
+            _currentOrbitAngles = _savedOrbitAngles;
+            _targetOrbitAngles = _savedOrbitAngles;
+            _currentDistance = _savedDistance;
+            _targetDistance = _savedDistance;
+            _state = CameraState.Following;
         }
     }
 }

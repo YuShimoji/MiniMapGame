@@ -19,12 +19,16 @@ namespace MiniMapGame.Runtime
         public void Interact()
         {
             if (!isLandmark) return;
-            int interiorSeed = buildingId.GetHashCode();
-            var interiorData = InteriorMapGenerator.Generate(interiorSeed);
-            Debug.Log($"[BuildingInteraction] Generated interior for {buildingId}: " +
-                      $"{interiorData.rooms.Count} rooms, {interiorData.corridors.Count} corridors, " +
-                      $"{interiorData.alcoveIndices.Count} alcoves");
-            // TODO: Load interior as additive Unity scene
+
+            var controller = Object.FindAnyObjectByType<InteriorController>();
+            if (controller != null)
+            {
+                controller.EnterBuilding(this);
+            }
+            else
+            {
+                Debug.LogWarning("[BuildingInteraction] InteriorController not found in scene.");
+            }
         }
     }
 }
