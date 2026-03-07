@@ -155,6 +155,9 @@ namespace MiniMapGame.EditorTools
             // 14. Interior System
             SetupInteriorSystem(mapManager, camCtrl, playerGo.transform);
 
+            // 15. Save Manager
+            SetupSaveManager(mapManager);
+
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
@@ -493,6 +496,17 @@ namespace MiniMapGame.EditorTools
             if (parchBtnText != null) parchBtnText.color = new Color(0.2f, 0.18f, 0.12f);
             yPos -= 0.08f;
 
+            // Save/Load buttons
+            CreateTMPChild(panelGo.transform, "SaveLoadLabel", "Save/Load:",
+                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.4f, yPos), TextAlignmentOptions.MiddleLeft);
+            yPos -= 0.05f;
+
+            controlUI.saveButton = CreateButton(panelGo.transform, "BtnSave", "Save",
+                new Vector2(0.05f, yPos - 0.055f), new Vector2(0.48f, yPos), new Color(0.2f, 0.45f, 0.3f)).GetComponent<Button>();
+            controlUI.loadButton = CreateButton(panelGo.transform, "BtnLoad", "Load",
+                new Vector2(0.52f, yPos - 0.055f), new Vector2(0.95f, yPos), new Color(0.3f, 0.3f, 0.5f)).GetComponent<Button>();
+            yPos -= 0.08f;
+
             // Stats text
             controlUI.statsText = CreateTMPChild(panelGo.transform, "StatsText", "",
                 new Vector2(0.05f, 0.02f), new Vector2(0.95f, yPos), TextAlignmentOptions.TopLeft);
@@ -767,6 +781,29 @@ namespace MiniMapGame.EditorTools
 
             EditorUtility.SetDirty(renderer);
             EditorUtility.SetDirty(controller);
+        }
+
+        // ── Save Manager ──
+
+        private static void SetupSaveManager(MapManager mapManager)
+        {
+            var go = FindOrCreate("SaveManager");
+            var sm = EnsureComponent<SaveManager>(go);
+            sm.mapManager = mapManager;
+
+            var glc = Object.FindAnyObjectByType<GameLoopController>();
+            if (glc != null)
+                sm.gameLoopController = glc;
+
+            // Wire into MapControlUI
+            var controlUI = Object.FindAnyObjectByType<MapControlUI>();
+            if (controlUI != null)
+            {
+                controlUI.saveManager = sm;
+                EditorUtility.SetDirty(controlUI);
+            }
+
+            EditorUtility.SetDirty(sm);
         }
 
         // ── Helpers ──

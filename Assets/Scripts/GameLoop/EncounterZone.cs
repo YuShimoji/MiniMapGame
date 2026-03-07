@@ -72,5 +72,13 @@ namespace MiniMapGame.GameLoop
             if (r != null)
                 r.material.color = new Color(1f, 0.3f, 0.3f, 0.3f);
         }
+
+        public void MarkTriggered()
+        {
+            _triggered = true;
+            var r = GetComponent<Renderer>();
+            if (r != null)
+                r.material.color = new Color(1f, 0.3f, 0.3f, 0.3f);
+        }
     }
 }

@@ -187,6 +187,50 @@ namespace MiniMapGame.GameLoop
                 HandleExtraction(false);
         }
 
+        public void RestoreState(GameState savedState)
+        {
+            if (savedState == null) return;
+
+            State.collectedValue = savedState.collectedValue;
+            State.encounterCount = savedState.encounterCount;
+            State.stats.currentHP = savedState.stats.currentHP;
+            State.stats.maxHP = savedState.stats.maxHP;
+
+            foreach (string itemId in savedState.collectedItemIds)
+            {
+                if (!State.collectedItemIds.Contains(itemId))
+                    State.collectedItemIds.Add(itemId);
+            }
+
+            // Remove collected ValueObjects from scene
+            for (int i = _spawnedEntities.Count - 1; i >= 0; i--)
+            {
+                var obj = _spawnedEntities[i];
+                if (obj == null) continue;
+                var vo = obj.GetComponent<ValueObjectBehaviour>();
+                if (vo != null && State.HasCollected(vo.ObjectId))
+                {
+                    Destroy(obj);
+                    _spawnedEntities.RemoveAt(i);
+                }
+            }
+
+            // Mark triggered EncounterZones
+            int encountered = 0;
+            foreach (var obj in _spawnedEntities)
+            {
+                if (obj == null) continue;
+                var ez = obj.GetComponent<EncounterZone>();
+                if (ez != null && encountered < savedState.encounterCount)
+                {
+                    ez.MarkTriggered();
+                    encountered++;
+                }
+            }
+
+            gameLoopUI?.UpdateHUD(State);
+        }
+
         private void ClearEntities()
         {
             foreach (var obj in _spawnedEntities)

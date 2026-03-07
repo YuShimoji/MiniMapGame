@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using MiniMapGame.Data;
 using MiniMapGame.Runtime;
+using MiniMapGame.GameLoop;
 
 namespace MiniMapGame.UI
 {
@@ -48,6 +49,11 @@ namespace MiniMapGame.UI
         public MapPreset gridPreset;
         public MapPreset mountainPreset;
 
+        [Header("Save/Load")]
+        public SaveManager saveManager;
+        public Button saveButton;
+        public Button loadButton;
+
         [Header("Panel Toggle")]
         public KeyCode toggleKey = KeyCode.F1;
         public GameObject controlPanel;
@@ -67,6 +73,9 @@ namespace MiniMapGame.UI
 
             darkThemeButton?.onClick.AddListener(() => SelectTheme(darkTheme));
             parchmentThemeButton?.onClick.AddListener(() => SelectTheme(parchmentTheme));
+
+            saveButton?.onClick.AddListener(() => saveManager?.Save());
+            loadButton?.onClick.AddListener(() => saveManager?.Load());
 
             if (buildingDensitySlider != null)
             {
