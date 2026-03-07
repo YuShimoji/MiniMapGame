@@ -135,6 +135,12 @@ namespace MiniMapGame.EditorTools
             // 9. MiniMap
             SetupMiniMap(canvas, mapManager, playerGo.transform);
 
+            // 10. Analysis Visualizer (Tab to toggle)
+            var vizGo = FindOrCreate("AnalysisVisualizer");
+            var viz = EnsureComponent<AnalysisVisualizer>(vizGo);
+            viz.mapManager = mapManager;
+            EditorUtility.SetDirty(viz);
+
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
