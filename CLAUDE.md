@@ -6,7 +6,7 @@ React/Canvasプロトタイプ (map-generator-v3.jsx) をC#/Unityへ移植し、
 ゲームプレイ基盤を構築する。
 
 ## Engine & Pipeline
-- Unity 6.2 beta (6000.2.0b2)
+- Unity 6.3 (6000.3.6f1)
 - URP 17.3.0
 - Camera: **Perspective** (3D orbit/pan/zoom, Interior時はOrthographic)
 - Input: Unity InputSystem 1.18.0
@@ -27,7 +27,7 @@ React/Canvasプロトタイプ (map-generator-v3.jsx) をC#/Unityへ移植し、
 - namespace: `MiniMapGame`（サブ: `.Data`, `.Core`, `.MapGen`, `.Runtime`, `.Interior`, `.GameLoop`, `.Player`, `.UI`, `.MiniGame`）
 - コメント: 日本語OK、ただしAPIドキュメントは英語
 
-## Unity 6.2 API 注意事項
+## Unity 6.x API 注意事項
 - `TextAlignmentOptions.TopCenter` → `.Top`
 - `TextAlignmentOptions.MiddleLeft` → `.MidlineLeft`
 - `TextAlignmentOptions.MiddleRight` → `.MidlineRight`

@@ -1,0 +1,200 @@
+[
+  {
+    "id": "SP-001",
+    "title": "ゲーム概要・コアループ",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#1-ゲーム概要",
+    "summary": "コアループ定義（マップ生成→探索→インテリア→遭遇→回収→脱出）"
+  },
+  {
+    "id": "SP-002",
+    "title": "プリセット定義",
+    "status": "done",
+    "pct": 100,
+    "cat": "data",
+    "file": "SPEC.md#2-プリセット定義",
+    "summary": "4プリセット（Coastal/Rural/Grid/Mountain）のMapPreset SO定義"
+  },
+  {
+    "id": "SP-003",
+    "title": "データ構造",
+    "status": "done",
+    "pct": 100,
+    "cat": "data",
+    "file": "SPEC.md#3-データ構造",
+    "summary": "MapNode/MapEdge/MapBuilding/MapTerrain/MapData/MapAnalysis/MapDecoration"
+  },
+  {
+    "id": "SP-004",
+    "title": "SeededRng（決定論的乱数）",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#4-seededrng-決定論的乱数",
+    "summary": "System.Random ラッパー、全生成を同一seedで決定論的再現"
+  },
+  {
+    "id": "SP-005",
+    "title": "マップジェネレータ",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#5-マップジェネレータ",
+    "summary": "IMapGenerator + 4実装（Organic/Grid/Mountain/Rural）"
+  },
+  {
+    "id": "SP-006",
+    "title": "SpatialHash（衝突検出）",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#6-spatialhash-衝突検出",
+    "summary": "グリッドベース空間ハッシュ、建物・装飾配置時の衝突回避"
+  },
+  {
+    "id": "SP-007",
+    "title": "BuildingPlacer",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#7-buildingplacer",
+    "summary": "道路沿い建物配置、tier別サイズ・密度制御"
+  },
+  {
+    "id": "SP-008",
+    "title": "MapAnalyzer",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#8-mapanalyzer",
+    "summary": "生成マップの分析（接続性、密度、チョークポイント検出）"
+  },
+  {
+    "id": "SP-009",
+    "title": "地形生成",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#9-地形生成",
+    "summary": "TerrainGenerator: 海岸・河川・丘陵の生成"
+  },
+  {
+    "id": "SP-010",
+    "title": "Unityシーンアーキテクチャ",
+    "status": "done",
+    "pct": 100,
+    "cat": "system",
+    "file": "SPEC.md#10-unity-シーンアーキテクチャ",
+    "summary": "MapManager統合、14ステップ生成パイプライン、レンダリング構成"
+  },
+  {
+    "id": "SP-011",
+    "title": "インテリアマップシステム",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#11-インテリアマップシステム",
+    "summary": "BSP部屋分割 + InteriorController + ミニゲーム連携"
+  },
+  {
+    "id": "SP-012",
+    "title": "ゲームループインターフェース",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#12-ゲームループインターフェース",
+    "summary": "GameState/PlayerStats/EncounterZone/ExtractionPoint/MapEventBus"
+  },
+  {
+    "id": "SP-013",
+    "title": "座標系変換",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#13-座標系変換",
+    "summary": "JSX CW/CH → Unity Vector3 変換ルール"
+  },
+  {
+    "id": "SP-014",
+    "title": "高低差システム",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#18-実装済み機能一覧",
+    "summary": "ElevationMap + 橋/トンネル + 道路・建物・水面の高度追従"
+  },
+  {
+    "id": "SP-015",
+    "title": "水面レンダリング",
+    "status": "done",
+    "pct": 100,
+    "cat": "system",
+    "file": "SPEC.md#18-実装済み機能一覧",
+    "summary": "River ribbon + Coast polygon + Water.shader"
+  },
+  {
+    "id": "SP-016",
+    "title": "装飾・LODシステム",
+    "status": "done",
+    "pct": 100,
+    "cat": "system",
+    "file": "SPEC.md#18-実装済み機能一覧",
+    "summary": "DecorationPlacer/Spawner 4種 + LOD 3段階"
+  },
+  {
+    "id": "SP-017",
+    "title": "ミニゲームシステム",
+    "status": "done",
+    "pct": 100,
+    "cat": "core",
+    "file": "SPEC.md#18-実装済み機能一覧",
+    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種、RoomTrigger連携"
+  },
+  {
+    "id": "SP-018",
+    "title": "テーマシステム",
+    "status": "done",
+    "pct": 100,
+    "cat": "ui",
+    "file": "SPEC.md#18-実装済み機能一覧",
+    "summary": "MapTheme SO (Dark/Parchment), per-tier道路色"
+  },
+  {
+    "id": "SP-019",
+    "title": "パフォーマンス最適化",
+    "status": "todo",
+    "pct": 0,
+    "cat": "infra",
+    "file": "SPEC.md#21-今後の方針・ユーザー要望",
+    "summary": "メッシュ結合、GPU instancing、オブジェクトプール"
+  },
+  {
+    "id": "SP-020",
+    "title": "プレイヤー体験ポリッシュ",
+    "status": "todo",
+    "pct": 0,
+    "cat": "ui",
+    "file": "SPEC.md#21-今後の方針・ユーザー要望",
+    "summary": "エンカウント演出、収集エフェクト、脱出カウントダウン"
+  },
+  {
+    "id": "SP-021",
+    "title": "オーディオシステム",
+    "status": "todo",
+    "pct": 0,
+    "cat": "system",
+    "file": "SPEC.md#21-今後の方針・ユーザー要望",
+    "summary": "環境音、BGM、SE"
+  },
+  {
+    "id": "SP-022",
+    "title": "UIシステム拡張",
+    "status": "todo",
+    "pct": 0,
+    "cat": "ui",
+    "file": "SPEC.md#21-今後の方針・ユーザー要望",
+    "summary": "ポーズメニュー、設定画面、カメラプリセット"
+  }
+]

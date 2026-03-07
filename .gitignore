@@ -62,3 +62,10 @@ Thumbs.db
 .vs/
 *.swp
 *.swo
+
+# AI tools
+.claude/
+.serena/
+
+# Windows artifacts
+nul
