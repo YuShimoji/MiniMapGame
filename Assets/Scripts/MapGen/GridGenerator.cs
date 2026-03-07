@@ -114,39 +114,58 @@ namespace MiniMapGame.MapGen
                 }
             }
 
-            // Create diagonal avenue (Broadway-style) if grid is large enough
+            // Create diagonal avenues (2 crossing avenues for larger grids)
             if (rows > 4 && cols > 4)
             {
-                int row = 0;
-                int col = Mathf.FloorToInt(cols * 0.4f);
+                // Avenue 1: top-left → bottom-right
+                CreateDiagonalAvenue(nodes, edges, rng, rows, cols,
+                    0, Mathf.FloorToInt(cols * 0.3f), 1, 1);
 
-                while (row < rows - 1)
+                // Avenue 2: top-right → bottom-left (if grid large enough)
+                if (rows > 6 && cols > 6)
                 {
-                    int currentNode = row * cols + col;
-
-                    // Move down one row
-                    int nextRow = row + 1;
-
-                    // Randomly move right or stay in same column
-                    int nextCol = col;
-                    if (rng.Next() > 0.5f && col < cols - 1)
-                    {
-                        nextCol = col + 1;
-                    }
-                    nextCol = Mathf.Clamp(nextCol, 0, cols - 1);
-
-                    int nextNode = nextRow * cols + nextCol;
-
-                    // Add diagonal edge with tier 0 and less curve
-                    MapGenUtils.AddEdge(nodes, edges, currentNode, nextNode, 0, rng, 0.12f);
-
-                    // Move to next position
-                    row = nextRow;
-                    col = nextCol;
+                    CreateDiagonalAvenue(nodes, edges, rng, rows, cols,
+                        0, Mathf.FloorToInt(cols * 0.7f), 1, -1);
                 }
             }
 
+            // Mark plaza nodes (avenue intersections / center area)
+            int centerNode = (rows / 2) * cols + (cols / 2);
+            if (centerNode < nodes.Count)
+            {
+                var cn = nodes[centerNode];
+                cn.type = NodeType.Hub;
+                nodes[centerNode] = cn;
+            }
+
             return (nodes, edges);
+        }
+
+        private static void CreateDiagonalAvenue(
+            List<MapNode> nodes, List<MapEdge> edges, SeededRng rng,
+            int rows, int cols, int startRow, int startCol, int rowDir, int colDir)
+        {
+            int row = startRow;
+            int col = startCol;
+
+            while (row >= 0 && row < rows - 1 && col >= 0 && col < cols)
+            {
+                int currentNode = row * cols + col;
+                int nextRow = row + rowDir;
+                int nextCol = col;
+
+                if (rng.Next() > 0.4f)
+                    nextCol = col + colDir;
+                nextCol = Mathf.Clamp(nextCol, 0, cols - 1);
+                nextRow = Mathf.Clamp(nextRow, 0, rows - 1);
+                if (nextRow == row && nextCol == col) break;
+
+                int nextNode = nextRow * cols + nextCol;
+                MapGenUtils.AddEdge(nodes, edges, currentNode, nextNode, 0, rng, 0.12f);
+
+                row = nextRow;
+                col = nextCol;
+            }
         }
     }
 }

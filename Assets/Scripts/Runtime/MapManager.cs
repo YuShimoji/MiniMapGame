@@ -65,13 +65,13 @@ namespace MiniMapGame.Runtime
 
             IMapGenerator generator = CreateGenerator(activePreset.generatorType);
             var (nodes, edges) = generator.Generate(rng, center, activePreset);
-            var terrain = TerrainGenerator.Generate(rng, center, activePreset);
+            var terrain = TerrainGenerator.Generate(rng, center, activePreset, nodes);
 
             // Elevation: generate height map from terrain hills, apply to nodes
             CurrentElevationMap = new ElevationMap(terrain, activePreset);
             CurrentElevationMap.ApplyToNodes(nodes);
 
-            var buildings = BuildingPlacer.Place(nodes, edges, rng, activePreset);
+            var buildings = BuildingPlacer.Place(nodes, edges, rng, activePreset, terrain);
             var analysis = MapAnalyzer.Analyze(nodes, edges);
 
             CurrentMap = new MapData

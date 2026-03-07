@@ -9,12 +9,13 @@ namespace MiniMapGame.Core
     /// </summary>
     public static class TerrainGenerator
     {
-        public static MapTerrain Generate(SeededRng rng, Vector2 center, MapPreset preset)
+        public static MapTerrain Generate(SeededRng rng, Vector2 center, MapPreset preset,
+            List<MapNode> nodes = null)
         {
             var terrain = new MapTerrain();
             GenerateCoast(terrain, rng, preset);
             GenerateRiver(terrain, rng, center, preset);
-            GenerateHills(terrain, rng, preset);
+            GenerateHills(terrain, rng, preset, nodes);
             return terrain;
         }
 
@@ -121,11 +122,13 @@ namespace MiniMapGame.Core
             }
         }
 
-        private static void GenerateHills(MapTerrain terrain, SeededRng rng, MapPreset preset)
+        private static void GenerateHills(MapTerrain terrain, SeededRng rng, MapPreset preset,
+            List<MapNode> nodes = null)
         {
             float w = preset.worldWidth;
             float h = preset.worldHeight;
             int numHills = Mathf.FloorToInt(preset.hillDensity * (8f + rng.Next() * 8f));
+            float minNodeDist = 30f; // Minimum distance from hill center to any road node
 
             for (int i = 0; i < numHills; i++)
             {
@@ -153,6 +156,37 @@ namespace MiniMapGame.Core
                         px = rng.Next() * w * 0.8f;
                         py = rng.Next() * h;
                         break;
+                }
+
+                // Push hill away from dense node clusters
+                if (nodes != null && nodes.Count > 0)
+                {
+                    var hillPos = new Vector2(px, py);
+                    for (int attempt = 0; attempt < 3; attempt++)
+                    {
+                        float closestDist = float.MaxValue;
+                        Vector2 pushDir = Vector2.zero;
+                        foreach (var node in nodes)
+                        {
+                            float dist = Vector2.Distance(hillPos, node.position);
+                            if (dist < closestDist)
+                            {
+                                closestDist = dist;
+                                if (dist > 0.01f)
+                                    pushDir = (hillPos - node.position).normalized;
+                            }
+                        }
+
+                        if (closestDist >= minNodeDist) break;
+
+                        // Nudge hill away from nearest node
+                        float nudge = minNodeDist - closestDist + rng.Next() * 15f;
+                        hillPos += pushDir * nudge;
+                        hillPos.x = Mathf.Clamp(hillPos.x, 20f, w - 20f);
+                        hillPos.y = Mathf.Clamp(hillPos.y, 20f, h - 20f);
+                    }
+                    px = hillPos.x;
+                    py = hillPos.y;
                 }
 
                 terrain.hills.Add(new HillData

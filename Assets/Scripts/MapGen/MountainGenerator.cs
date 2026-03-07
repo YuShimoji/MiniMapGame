@@ -45,7 +45,52 @@ namespace MiniMapGame.MapGen
                 nodes[spine[i]] = node;
             }
 
-            // 2. Dead-end branches
+            // 2. Secondary ridges (1-2 branching from spine mid-section)
+            int numRidges = 1 + Mathf.FloorToInt(rng.Next() * 2f);
+            for (int r = 0; r < numRidges; r++)
+            {
+                // Pick a branch point from the middle 40-80% of spine
+                int branchIdx = Mathf.FloorToInt(spine.Count * (0.4f + rng.Next() * 0.4f));
+                branchIdx = Mathf.Clamp(branchIdx, 1, spine.Count - 2);
+                int branchFrom = spine[branchIdx];
+                float parentElev = nodes[branchFrom].elevation;
+
+                // Ridge direction: perpendicular-ish from spine direction
+                float spineAngle = Mathf.Atan2(
+                    nodes[spine[Mathf.Min(branchIdx + 1, spine.Count - 1)]].position.y - nodes[branchFrom].position.y,
+                    nodes[spine[Mathf.Min(branchIdx + 1, spine.Count - 1)]].position.x - nodes[branchFrom].position.x);
+                float ridgeAngle = spineAngle + (rng.Next() > 0.5f ? 1f : -1f) * (Mathf.PI * 0.3f + rng.Next() * 0.4f);
+
+                var ridge = new List<int> { branchFrom };
+                int ridgeSteps = 3 + Mathf.FloorToInt(rng.Next() * 3f);
+                int prev = branchFrom;
+
+                for (int s = 0; s < ridgeSteps; s++)
+                {
+                    ridgeAngle += (rng.Next() - 0.5f) * 0.4f * ca;
+                    float stepLen = 30f + rng.Next() * 40f;
+                    float rx = nodes[prev].position.x + Mathf.Cos(ridgeAngle) * stepLen;
+                    float ry = nodes[prev].position.y + Mathf.Sin(ridgeAngle) * stepLen;
+
+                    if (rx < 50f || rx > w - 50f || ry < 30f || ry > h - 30f) break;
+
+                    string rLabel = s == ridgeSteps - 1 ? "副峰" : "";
+                    int rn = MapGenUtils.AddNode(nodes, rx, ry, preset, rLabel);
+
+                    // Ridge elevation: descends from parent, peaks at 70% of parent
+                    float ridgeT = (s + 1) / (float)ridgeSteps;
+                    float ridgeElev = parentElev * (0.7f - ridgeT * 0.3f);
+                    var rNode = nodes[rn];
+                    rNode.elevation = ridgeElev;
+                    nodes[rn] = rNode;
+
+                    MapGenUtils.AddEdge(nodes, edges, prev, rn, 1, rng, ca);
+                    ridge.Add(rn);
+                    prev = rn;
+                }
+            }
+
+            // 3. Dead-end branches (from both spine and ridge nodes)
             foreach (int si in spine)
             {
                 if (rng.Next() >= 0.4f) continue;
@@ -59,7 +104,6 @@ namespace MiniMapGame.MapGen
 
                 string bLabel = rng.Next() > 0.8f ? "避難小屋" : "";
                 int bn = MapGenUtils.AddNode(nodes, bx, by, preset, bLabel, NodeType.Shelter);
-                // Branch elevation: parent ± small random
                 var branchNode = nodes[bn];
                 branchNode.elevation = nodes[si].elevation * (0.6f + rng.Next() * 0.3f);
                 nodes[bn] = branchNode;

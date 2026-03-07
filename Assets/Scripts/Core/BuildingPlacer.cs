@@ -24,10 +24,12 @@ namespace MiniMapGame.Core
         };
 
         public static List<MapBuilding> Place(
-            List<MapNode> nodes, List<MapEdge> edges, SeededRng rng, MapPreset preset)
+            List<MapNode> nodes, List<MapEdge> edges, SeededRng rng, MapPreset preset,
+            MapTerrain terrain = null)
         {
             var buildings = new List<MapBuilding>();
             var hash = new SpatialHash<MapBuilding>(40f);
+            var coastPoly = terrain != null ? terrain.coastPoints : null;
             int bldId = 0;
 
             foreach (var seg in edges)
@@ -101,7 +103,7 @@ namespace MiniMapGame.Core
                             id = $"B{bldId++}"
                         };
 
-                        if (!hash.Overlaps(b))
+                        if (!hash.Overlaps(b) && !InsideCoast(new Vector2(bx, by), coastPoly))
                         {
                             hash.Insert(b);
                             buildings.Add(b);
@@ -113,6 +115,27 @@ namespace MiniMapGame.Core
             }
 
             return buildings;
+        }
+
+        /// <summary>
+        /// Ray-casting point-in-polygon test. Returns true if point is inside coast water area.
+        /// </summary>
+        private static bool InsideCoast(Vector2 point, List<Vector2> polygon)
+        {
+            if (polygon == null || polygon.Count < 3) return false;
+
+            bool inside = false;
+            int n = polygon.Count;
+            for (int i = 0, j = n - 1; i < n; j = i++)
+            {
+                if ((polygon[i].y > point.y) != (polygon[j].y > point.y) &&
+                    point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y)
+                        / (polygon[j].y - polygon[i].y) + polygon[i].x)
+                {
+                    inside = !inside;
+                }
+            }
+            return inside;
         }
     }
 }

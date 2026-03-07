@@ -22,13 +22,16 @@ namespace MiniMapGame.MapGen
             int numA = preset.arterialRange.x +
                        Mathf.FloorToInt(rng.Next() * (preset.arterialRange.y - preset.arterialRange.x + 1));
 
-            // 3. Radial roads
+            // 3. Radial roads — track nodes per spoke for cross-linking
+            var spokeNodes = new List<List<int>>();
+
             for (int i = 0; i < numA; i++)
             {
                 float baseAngle = (i / (float)numA) * Mathf.PI * 2f + rng.Next() * 0.4f;
                 int prev = C;
                 int steps = 4 + Mathf.FloorToInt(rng.Next() * 4f);
                 float len = (200f + rng.Next() * 120f) / steps;
+                var spoke = new List<int>();
 
                 for (int j = 0; j < steps; j++)
                 {
@@ -50,6 +53,7 @@ namespace MiniMapGame.MapGen
                     int n = MapGenUtils.AddNode(nodes, nx, ny, preset, label,
                         label == "農場" ? NodeType.Farm : NodeType.None);
                     MapGenUtils.AddEdge(nodes, edges, prev, n, tier, rng, ca);
+                    spoke.Add(n);
 
                     // Side branch
                     if (j > 0 && rng.Next() > 0.75f)
@@ -67,6 +71,26 @@ namespace MiniMapGame.MapGen
                     }
 
                     prev = n;
+                }
+                spokeNodes.Add(spoke);
+            }
+
+            // 4. Cross-links between adjacent spokes (creates loops)
+            for (int i = 0; i < spokeNodes.Count; i++)
+            {
+                int j = (i + 1) % spokeNodes.Count;
+                var sA = spokeNodes[i];
+                var sB = spokeNodes[j];
+                if (sA.Count < 2 || sB.Count < 2) continue;
+
+                // Link mid-level nodes (step 1-2) if close enough
+                int idxA = Mathf.Min(1, sA.Count - 1);
+                int idxB = Mathf.Min(1, sB.Count - 1);
+                float dist = MapGenUtils.Distance(nodes[sA[idxA]].position, nodes[sB[idxB]].position);
+
+                if (dist < 200f && rng.Next() > 0.3f)
+                {
+                    MapGenUtils.AddEdge(nodes, edges, sA[idxA], sB[idxB], 2, rng, ca);
                 }
             }
 
