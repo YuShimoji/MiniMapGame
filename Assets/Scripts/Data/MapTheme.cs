@@ -22,6 +22,10 @@ namespace MiniMapGame.Data
         public Color roadFill1;
         public Color roadFill2;
 
+        [Header("Road Markings")]
+        public Color markingColor = new Color(0.85f, 0.85f, 0.75f, 1f);
+        public Color curbColor = new Color(0.3f, 0.3f, 0.3f, 1f);
+
         [Header("Buildings")]
         public Color buildingFill;
         public Color buildingFillLandmark;
@@ -30,6 +34,9 @@ namespace MiniMapGame.Data
         [Header("Terrain")]
         public Color coastColor;
         public Color riverColor;
+        public Color shallowWaterColor = new Color(0.15f, 0.35f, 0.45f, 0.45f);
+        public Color deepWaterColor = new Color(0.02f, 0.08f, 0.22f, 0.90f);
+        public Color foamColor = new Color(0.8f, 0.9f, 1.0f, 0.6f);
 
         [Header("Nodes")]
         public Color nodeColor;

@@ -64,15 +64,42 @@ namespace MiniMapGame.Runtime
         private void ApplyRoadMaterials(MapTheme theme)
         {
             if (mapRenderer == null) return;
-            Color[] outerColors = { theme.roadOuter0, theme.roadOuter1, theme.roadOuter2 };
-            Color[] innerColors = { theme.roadFill0, theme.roadFill1, theme.roadFill2 };
 
-            for (int i = 0; i < 3; i++)
+            Color[] baseColors = { theme.roadFill0, theme.roadFill1, theme.roadFill2 };
+            Color[] casingColors = { theme.roadOuter0, theme.roadOuter1, theme.roadOuter2 };
+
+            // New Road.shader materials
+            if (mapRenderer.roadMaterials != null)
             {
-                if (i < mapRenderer.roadOuterMaterials.Length && mapRenderer.roadOuterMaterials[i] != null)
-                    mapRenderer.roadOuterMaterials[i].color = outerColors[i];
-                if (i < mapRenderer.roadInnerMaterials.Length && mapRenderer.roadInnerMaterials[i] != null)
-                    mapRenderer.roadInnerMaterials[i].color = innerColors[i];
+                for (int i = 0; i < 3; i++)
+                {
+                    if (i < mapRenderer.roadMaterials.Length && mapRenderer.roadMaterials[i] != null)
+                    {
+                        var mat = mapRenderer.roadMaterials[i];
+                        mat.SetColor("_BaseColor", baseColors[i]);
+                        mat.SetColor("_CasingColor", casingColors[i]);
+                        mat.SetColor("_MarkingColor", theme.markingColor);
+                        mat.SetColor("_CurbColor", theme.curbColor);
+                    }
+                }
+            }
+
+            // Legacy materials
+            if (mapRenderer.roadOuterMaterials != null)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (i < mapRenderer.roadOuterMaterials.Length && mapRenderer.roadOuterMaterials[i] != null)
+                        mapRenderer.roadOuterMaterials[i].color = casingColors[i];
+                }
+            }
+            if (mapRenderer.roadInnerMaterials != null)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (i < mapRenderer.roadInnerMaterials.Length && mapRenderer.roadInnerMaterials[i] != null)
+                        mapRenderer.roadInnerMaterials[i].color = baseColors[i];
+                }
             }
         }
 
@@ -130,11 +157,12 @@ namespace MiniMapGame.Runtime
 
         private void ApplyWater(MapTheme theme)
         {
-            if (waterRenderer == null) return;
-            if (waterRenderer.riverMaterial != null)
-                waterRenderer.riverMaterial.SetColor("_BaseColor", theme.riverColor);
-            if (waterRenderer.coastMaterial != null)
-                waterRenderer.coastMaterial.SetColor("_BaseColor", theme.coastColor);
+            if (waterRenderer == null || waterRenderer.waterMaterial == null) return;
+            var mat = waterRenderer.waterMaterial;
+            mat.SetColor("_BaseColor", theme.riverColor);
+            mat.SetColor("_ShallowColor", theme.shallowWaterColor);
+            mat.SetColor("_DeepColor", theme.deepWaterColor);
+            mat.SetColor("_FoamColor", theme.foamColor);
         }
 
         private void ApplyPostProcessing(MapTheme theme)

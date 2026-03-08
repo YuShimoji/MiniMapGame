@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11ecfc61b0d95a94290f6b1a13d21dbd, type: 3}
+  m_Name: RoadProfile_Modern
+  m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.RoadProfile
+  tiers:
+  - tierName: Highway
+    laneCount: 4
+    laneWidth: 0.225
+    shoulderWidth: 0.15
+    curbWidth: 0.1
+    hasCenterLine: 1
+    centerLineSolid: 1
+    hasLaneDividers: 1
+    hasEdgeLines: 1
+    markingWidth: 0.02
+    dashLength: 2
+    dashGap: 1.5
+    roughness: 0.15
+    wear: 0.05
+    crackDensity: 0.02
+  - tierName: Street
+    laneCount: 2
+    laneWidth: 0.275
+    shoulderWidth: 0.1
+    curbWidth: 0.075
+    hasCenterLine: 1
+    centerLineSolid: 0
+    hasLaneDividers: 0
+    hasEdgeLines: 1
+    markingWidth: 0.015
+    dashLength: 1.5
+    dashGap: 1.5
+    roughness: 0.25
+    wear: 0.15
+    crackDensity: 0.08
+  - tierName: Alley
+    laneCount: 1
+    laneWidth: 0.28
+    shoulderWidth: 0.05
+    curbWidth: 0.06
+    hasCenterLine: 0
+    centerLineSolid: 0
+    hasLaneDividers: 0
+    hasEdgeLines: 0
+    markingWidth: 0
+    dashLength: 0
+    dashGap: 0
+    roughness: 0.4
+    wear: 0.3
+    crackDensity: 0.15

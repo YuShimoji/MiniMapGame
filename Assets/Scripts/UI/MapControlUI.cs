@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -186,12 +188,48 @@ namespace MiniMapGame.UI
 
             if (statsText != null)
             {
+                var sb = new StringBuilder();
                 var a = data.analysis;
-                statsText.text =
-                    $"Nodes: {data.nodes.Count}  Edges: {data.edges.Count}\n" +
-                    $"Buildings: {data.buildings.Count}\n" +
-                    $"Dead Ends: {a.deadEndIndices.Count}  Chokes: {a.chokeEdgeIndices.Count}\n" +
-                    $"Intersections: {a.intersectionIndices.Count}  Plazas: {a.plazaIndices.Count}";
+
+                // Graph stats
+                sb.AppendLine($"Nodes: {data.nodes.Count}  Edges: {data.edges.Count}");
+                sb.AppendLine($"Buildings: {data.buildings.Count}");
+                sb.AppendLine($"Dead Ends: {a.deadEndIndices.Count}  Chokes: {a.chokeEdgeIndices.Count}");
+                sb.AppendLine($"Intersections: {a.intersectionIndices.Count}  Plazas: {a.plazaIndices.Count}");
+
+                // Terrain stats
+                var terrain = data.terrain;
+                if (terrain != null && terrain.hills != null && terrain.hills.Count > 0)
+                {
+                    int clusterCount = terrain.hillClusters?.Count ?? 0;
+                    sb.AppendLine($"--- Terrain ---");
+                    sb.AppendLine($"Hills: {terrain.hills.Count}  Clusters: {clusterCount}");
+
+                    if (terrain.hillClusters != null && clusterCount > 0)
+                    {
+                        var byType = terrain.hillClusters.GroupBy(c => c.type)
+                            .OrderBy(g => (int)g.Key);
+                        sb.AppendLine(string.Join("  ",
+                            byType.Select(g => $"{g.Key}: {g.Count()}")));
+                    }
+
+                    var byProfile = terrain.hills.GroupBy(h => h.profile)
+                        .OrderBy(g => (int)g.Key);
+                    sb.AppendLine(string.Join("  ",
+                        byProfile.Select(g => $"{g.Key}: {g.Count()}")));
+                }
+
+                // Decoration stats
+                if (data.decorations != null && data.decorations.Count > 0)
+                {
+                    sb.AppendLine($"--- Decorations: {data.decorations.Count} ---");
+                    var byType = data.decorations.GroupBy(d => d.type)
+                        .OrderBy(g => (int)g.Key);
+                    sb.AppendLine(string.Join("  ",
+                        byType.Select(g => $"{g.Key}: {g.Count()}")));
+                }
+
+                statsText.text = sb.ToString().TrimEnd();
             }
         }
     }

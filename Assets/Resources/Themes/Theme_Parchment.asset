@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95514bbd029165142beecfd6630dbdb0, type: 3}
+  m_Name: Theme_Parchment
+  m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapTheme
+  displayName: "\u30D1\u30FC\u30C1\u30E1\u30F3\u30C8"
+  backgroundColor: {r: 0.9098039, g: 0.8784314, b: 0.8, a: 1}
+  groundColor: {r: 0.8745098, g: 0.84313726, b: 0.74509805, a: 1}
+  roadOuter0: {r: 0.53333336, g: 0.5019608, b: 0.3764706, a: 1}
+  roadOuter1: {r: 0.6039216, g: 0.5647059, b: 0.4392157, a: 1}
+  roadOuter2: {r: 0.4392157, g: 0.40784314, b: 0.28235295, a: 1}
+  roadFill0: {r: 0.78431374, g: 0.72156864, b: 0.4392157, a: 1}
+  roadFill1: {r: 0.84705883, g: 0.78431374, b: 0.5019608, a: 1}
+  roadFill2: {r: 0.6901961, g: 0.627451, b: 0.3764706, a: 1}
+  markingColor: {r: 0.3137255, g: 0.28235295, b: 0.1882353, a: 1}
+  curbColor: {r: 0.3764706, g: 0.34509805, b: 0.2509804, a: 1}
+  buildingFill: {r: 0.78431374, g: 0.7372549, b: 0.627451, a: 1}
+  buildingFillLandmark: {r: 0.6901961, g: 0.65882355, b: 0.53333336, a: 1}
+  buildingStroke: {r: 0.53333336, g: 0.5019608, b: 0.3764706, a: 1}
+  coastColor: {r: 0.72156864, g: 0.78431374, b: 0.8156863, a: 1}
+  riverColor: {r: 0.5647059, g: 0.6901961, b: 0.78431374, a: 1}
+  shallowWaterColor: {r: 0.45, g: 0.58, b: 0.65, a: 0.4}
+  deepWaterColor: {r: 0.25, g: 0.4, b: 0.55, a: 0.85}
+  foamColor: {r: 0.9, g: 0.92, b: 0.88, a: 0.55}
+  nodeColor: {r: 0.4392157, g: 0.3764706, b: 0.2509804, a: 1}
+  plazaNodeColor: {r: 0.3764706, g: 0.3137255, b: 0.1882353, a: 1}
+  textColor: {r: 0.16470589, g: 0.14117648, b: 0.09411765, a: 1}
+  deadEndColor: {r: 0.8, g: 0.2, b: 0.2, a: 0.8}
+  chokeColor: {r: 0.8, g: 0.5, b: 0.1, a: 0.8}
+  plazaColor: {r: 0.2, g: 0.4, b: 0.8, a: 0.8}
+  intersectionColor: {r: 0.2, g: 0.6, b: 0.3, a: 0.8}
+  directionalLightColor: {r: 1, g: 0.95, b: 0.85, a: 1}
+  directionalLightIntensity: 1
+  ambientColor: {r: 0.5, g: 0.48, b: 0.4, a: 1}
+  shadowStrength: 0.3
+  bloomIntensity: 0.2
+  bloomThreshold: 1.2
+  vignetteIntensity: 0.15
+  vignetteColor: {r: 0.22745098, g: 0.16470589, b: 0.101960786, a: 1}
+  contrast: 5
+  saturation: -5
+  enableFog: 1
+  fogColor: {r: 0.9098039, g: 0.8784314, b: 0.8, a: 1}
+  fogStartDistance: 120
+  fogEndDistance: 450
+  ambientParticleColor: {r: 0.7, g: 0.6, b: 0.4, a: 0.12}
+  gridLineColor: {r: 0.78431374, g: 0.7529412, b: 0.65882355, a: 1}
+  gridSize: 20
+  gridOpacity: 0.12

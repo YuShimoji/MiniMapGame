@@ -51,6 +51,9 @@ namespace MiniMapGame.EditorTools
             t.roadFill0 = HexColor("384e68");
             t.roadFill1 = HexColor("486080");
             t.roadFill2 = HexColor("283848");
+            // Road markings
+            t.markingColor = HexColor("a0a898");
+            t.curbColor = HexColor("1a2838");
 
             // Buildings
             t.buildingFill = HexColor("111c28");
@@ -60,6 +63,9 @@ namespace MiniMapGame.EditorTools
             // Terrain
             t.coastColor = HexColor("0a1520");
             t.riverColor = HexColor("142030");
+            t.shallowWaterColor = new Color(0.10f, 0.22f, 0.32f, 0.45f);
+            t.deepWaterColor = new Color(0.02f, 0.06f, 0.16f, 0.92f);
+            t.foamColor = new Color(0.5f, 0.6f, 0.7f, 0.5f);
 
             // Nodes
             t.nodeColor = HexColor("4a6a8a");
@@ -129,6 +135,9 @@ namespace MiniMapGame.EditorTools
             t.roadFill0 = HexColor("c8b870");
             t.roadFill1 = HexColor("d8c880");
             t.roadFill2 = HexColor("b0a060");
+            // Road markings
+            t.markingColor = HexColor("504830");
+            t.curbColor = HexColor("605840");
 
             // Buildings
             t.buildingFill = HexColor("c8bca0");
@@ -138,6 +147,9 @@ namespace MiniMapGame.EditorTools
             // Terrain
             t.coastColor = HexColor("b8c8d0");
             t.riverColor = HexColor("90b0c8");
+            t.shallowWaterColor = new Color(0.45f, 0.58f, 0.65f, 0.40f);
+            t.deepWaterColor = new Color(0.25f, 0.40f, 0.55f, 0.85f);
+            t.foamColor = new Color(0.90f, 0.92f, 0.88f, 0.55f);
 
             // Nodes
             t.nodeColor = HexColor("706040");

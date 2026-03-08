@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
+  m_Name: Preset_Mountain
+  m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
+  displayName: "\u5C71\u9053"
+  generatorType: 2
+  arterialRange: {x: 2, y: 3}
+  hasRingRoad: 0
+  curveAmount: 0.88
+  buildingDensity: 0.18
+  hasCoast: 0
+  hasRiver: 0
+  hillDensity: 0.95
+  description: "\u967A\u3057\u3044\u5C71\u5CB3\u8DEF\u3002\u884C\u304D\u6B62\u307E\u308A\u3068\u5206\u5C90\u304C\u591A\u3044\u3002"
+  worldWidth: 860
+  worldHeight: 580
+  borderPadding: 50
+  roadProfile: {fileID: 11400000, guid: ad4fd2ada3ad04a469573d8ae38376a1, type: 2}
+  waterProfile: {fileID: 0}
+  decorationDensity: 0.2
+  defaultInteriorPreset: {fileID: 0}
+  maxElevation: 40
+  elevationScale: 1.5
+  steepnessBias: 0.5
+  enableBridges: 1
+  enableTunnels: 0

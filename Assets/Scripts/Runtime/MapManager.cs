@@ -65,10 +65,24 @@ namespace MiniMapGame.Runtime
 
             IMapGenerator generator = CreateGenerator(activePreset.generatorType);
             var (nodes, edges) = generator.Generate(rng, center, activePreset);
-            var terrain = TerrainGenerator.Generate(rng, center, activePreset, nodes);
 
-            // Elevation: generate height map from terrain hills, apply to nodes
+            // Determine coast side early (hills need this for coast-aware placement)
+            int coastSide = WaterGenerator.DetermineCoastSide(rng, activePreset);
+
+            var terrain = TerrainGenerator.Generate(rng, center, activePreset, coastSide, nodes);
+
+            // Elevation: generate height map from terrain hills
             CurrentElevationMap = new ElevationMap(terrain, activePreset);
+
+            // Generate water bodies (terrain-responsive: uses ElevationMap for valley following)
+            terrain.waterBodies = WaterGenerator.Generate(rng, center, activePreset,
+                coastSide, nodes, CurrentElevationMap);
+
+            // Water carving: rivers create valleys, coasts create shore slopes
+            WaterTerrainInteraction.ApplyWaterCarving(
+                CurrentElevationMap, terrain.waterBodies, activePreset);
+
+            // Apply elevation to nodes (after carving for final terrain shape)
             CurrentElevationMap.ApplyToNodes(nodes);
 
             var buildings = BuildingPlacer.Place(nodes, edges, rng, activePreset, terrain);
@@ -97,9 +111,10 @@ namespace MiniMapGame.Runtime
             if (buildingSpawner != null) buildingSpawner.Spawn(CurrentMap);
             if (waterRenderer != null) waterRenderer.Render(CurrentMap);
 
-            // Decoration placement and spawning
+            // Decoration placement and spawning (terrain-aware)
             var decorations = DecorationPlacer.Place(
-                nodes, edges, analysis, buildings, rng, activePreset);
+                nodes, edges, analysis, buildings, rng, activePreset,
+                CurrentElevationMap, terrain);
             CurrentMap.decorations = decorations;
             if (decorationSpawner != null) decorationSpawner.Spawn(CurrentMap);
 
@@ -129,7 +144,7 @@ namespace MiniMapGame.Runtime
             OnMapCleared?.Invoke();
         }
 
-        private const int GroundGridRes = 20;
+        private const int GroundGridRes = 40;
 
         private void EnsureGroundPlane()
         {

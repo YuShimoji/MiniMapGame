@@ -45,7 +45,10 @@ namespace MiniMapGame.Runtime
                 if (mapManager != null && mapManager.CurrentElevationMap != null)
                     terrainElev = mapManager.CurrentElevationMap.Sample(b.position);
 
-                float yHeight = Mathf.Max(b.floors, 1) * floorHeight;
+                // Height variation: ±7.5% per building based on ID hash
+                int bHash = b.id.GetHashCode();
+                float heightVar = 1f + ((bHash & 0x1FF) / 511f - 0.5f) * 0.15f;
+                float yHeight = Mathf.Max(b.floors, 1) * floorHeight * heightVar;
                 var rotation = Quaternion.Euler(0f, b.angle * Mathf.Rad2Deg, 0f);
 
                 GameObject go;
@@ -71,6 +74,13 @@ namespace MiniMapGame.Runtime
                 var interaction = go.AddComponent<BuildingInteraction>();
                 interaction.buildingId = b.id;
                 interaction.isLandmark = b.isLandmark;
+
+                // Classify building for v2 interior generation
+                if (mapManager != null && mapManager.CurrentElevationMap != null)
+                {
+                    interaction.context = BuildingClassifier.Classify(
+                        b, preset, data.terrain, mapManager.CurrentElevationMap);
+                }
 
                 ApplyBuildingVariation(go, b.id, b.isLandmark);
                 _spawnedBuildings.Add(go);
@@ -179,6 +189,10 @@ namespace MiniMapGame.Runtime
                 _propBlock.SetColor("_EmissionColor", _landmarkColor * 0.15f);
             else
                 _propBlock.SetColor("_EmissionColor", Color.black);
+
+            // Per-building roughness variation (smoothness 0.3–0.6)
+            float roughness = 0.4f + (((hash >> 24) & 0xFF) / 255f) * 0.3f;
+            _propBlock.SetFloat("_Smoothness", 1f - roughness);
 
             // Apply to self and all children with renderers
             var renderers = go.GetComponentsInChildren<Renderer>();

@@ -58,52 +58,60 @@ namespace MiniMapGame.Core
                 }
             }
 
-            // River-road crossings: edges crossing the river become bridges
-            if (preset.enableBridges && data.terrain.riverPoints.Count >= 2)
+            // Water-road crossings: edges crossing rivers/streams become bridges
+            if (preset.enableBridges)
             {
-                DetectRiverCrossings(data, preset);
+                DetectWaterCrossings(data, preset);
             }
         }
 
-        private static void DetectRiverCrossings(MapData data, MapPreset preset)
+        private static void DetectWaterCrossings(MapData data, MapPreset preset)
         {
-            var riverPts = data.terrain.riverPoints;
+            if (data.terrain.waterBodies == null) return;
 
-            // Build edge segment lists
-            for (int ei = 0; ei < data.edges.Count; ei++)
+            foreach (var water in data.terrain.waterBodies)
             {
-                var edge = data.edges[ei];
-                if (edge.layer != 0) continue; // Already a bridge/tunnel
+                if (water.bodyType != WaterBodyType.River &&
+                    water.bodyType != WaterBodyType.Stream &&
+                    water.bodyType != WaterBodyType.Canal) continue;
 
-                var posA = data.nodes[edge.nodeA].position;
-                var posB = data.nodes[edge.nodeB].position;
+                var waterPts = water.pathPoints;
+                if (waterPts.Count < 2) continue;
 
-                // Check if edge bezier crosses any river segment
-                bool crosses = false;
-                for (int s = 0; s < SegmentsPerEdge && !crosses; s++)
+                for (int ei = 0; ei < data.edges.Count; ei++)
                 {
-                    float t0 = s / (float)SegmentsPerEdge;
-                    float t1 = (s + 1) / (float)SegmentsPerEdge;
-                    var ep0 = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, t0);
-                    var ep1 = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, t1);
+                    var edge = data.edges[ei];
+                    if (edge.layer != 0) continue;
 
-                    for (int ri = 0; ri < riverPts.Count - 1; ri++)
+                    var posA = data.nodes[edge.nodeA].position;
+                    var posB = data.nodes[edge.nodeB].position;
+
+                    bool crosses = false;
+                    for (int s = 0; s < SegmentsPerEdge && !crosses; s++)
                     {
-                        if (LineSegmentsIntersect(ep0, ep1, riverPts[ri], riverPts[ri + 1]))
+                        float t0 = s / (float)SegmentsPerEdge;
+                        float t1 = (s + 1) / (float)SegmentsPerEdge;
+                        var ep0 = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, t0);
+                        var ep1 = MapGenUtils.BezierPoint(posA, edge.controlPoint, posB, t1);
+
+                        for (int ri = 0; ri < waterPts.Count - 1; ri++)
                         {
-                            crosses = true;
-                            break;
+                            if (LineSegmentsIntersect(ep0, ep1, waterPts[ri], waterPts[ri + 1]))
+                            {
+                                crosses = true;
+                                break;
+                            }
                         }
                     }
-                }
 
-                if (crosses)
-                {
-                    var bridge = data.edges[ei];
-                    bridge.layer = 1;
-                    data.edges[ei] = bridge;
-                    RaiseNode(data.nodes, bridge.nodeA, BridgeHeight);
-                    RaiseNode(data.nodes, bridge.nodeB, BridgeHeight);
+                    if (crosses)
+                    {
+                        var bridge = data.edges[ei];
+                        bridge.layer = 1;
+                        data.edges[ei] = bridge;
+                        RaiseNode(data.nodes, bridge.nodeA, BridgeHeight);
+                        RaiseNode(data.nodes, bridge.nodeB, BridgeHeight);
+                    }
                 }
             }
         }

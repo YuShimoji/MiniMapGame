@@ -29,8 +29,11 @@ namespace MiniMapGame.Core
         {
             var buildings = new List<MapBuilding>();
             var hash = new SpatialHash<MapBuilding>(40f);
-            var coastPoly = terrain != null ? terrain.coastPoints : null;
             int bldId = 0;
+
+            // Profile-aware road half-widths (ensure buildings clear the road mesh)
+            var profile = preset != null && preset.roadProfile != null
+                ? preset.roadProfile : null;
 
             foreach (var seg in edges)
             {
@@ -46,9 +49,15 @@ namespace MiniMapGame.Core
                 float[] hw = TierRoadWidth[ti];
                 float[] bw = TierBuildingWidth[ti];
 
+                // Use profile width as floor if it exceeds the default setback
+                float profileHalfW = profile != null
+                    ? profile.tiers[Mathf.Clamp(ti, 0, profile.tiers.Length - 1)].TotalWidth * 0.5f
+                    : 0f;
+                float effectiveHw = Mathf.Max(hw[0], profileHalfW);
+
                 for (int side = -1; side <= 1; side += 2)
                 {
-                    float baseOff = (hw[0] + 3f) * side;
+                    float baseOff = (effectiveHw + 3f) * side;
                     float spacing = 7f + rng.Next() * 8f;
                     int count = Mathf.FloorToInt(d / spacing);
                     int ci = Mathf.FloorToInt(rng.Next() * 2f);
@@ -103,7 +112,7 @@ namespace MiniMapGame.Core
                             id = $"B{bldId++}"
                         };
 
-                        if (!hash.Overlaps(b) && !InsideCoast(new Vector2(bx, by), coastPoly))
+                        if (!hash.Overlaps(b) && !WaterGenerator.IsInsideCoast(new Vector2(bx, by), terrain?.waterBodies))
                         {
                             hash.Insert(b);
                             buildings.Add(b);
@@ -115,27 +124,6 @@ namespace MiniMapGame.Core
             }
 
             return buildings;
-        }
-
-        /// <summary>
-        /// Ray-casting point-in-polygon test. Returns true if point is inside coast water area.
-        /// </summary>
-        private static bool InsideCoast(Vector2 point, List<Vector2> polygon)
-        {
-            if (polygon == null || polygon.Count < 3) return false;
-
-            bool inside = false;
-            int n = polygon.Count;
-            for (int i = 0, j = n - 1; i < n; j = i++)
-            {
-                if ((polygon[i].y > point.y) != (polygon[j].y > point.y) &&
-                    point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y)
-                        / (polygon[j].y - polygon[i].y) + polygon[i].x)
-                {
-                    inside = !inside;
-                }
-            }
-            return inside;
         }
     }
 }

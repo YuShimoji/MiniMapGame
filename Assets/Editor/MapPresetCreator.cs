@@ -33,7 +33,7 @@ namespace MiniMapGame.EditorTools
                 maxElevation = 10f,
                 elevationScale = 0.8f,
                 enableBridges = true,
-                riverWidth = 14f,
+                waterProfile = null, // Uses WaterProfile.CreateDefaultFallback()
                 decorationDensity = 0.6f,
                 description = "有機的な港町。入り組んだ路地と港湾区域。"
             });
@@ -52,7 +52,7 @@ namespace MiniMapGame.EditorTools
                 maxElevation = 12f,
                 elevationScale = 1.0f,
                 enableBridges = true,
-                riverWidth = 10f,
+                waterProfile = null,
                 decorationDensity = 0.3f,
                 description = "疎らな集落。広い農村地帯と川。"
             });
@@ -71,7 +71,7 @@ namespace MiniMapGame.EditorTools
                 maxElevation = 0f,
                 elevationScale = 0f,
                 enableBridges = false,
-                riverWidth = 12f,
+                waterProfile = null,
                 decorationDensity = 0.7f,
                 description = "整然としたブロック構造。高密度市街地。"
             });
@@ -90,7 +90,7 @@ namespace MiniMapGame.EditorTools
                 maxElevation = 40f,
                 elevationScale = 1.5f,
                 enableBridges = true,
-                riverWidth = 8f,
+                waterProfile = null,
                 decorationDensity = 0.2f,
                 description = "険しい山岳路。行き止まりと分岐が多い。"
             });
@@ -116,8 +116,9 @@ namespace MiniMapGame.EditorTools
             public float maxElevation;
             public float elevationScale;
             public bool enableBridges;
-            public float riverWidth;
+            public WaterProfile waterProfile;
             public float decorationDensity;
+            public RoadProfile roadProfile;
         }
 
         private static void CreatePreset(string folder, string fileName, PresetDef def)
@@ -144,8 +145,9 @@ namespace MiniMapGame.EditorTools
             preset.maxElevation = def.maxElevation;
             preset.elevationScale = def.elevationScale;
             preset.enableBridges = def.enableBridges;
-            preset.riverWidth = def.riverWidth;
+            preset.waterProfile = def.waterProfile;
             preset.decorationDensity = def.decorationDensity;
+            preset.roadProfile = def.roadProfile;
             // worldWidth, worldHeight, borderPadding use defaults (860, 580, 50)
 
             AssetDatabase.CreateAsset(preset, path);

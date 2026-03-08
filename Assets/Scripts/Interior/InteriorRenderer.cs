@@ -5,8 +5,10 @@ using MiniMapGame.MiniGame;
 namespace MiniMapGame.Interior
 {
     /// <summary>
-    /// Renders InteriorMapData as 3D primitives (Quad floors + LineRenderer walls + corridor floors).
-    /// Room types color-coded: Entrance=green, Boss=red, Treasure=gold, Alcove=grey, Normal=white.
+    /// Renders InteriorMapData as 3D primitives.
+    /// Supports multi-floor rendering with per-floor visibility toggle.
+    /// New data path: InteriorFloorData with InteriorRoom/InteriorDoor/InteriorCorridor.
+    /// Legacy data path: RoomNode/CorridorEdge (single floor, backward compatible).
     /// </summary>
     public class InteriorRenderer : MonoBehaviour
     {
@@ -19,13 +21,67 @@ namespace MiniMapGame.Interior
         [Header("Settings")]
         public float floorY = 0.02f;
         public float wallHeight = 0.2f;
+        public float floorSpacing = 0.5f; // Y offset between floors (for stacked rendering)
 
+        private readonly List<FloorRenderGroup> _floorGroups = new();
         private readonly List<GameObject> _spawnedObjects = new();
         private readonly Dictionary<Color, Material> _floorMaterialCache = new();
         private Material _cachedWallMaterial;
         private Mesh _sharedQuadMesh;
 
-        private static readonly Dictionary<RoomType, Color> RoomColors = new()
+        private int _currentFloorIndex;
+        private InteriorPreset _activePreset;
+
+        // Default room type → color mapping
+        private static readonly Dictionary<InteriorRoomType, Color> DefaultRoomColors = new()
+        {
+            // Structural
+            { InteriorRoomType.Entrance, new Color(0.2f, 0.7f, 0.3f) },
+            { InteriorRoomType.Hallway, new Color(0.5f, 0.5f, 0.55f) },
+            { InteriorRoomType.Stairwell, new Color(0.45f, 0.55f, 0.65f) },
+            { InteriorRoomType.Corridor, new Color(0.5f, 0.5f, 0.55f) },
+            // Residential
+            { InteriorRoomType.LivingRoom, new Color(0.65f, 0.68f, 0.6f) },
+            { InteriorRoomType.Bedroom, new Color(0.6f, 0.6f, 0.7f) },
+            { InteriorRoomType.Kitchen, new Color(0.7f, 0.65f, 0.55f) },
+            { InteriorRoomType.Bathroom, new Color(0.55f, 0.7f, 0.72f) },
+            { InteriorRoomType.DiningRoom, new Color(0.68f, 0.65f, 0.58f) },
+            { InteriorRoomType.Storage, new Color(0.5f, 0.48f, 0.45f) },
+            // Commercial
+            { InteriorRoomType.Shopfront, new Color(0.75f, 0.7f, 0.55f) },
+            { InteriorRoomType.Backroom, new Color(0.5f, 0.48f, 0.46f) },
+            { InteriorRoomType.Counter, new Color(0.7f, 0.6f, 0.5f) },
+            { InteriorRoomType.DisplayArea, new Color(0.72f, 0.68f, 0.6f) },
+            { InteriorRoomType.SeatingArea, new Color(0.65f, 0.62f, 0.55f) },
+            { InteriorRoomType.Bar, new Color(0.55f, 0.42f, 0.35f) },
+            // Industrial
+            { InteriorRoomType.Workshop, new Color(0.58f, 0.55f, 0.5f) },
+            { InteriorRoomType.LoadingDock, new Color(0.55f, 0.55f, 0.52f) },
+            { InteriorRoomType.MachineryRoom, new Color(0.52f, 0.52f, 0.5f) },
+            // Public
+            { InteriorRoomType.Lobby, new Color(0.7f, 0.72f, 0.68f) },
+            { InteriorRoomType.Office, new Color(0.62f, 0.65f, 0.68f) },
+            { InteriorRoomType.MeetingRoom, new Color(0.6f, 0.62f, 0.65f) },
+            { InteriorRoomType.Archive, new Color(0.55f, 0.52f, 0.48f) },
+            // Special
+            { InteriorRoomType.Laboratory, new Color(0.6f, 0.72f, 0.65f) },
+            { InteriorRoomType.ServerRoom, new Color(0.5f, 0.55f, 0.65f) },
+            { InteriorRoomType.SecretRoom, new Color(0.4f, 0.2f, 0.6f) },
+            { InteriorRoomType.Vault, new Color(0.9f, 0.75f, 0.2f) },
+            { InteriorRoomType.Ruin, new Color(0.4f, 0.38f, 0.35f) },
+            { InteriorRoomType.Rooftop, new Color(0.6f, 0.65f, 0.7f) },
+            { InteriorRoomType.Basement, new Color(0.42f, 0.4f, 0.38f) },
+            // Dead space
+            { InteriorRoomType.WallVoid, new Color(0.2f, 0.2f, 0.22f) },
+            { InteriorRoomType.Shaft, new Color(0.18f, 0.18f, 0.2f) },
+            // Utility
+            { InteriorRoomType.Restroom, new Color(0.6f, 0.65f, 0.7f) },
+            { InteriorRoomType.Utility, new Color(0.48f, 0.48f, 0.5f) },
+        };
+
+        // Legacy colors for backward compat
+#pragma warning disable CS0618
+        private static readonly Dictionary<RoomType, Color> LegacyRoomColors = new()
         {
             { RoomType.Entrance, new Color(0.2f, 0.7f, 0.3f) },
             { RoomType.Boss, new Color(0.8f, 0.2f, 0.2f) },
@@ -33,38 +89,111 @@ namespace MiniMapGame.Interior
             { RoomType.Alcove, new Color(0.45f, 0.45f, 0.5f) },
             { RoomType.Normal, new Color(0.6f, 0.65f, 0.7f) }
         };
+#pragma warning restore CS0618
 
-        private static readonly Color WallColor = new(0.3f, 0.35f, 0.4f);
-        private static readonly Color CorridorColor = new(0.5f, 0.5f, 0.55f);
+        private static readonly Color DefaultWallColor = new(0.3f, 0.35f, 0.4f);
+        private static readonly Color DefaultCorridorColor = new(0.5f, 0.5f, 0.55f);
 
         private string _currentBuildingId;
         private int _currentSeed;
 
+        public int CurrentFloorIndex => _currentFloorIndex;
+        public int FloorCount => _floorGroups.Count;
+
+        /// <summary>
+        /// New multi-floor render path. Uses InteriorFloorData.
+        /// </summary>
+        public void Render(InteriorMapData data, Vector3 worldOrigin, InteriorPreset preset,
+            string buildingId = null, int seed = 0)
+        {
+            Clear();
+            _currentBuildingId = buildingId;
+            _currentSeed = seed;
+            _activePreset = preset;
+            _currentFloorIndex = 0;
+
+            for (int fi = 0; fi < data.floors.Count; fi++)
+            {
+                var floor = data.floors[fi];
+                var group = new FloorRenderGroup
+                {
+                    floorIndex = floor.floorIndex,
+                    root = new GameObject($"Floor_{floor.floorIndex}")
+                };
+                group.root.transform.SetParent(transform);
+
+                float yOffset = floorY + fi * floorSpacing;
+
+                // Rooms
+                for (int ri = 0; ri < floor.rooms.Count; ri++)
+                {
+                    var room = floor.rooms[ri];
+                    CreateNewRoomFloor(room, worldOrigin, yOffset, group.root.transform, preset);
+                    CreateNewRoomWalls(room, floor.doors, worldOrigin, yOffset, group.root.transform, preset);
+                }
+
+                // Doors (rendered as floor gaps in walls — visual indicators)
+                foreach (var door in floor.doors)
+                {
+                    if (!door.isHidden)
+                        CreateDoorIndicator(door, worldOrigin, yOffset, group.root.transform, preset);
+                }
+
+                // Corridors
+                foreach (var corridor in floor.corridors)
+                {
+                    CreateNewCorridorFloor(corridor, floor, worldOrigin, yOffset, group.root.transform, preset);
+                }
+
+                _floorGroups.Add(group);
+            }
+
+            // Show only ground floor initially
+            SetActiveFloor(0);
+        }
+
+        /// <summary>
+        /// Legacy single-floor render path. Backward compatible with old InteriorMapData.
+        /// </summary>
+#pragma warning disable CS0618
         public void Render(InteriorMapData data, Vector3 worldOrigin,
             string buildingId = null, int seed = 0)
         {
             Clear();
             _currentBuildingId = buildingId;
             _currentSeed = seed;
+            _activePreset = null;
 
-            for (int i = 0; i < data.rooms.Count; i++)
+            // Legacy path: use rooms/corridors properties (triggers Obsolete warning suppressed here)
+            var rooms = data.rooms;
+            var corridors = data.corridors;
+
+            for (int i = 0; i < rooms.Count; i++)
             {
-                CreateRoomFloor(data.rooms[i], worldOrigin);
-                AttachRoomTrigger(data.rooms[i], i, worldOrigin);
+                CreateLegacyRoomFloor(rooms[i], worldOrigin);
+                AttachLegacyRoomTrigger(rooms[i], i, worldOrigin);
             }
 
-            foreach (var room in data.rooms)
-                CreateRoomWalls(room, worldOrigin);
+            foreach (var room in rooms)
+                CreateLegacyRoomWalls(room, worldOrigin);
 
-            foreach (var corridor in data.corridors)
-                CreateCorridorFloor(corridor, data, worldOrigin);
+            foreach (var corridor in corridors)
+                CreateLegacyCorridorFloor(corridor, rooms, worldOrigin);
         }
+#pragma warning restore CS0618
 
         public void Clear()
         {
+            foreach (var group in _floorGroups)
+            {
+                if (group.root != null) Destroy(group.root);
+            }
+            _floorGroups.Clear();
+
             foreach (var obj in _spawnedObjects)
                 if (obj != null) Destroy(obj);
             _spawnedObjects.Clear();
+
             foreach (var mat in _floorMaterialCache.Values)
                 if (mat != null) Destroy(mat);
             _floorMaterialCache.Clear();
@@ -73,16 +202,226 @@ namespace MiniMapGame.Interior
                 Destroy(_cachedWallMaterial);
                 _cachedWallMaterial = null;
             }
+
+            _activePreset = null;
+            _currentFloorIndex = 0;
         }
 
-        private void CreateRoomFloor(RoomNode room, Vector3 origin)
+        /// <summary>
+        /// Show only the specified floor. Hides all others.
+        /// </summary>
+        public void SetActiveFloor(int index)
+        {
+            index = Mathf.Clamp(index, 0, _floorGroups.Count - 1);
+            _currentFloorIndex = index;
+
+            for (int i = 0; i < _floorGroups.Count; i++)
+            {
+                if (_floorGroups[i].root != null)
+                    _floorGroups[i].root.SetActive(i == index);
+            }
+        }
+
+        /// <summary>
+        /// Move to next floor (up). Returns new floor index.
+        /// </summary>
+        public int GoUpFloor()
+        {
+            if (_currentFloorIndex < _floorGroups.Count - 1)
+                SetActiveFloor(_currentFloorIndex + 1);
+            return _currentFloorIndex;
+        }
+
+        /// <summary>
+        /// Move to previous floor (down). Returns new floor index.
+        /// </summary>
+        public int GoDownFloor()
+        {
+            if (_currentFloorIndex > 0)
+                SetActiveFloor(_currentFloorIndex - 1);
+            return _currentFloorIndex;
+        }
+
+        /// <summary>
+        /// Get the display label for the current floor (B2, B1, 1F, 2F, ...).
+        /// </summary>
+        public string GetFloorLabel(int index)
+        {
+            if (index < 0 || index >= _floorGroups.Count) return "";
+            int fi = _floorGroups[index].floorIndex;
+            if (fi < 0) return $"B{-fi}";
+            return $"{fi + 1}F";
+        }
+
+        public string GetCurrentFloorLabel() => GetFloorLabel(_currentFloorIndex);
+
+        // ===== New data path rendering =====
+
+        private void CreateNewRoomFloor(InteriorRoom room, Vector3 origin, float yOffset,
+            Transform parent, InteriorPreset preset)
+        {
+            var go = new GameObject($"RoomFloor_{room.type}_{room.id}");
+            go.transform.SetParent(parent);
+
+            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial =
+                GetCachedFloorMaterial(GetRoomColor(room.type, preset));
+
+            var pos = new Vector3(origin.x + room.position.x, yOffset, origin.z + room.position.y);
+
+            if (room.rotation != 0f)
+            {
+                go.transform.position = pos;
+                go.transform.rotation = Quaternion.Euler(90f, room.rotation, 0f);
+            }
+            else
+            {
+                go.transform.position = pos;
+                go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            }
+            go.transform.localScale = new Vector3(room.size.x, room.size.y, 1f);
+        }
+
+        private void CreateNewRoomWalls(InteriorRoom room, List<InteriorDoor> doors,
+            Vector3 origin, float yOffset, Transform parent, InteriorPreset preset)
+        {
+            float hw = room.size.x * 0.5f;
+            float hh = room.size.y * 0.5f;
+            var center = new Vector3(origin.x + room.position.x, yOffset + 0.05f, origin.z + room.position.y);
+
+            // Collect door gaps on this room's walls
+            var doorGaps = new List<DoorGap>();
+            foreach (var door in doors)
+            {
+                if (door.roomA == room.id || door.roomB == room.id)
+                {
+                    doorGaps.Add(new DoorGap
+                    {
+                        position = door.position,
+                        halfWidth = door.width * 0.5f,
+                        isHidden = door.isHidden
+                    });
+                }
+            }
+
+            Color wallColor = preset != null ? preset.wallColor : DefaultWallColor;
+            float wh = preset != null ? Mathf.Min(preset.wallHeight * 0.06f, 0.3f) : wallHeight;
+
+            // 4 wall segments, each potentially split by door gaps
+            Vector3[] corners = new Vector3[4];
+            corners[0] = new Vector3(center.x - hw, center.y, center.z - hh);
+            corners[1] = new Vector3(center.x + hw, center.y, center.z - hh);
+            corners[2] = new Vector3(center.x + hw, center.y, center.z + hh);
+            corners[3] = new Vector3(center.x - hw, center.y, center.z + hh);
+
+            for (int w = 0; w < 4; w++)
+            {
+                var wallStart = corners[w];
+                var wallEnd = corners[(w + 1) % 4];
+                var segments = SplitWallByDoors(wallStart, wallEnd, doorGaps, room);
+
+                foreach (var seg in segments)
+                {
+                    CreateWallSegment(seg.start, seg.end, wh, wallColor, parent);
+                }
+            }
+        }
+
+        private void CreateWallSegment(Vector3 start, Vector3 end, float width, Color color, Transform parent)
+        {
+            if (Vector3.Distance(start, end) < 0.1f) return;
+
+            var go = new GameObject("WallSeg");
+            go.transform.SetParent(parent);
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = true;
+            lr.loop = false;
+            lr.startWidth = width;
+            lr.endWidth = width;
+            lr.material = wallMaterial != null ? wallMaterial : GetCachedWallMaterial();
+            lr.startColor = color;
+            lr.endColor = color;
+            lr.positionCount = 2;
+            lr.SetPosition(0, start);
+            lr.SetPosition(1, end);
+        }
+
+        private void CreateDoorIndicator(InteriorDoor door, Vector3 origin, float yOffset,
+            Transform parent, InteriorPreset preset)
+        {
+            // Small colored indicator at door position
+            var go = new GameObject($"Door_{door.roomA}_{door.roomB}");
+            go.transform.SetParent(parent);
+
+            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
+            Color doorColor = door.isLocked
+                ? new Color(0.8f, 0.3f, 0.2f, 0.8f) // Red = locked
+                : new Color(0.3f, 0.7f, 0.4f, 0.8f); // Green = open
+            go.AddComponent<MeshRenderer>().sharedMaterial = GetCachedFloorMaterial(doorColor);
+
+            go.transform.position = new Vector3(origin.x + door.position.x, yOffset + 0.01f, origin.z + door.position.y);
+            go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            go.transform.localScale = new Vector3(door.width, door.width * 0.3f, 1f);
+        }
+
+        private void CreateNewCorridorFloor(InteriorCorridor corridor, InteriorFloorData floor,
+            Vector3 origin, float yOffset, Transform parent, InteriorPreset preset)
+        {
+            Color color = preset != null ? preset.corridorColor : DefaultCorridorColor;
+
+            if (corridor.waypoints != null && corridor.waypoints.Length >= 2)
+            {
+                // Waypoint-based corridor: render segments between consecutive waypoints
+                for (int i = 0; i < corridor.waypoints.Length - 1; i++)
+                {
+                    var posA = new Vector3(origin.x + corridor.waypoints[i].x, yOffset - 0.001f,
+                        origin.z + corridor.waypoints[i].y);
+                    var posB = new Vector3(origin.x + corridor.waypoints[i + 1].x, yOffset - 0.001f,
+                        origin.z + corridor.waypoints[i + 1].y);
+
+                    CreateCorridorSegment(posA, posB, corridor.width, color, parent);
+                }
+            }
+            else if (corridor.roomA >= 0 && corridor.roomA < floor.rooms.Count
+                     && corridor.roomB >= 0 && corridor.roomB < floor.rooms.Count)
+            {
+                // Fallback: room-center to room-center
+                var roomA = floor.rooms[corridor.roomA];
+                var roomB = floor.rooms[corridor.roomB];
+                var posA = new Vector3(origin.x + roomA.position.x, yOffset - 0.001f, origin.z + roomA.position.y);
+                var posB = new Vector3(origin.x + roomB.position.x, yOffset - 0.001f, origin.z + roomB.position.y);
+
+                CreateCorridorSegment(posA, posB, corridor.width, color, parent);
+            }
+        }
+
+        private void CreateCorridorSegment(Vector3 posA, Vector3 posB, float width, Color color, Transform parent)
+        {
+            var midpoint = (posA + posB) * 0.5f;
+            float length = Vector3.Distance(posA, posB);
+            float angle = Mathf.Atan2(posB.x - posA.x, posB.z - posA.z) * Mathf.Rad2Deg;
+
+            var go = new GameObject("CorridorSeg");
+            go.transform.SetParent(parent);
+            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial = GetCachedFloorMaterial(color);
+            go.transform.position = midpoint;
+            go.transform.rotation = Quaternion.Euler(90f, angle, 0f);
+            go.transform.localScale = new Vector3(width, length, 1f);
+        }
+
+        // ===== Legacy rendering (backward compat) =====
+
+#pragma warning disable CS0618
+        private void CreateLegacyRoomFloor(RoomNode room, Vector3 origin)
         {
             var go = new GameObject($"RoomFloor_{room.type}");
             go.transform.SetParent(transform);
 
             go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
             go.AddComponent<MeshRenderer>().sharedMaterial =
-                GetCachedFloorMaterial(RoomColors.GetValueOrDefault(room.type, Color.white));
+                GetCachedFloorMaterial(LegacyRoomColors.GetValueOrDefault(room.type, Color.white));
 
             var pos = InteriorToWorld(room.position, origin);
             go.transform.position = pos;
@@ -92,7 +431,7 @@ namespace MiniMapGame.Interior
             _spawnedObjects.Add(go);
         }
 
-        private void CreateRoomWalls(RoomNode room, Vector3 origin)
+        private void CreateLegacyRoomWalls(RoomNode room, Vector3 origin)
         {
             var go = new GameObject($"RoomWalls_{room.type}");
             go.transform.SetParent(transform);
@@ -103,8 +442,8 @@ namespace MiniMapGame.Interior
             lr.startWidth = wallHeight;
             lr.endWidth = wallHeight;
             lr.material = wallMaterial != null ? wallMaterial : GetCachedWallMaterial();
-            lr.startColor = WallColor;
-            lr.endColor = WallColor;
+            lr.startColor = DefaultWallColor;
+            lr.endColor = DefaultWallColor;
 
             var center = InteriorToWorld(room.position, origin);
             float hw = room.size.x * 0.5f;
@@ -120,10 +459,10 @@ namespace MiniMapGame.Interior
             _spawnedObjects.Add(go);
         }
 
-        private void CreateCorridorFloor(CorridorEdge corridor, InteriorMapData data, Vector3 origin)
+        private void CreateLegacyCorridorFloor(CorridorEdge corridor, List<RoomNode> rooms, Vector3 origin)
         {
-            var roomA = data.rooms[corridor.roomA];
-            var roomB = data.rooms[corridor.roomB];
+            var roomA = rooms[corridor.roomA];
+            var roomB = rooms[corridor.roomB];
 
             var posA = InteriorToWorld(roomA.position, origin);
             var posB = InteriorToWorld(roomB.position, origin);
@@ -136,7 +475,7 @@ namespace MiniMapGame.Interior
             go.transform.SetParent(transform);
 
             go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
-            go.AddComponent<MeshRenderer>().sharedMaterial = GetCachedFloorMaterial(CorridorColor);
+            go.AddComponent<MeshRenderer>().sharedMaterial = GetCachedFloorMaterial(DefaultCorridorColor);
 
             go.transform.position = new Vector3(midpoint.x, floorY - 0.001f, midpoint.z);
             go.transform.rotation = Quaternion.Euler(90f, angle, 0f);
@@ -145,7 +484,7 @@ namespace MiniMapGame.Interior
             _spawnedObjects.Add(go);
         }
 
-        private void AttachRoomTrigger(RoomNode room, int roomIndex, Vector3 origin)
+        private void AttachLegacyRoomTrigger(RoomNode room, int roomIndex, Vector3 origin)
         {
             if (miniGameManager == null) return;
             var gameType = RoomTrigger.GetGameType(room.type);
@@ -167,6 +506,95 @@ namespace MiniMapGame.Interior
             trigger.seed = _currentSeed + roomIndex;
 
             _spawnedObjects.Add(go);
+        }
+#pragma warning restore CS0618
+
+        // ===== Helpers =====
+
+        private Color GetRoomColor(InteriorRoomType type, InteriorPreset preset)
+        {
+            // 1. Check preset overrides
+            if (preset != null && preset.roomColorOverrides != null)
+            {
+                foreach (var entry in preset.roomColorOverrides)
+                {
+                    if (entry.roomType == type) return entry.color;
+                }
+            }
+
+            // 2. Preset-level colors for special types
+            if (preset != null && type == InteriorRoomType.SecretRoom)
+                return preset.secretRoomColor;
+
+            // 3. Default color map
+            if (DefaultRoomColors.TryGetValue(type, out var color))
+                return color;
+
+            // 4. Fallback to preset floor color or white
+            return preset != null ? preset.floorColor : Color.white;
+        }
+
+        private List<WallSegment> SplitWallByDoors(Vector3 wallStart, Vector3 wallEnd,
+            List<DoorGap> doorGaps, InteriorRoom room)
+        {
+            var segments = new List<WallSegment>();
+            var wallDir = (wallEnd - wallStart).normalized;
+            float wallLen = Vector3.Distance(wallStart, wallEnd);
+
+            // Project each door gap onto this wall segment
+            var gaps = new List<(float start, float end)>();
+            foreach (var gap in doorGaps)
+            {
+                if (gap.isHidden) continue; // Hidden doors don't create visual gaps
+                var doorWorld = new Vector3(gap.position.x, wallStart.y, gap.position.y);
+
+                // Calculate perpendicular distance from door to wall line
+                var toGap = doorWorld - wallStart;
+                float proj = Vector3.Dot(toGap, wallDir);
+                float perpDist = Vector3.Distance(wallStart + wallDir * proj, doorWorld);
+
+                // Only affect this wall if door is close enough
+                if (perpDist < 0.5f && proj > -gap.halfWidth && proj < wallLen + gap.halfWidth)
+                {
+                    float gapStart = Mathf.Max(0f, proj - gap.halfWidth);
+                    float gapEnd = Mathf.Min(wallLen, proj + gap.halfWidth);
+                    if (gapEnd > gapStart)
+                        gaps.Add((gapStart, gapEnd));
+                }
+            }
+
+            if (gaps.Count == 0)
+            {
+                segments.Add(new WallSegment { start = wallStart, end = wallEnd });
+                return segments;
+            }
+
+            // Sort gaps by start position
+            gaps.Sort((a, b) => a.start.CompareTo(b.start));
+
+            float cursor = 0f;
+            foreach (var (gStart, gEnd) in gaps)
+            {
+                if (gStart > cursor + 0.1f)
+                {
+                    segments.Add(new WallSegment
+                    {
+                        start = wallStart + wallDir * cursor,
+                        end = wallStart + wallDir * gStart
+                    });
+                }
+                cursor = gEnd;
+            }
+            if (cursor < wallLen - 0.1f)
+            {
+                segments.Add(new WallSegment
+                {
+                    start = wallStart + wallDir * cursor,
+                    end = wallEnd
+                });
+            }
+
+            return segments;
         }
 
         private Vector3 InteriorToWorld(Vector2 interiorPos, Vector3 origin)
@@ -192,7 +620,7 @@ namespace MiniMapGame.Interior
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Standard");
             _cachedWallMaterial = new Material(shader);
-            _cachedWallMaterial.color = WallColor;
+            _cachedWallMaterial.color = DefaultWallColor;
             return _cachedWallMaterial;
         }
 
@@ -203,6 +631,27 @@ namespace MiniMapGame.Interior
             _sharedQuadMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
             Destroy(tmp);
             return _sharedQuadMesh;
+        }
+
+        // ===== Internal types =====
+
+        private class FloorRenderGroup
+        {
+            public int floorIndex;
+            public GameObject root;
+        }
+
+        private struct WallSegment
+        {
+            public Vector3 start;
+            public Vector3 end;
+        }
+
+        private struct DoorGap
+        {
+            public Vector2 position; // World-relative 2D
+            public float halfWidth;
+            public bool isHidden;
         }
     }
 }

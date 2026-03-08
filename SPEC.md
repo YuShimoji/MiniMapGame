@@ -133,10 +133,10 @@ public struct MapBuilding : ISpatialBounds
 [System.Serializable]
 public class MapTerrain
 {
-    public List<Vector2> coastPoints;  // 海岸線ポリゴン頂点
-    public List<Vector2> riverPoints;  // 河川中心線
-    public List<HillData> hills;       // 丘陵/等高線
-    public int coastSide;              // 海岸方向: 0=右, 1=下, 2=左, 3=上, -1=なし
+    public List<WaterBodyData> waterBodies;  // 水体データ（河川・海岸等）
+    public List<HillData> hills;             // 丘陵/等高線
+    public List<HillCluster> hillClusters;   // 丘陵クラスタ
+    public int coastSide = -1;               // 海岸方向: 0=右, 1=下, 2=左, 3=上, -1=なし
 }
 
 [System.Serializable]
@@ -147,6 +147,35 @@ public struct HillData
     public float radiusY;     // 楕円半径Y
     public float angle;       // 楕円回転
     public int layers;        // 等高線数 (2-4)
+    public SlopeProfile profile;  // 断面形状 (Gaussian/Steep/Gentle/Plateau/Mesa)
+    public int clusterId;     // 所属クラスタID (-1 = 独立)
+}
+
+public enum SlopeProfile
+{
+    Gaussian,   // 標準ベルカーブ: Exp(-distSq * 1.5)
+    Steep,      // 急峻: Exp(-distSq * 3.0)
+    Gentle,     // なだらか: Exp(-distSq * 0.7)
+    Plateau,    // 平頂+急斜面
+    Mesa        // 平頂+垂直壁
+}
+
+[System.Serializable]
+public struct HillCluster
+{
+    public int id;
+    public ClusterType type;
+    public Vector2 center;
+    public float orientationAngle;
+    public SlopeProfile dominantProfile;
+}
+
+public enum ClusterType
+{
+    Ridge,          // 直線状の尾根 (3-6丘)
+    MoundGroup,     // 円形丘群 (3-5丘)
+    ValleyFramer,   // 平行2尾根で谷を形成
+    Solitary        // 独立した単独丘
 }
 ```
 
@@ -511,9 +540,29 @@ JSX `genTerrain()` の移植。
 - マップ上端から下端まで蛇行するスプライン
 - x偏向量: rural=35, それ以外=55
 
-### 9.3 丘陵
-- `hillDensity` に比例して 0〜16 個の楕円を生成
-- 各楕円: position, radiusX(35-115), radiusY(22-72), angle, layers(2-4)
+### 9.3 丘陵 (クラスタベース生成)
+
+`hillDensity` に基づきクラスタを生成し、各クラスタから複数の丘を展開。
+
+**クラスタ生成**: `hillDensity * (3 + rng*4)` → 2-7クラスタ。クラスタ間最低60ユニット間隔。
+
+| ClusterType | 丘数 | 配置パターン |
+|-------------|------|------------|
+| Ridge | 3-6 | 直線上、中央が最も高い、楕円長軸が尾根方向に整列 |
+| MoundGroup | 3-5 | 円形、中央丘が最大（周囲の60-80%半径） |
+| ValleyFramer | 4-8 (2列) | 平行尾根、間隔60-100ユニット、Steep寄り |
+| Solitary | 1 | 独立配置 |
+
+**SlopeProfile**: 各丘に断面プロファイルを割り当て、ElevationMap.ComputeFalloff で使用:
+- Gaussian: 標準 `Exp(-distSq * 1.5)`
+- Steep: 急峻 `Exp(-distSq * 3.0)`
+- Gentle: なだらか `Exp(-distSq * 0.7)`
+- Plateau: `distSq < 0.09` で平頂、以降急降下
+- Mesa: `distSq < 0.16` で平頂、以降垂直壁
+
+**配置制約**: 海岸側回避 + 道路ノードから最低30ユニット離す (3回ナッジ)
+
+**MapPreset.steepnessBias** (0-1): Steep/Mesa系プロファイルの出現確率を制御
 
 ---
 
@@ -562,38 +611,101 @@ namespace MiniMapGame.Runtime
 8. `OnMapGenerated` イベント発火
 9. `MapRenderer.Render(mapData)`, `BuildingSpawner.Spawn(mapData)` 呼び出し
 
-### 10.2 MapRenderer (MonoBehaviour)
+### 10.2 RoadProfile (ScriptableObject)
+
+```csharp
+namespace MiniMapGame.Data
+{
+    [CreateAssetMenu(fileName = "NewRoadProfile", menuName = "MiniMapGame/RoadProfile")]
+    public class RoadProfile : ScriptableObject
+    {
+        [System.Serializable]
+        public struct RoadTierConfig
+        {
+            public string tierName;
+            [Range(1, 6)] public int laneCount;
+            public float laneWidth, shoulderWidth, curbWidth;
+            public bool hasCenterLine, centerLineSolid, hasLaneDividers, hasEdgeLines;
+            public float markingWidth, dashLength, dashGap;
+            [Range(0f,1f)] public float roughness, wear, crackDensity;
+            public float TotalWidth => 2f*(curbWidth+shoulderWidth) + laneCount*laneWidth;
+        }
+        public RoadTierConfig[] tiers = new RoadTierConfig[3];
+        public static RoadProfile CreateDefaultFallback(); // T0=1.4, T1=0.9, T2=0.5
+    }
+}
+```
+
+**デフォルトプロファイル3種** (Editor/RoadProfileCreator で生成):
+| プロファイル | T0 | T1 | T2 |
+|------------|----|----|-----|
+| Modern | Highway 4車線/全標示 | Street 2車線/中央+端線 | Alley 1車線/標示なし |
+| Rural | Country Road 2車線/中央線のみ | Farm Track 1車線/標示なし | Path 1車線/荒れ |
+| Historic | Boulevard 2車線/標示なし/高粗さ | Cobblestone 1車線/石畳風 | Passage 1車線 |
+
+**後方互換**: `MapPreset.roadProfile == null` → `CreateDefaultFallback()` で旧ハードコード幅と一致する値を生成。
+
+### 10.3 Road.shader (URP HLSL)
+
+```
+道路断面 (UV.x マッピング):
+0.0          curbR     shoulder          0.5           shoulder     curbR          1.0
+|---curb----|--shoulder--|------lanes------|------lanes------|--shoulder--|---curb----|
+| _CurbColor| _CasingClr| _BaseColor+mark | _BaseColor+mark | _CasingClr| _CurbColor|
+```
+
+- `uMirror = abs(UV.x - 0.5) * 2.0` で左右対称処理
+- UV.y = 累積距離 → ダッシュパターン (`_DashLength` / `_DashGap`)
+- 路面ノイズ: `hash21`/`noise2D` で磨耗・ひび割れ・粗さ
+- Lambert照明 + フォグ + シャドウ (ForwardLit + ShadowCaster)
+- Queue = Geometry+1 (地面の上)
+
+**シェーダープロパティ** (17個):
+`_BaseColor`, `_CasingColor`, `_MarkingColor`, `_CurbColor`,
+`_CurbRatio`, `_ShoulderRatio`, `_LaneCount`, `_MarkingWidthRatio`,
+`_HasCenterLine`, `_CenterLineSolid`, `_HasLaneDividers`, `_HasEdgeLines`,
+`_DashLength`, `_DashGap`, `_Roughness`, `_Wear`, `_CrackDensity`
+
+### 10.4 MapRenderer (MonoBehaviour)
 
 ```csharp
 namespace MiniMapGame.Runtime
 {
     /// <summary>
     /// 道路ネットワークをプロシージャルメッシュで描画。
-    /// tier×layer 別にバッチ化し、per-tier マテリアルを適用。
+    /// 単一メッシュ per (tier, layer)、UV駆動 Road.shader で車線標示・路面表現。
     /// </summary>
     public class MapRenderer : MonoBehaviour
     {
-        [Header("Road Width by Tier")]
-        public float[] outerWidths = { 14f, 9f, 5f };
-        public float[] innerWidths = { 9f, 5.5f, 2.8f };
+        [Header("Road Materials (per tier, uses Road.shader)")]
+        public Material[] roadMaterials = new Material[3];
 
-        [Header("Materials (per-tier: 3 outer + 3 inner)")]
-        public Material[] roadOuterMaterials;  // [3]
-        public Material[] roadInnerMaterials;  // [3]
+        [Header("Rendering")]
+        public int bezierSegments = 16;
+        public float roadYOffset = 0.01f;
 
-        public void Render(MapData data);
+        [Header("Intersections")]
+        [Range(0f, 2f)] public float intersectionRadiusFactor = 0.7f;
+        public int intersectionSegments = 12;
+
+        public ElevationMap ElevMap { get; set; }
+        public void Render(MapData data);  // Edges → Intersections → Pillars → Markers
         public void Clear();
     }
 }
 ```
 
-**レンダリング手法**:
-- tier×layer の組み合わせ別にメッシュをバッチ生成（LineRenderer不使用）
-- ベジェ曲線を分割し、ribbon形状のMeshを構築
-- outer (ケーシング) + inner (フィル) の2層メッシュ
-- 橋 (layer=1) は高度オフセット + ピラー生成
+**レンダリングパイプライン**:
+1. **RenderEdges**: tier×layer 別にメッシュをバッチ生成。ベジェ曲線を分割し ribbon 形状構築
+   - UV.x = [0,1] 道路横断位置、UV.y = 累積ワールド距離
+   - `ApplyProfileToMaterial()` で RoadTierConfig → シェーダープロパティ設定
+2. **RenderIntersections**: degree≥3 ノードに円盤メッシュ生成（標示なし専用マテリアル）
+3. **RenderBridgePillars**: layer=1 エッジの中間点にピラー (Cylinder) 生成
+4. **RenderNodeMarkers**: plazaIndices / intersectionIndices にマーカープレハブ配置
 
-### 10.3 BuildingSpawner (MonoBehaviour)
+**draw call**: 旧 outer+inner 2ストリップ → 統合1ストリップで約半減。
+
+### 10.5 BuildingSpawner (MonoBehaviour)
 
 ```csharp
 namespace MiniMapGame.Runtime
@@ -613,7 +725,7 @@ namespace MiniMapGame.Runtime
 - マテリアルは色別Dictionary キャッシュで再利用
 - isLandmark → BuildingInteractionコンポーネント追加
 
-### 10.4 BuildingInteraction (MonoBehaviour)
+### 10.6 BuildingInteraction (MonoBehaviour)
 
 ```csharp
 namespace MiniMapGame.Runtime
@@ -774,10 +886,14 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - テーマシステム (Dark/Parchment)
 
 ### 高低差システム (完了)
-- ElevationMap: HillData から Gaussian falloff でサンプリング
+- ElevationMap: HillData から SlopeProfile別 ComputeFalloff でサンプリング
+  - 5プロファイル: Gaussian/Steep/Gentle/Plateau/Mesa
+  - SampleSlope(): central differences で傾斜勾配を計算
+  - CarvingData: 水系による地形削り込み
 - 道路: ベジェ制御点を高度追従
-- 建物: Y座標を ElevationMap.Sample で設定
-- 地面メッシュ: 20×20 グリッド、各頂点が高度追従
+- 建物: Y座標を ElevationMap.Sample で設定、高さ ±7.5% ランダム変動、Smoothness 0.3-0.6 バリエーション
+- 地面メッシュ: 40×40 グリッド、各頂点が高度追従
+- GridGround.shader: 等高線 (2ワールドユニット間隔)、二段階グリッド (細+5倍粗)、斜面着色 (0.75倍)
 - 橋/トンネル: BridgeTunnelDetector (edge.layer = -1/0/1)
 
 ### 水面レンダリング (完了)
@@ -786,21 +902,24 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - Water.shader: UVスクロール半透明
 
 ### 装飾・LOD (完了)
-- DecorationPlacer: 道路沿い配置 (SpatialHash衝突回避)
-- 4種: StreetLight(Cylinder+Sphere), Tree(Cylinder+Sphere), Bench(Cube), Bollard(Cylinder)
+- DecorationPlacer: 道路沿い配置 + 地形対応配置 (SpatialHash衝突回避)
+- 12種:
+  - 道路沿い: StreetLight, Tree, Bench, Bollard
+  - 地形対応: Rock (高地急斜面), Boulder (急斜面), GrassClump (平坦低地), Wildflower (水辺低地), Shrub (丘の縁), Fence (道路沿いRural/Mountain), Stump (Tree付近Rural), SignPost (交差点Mountain/Rural)
+- 地形選択: ElevationMap高度・SampleSlope傾斜・MinDistToWater水距離で自動判定
 - LOD 3段階: <12f=全表示, <30f=LOD0+1, ≥30f=LOD0のみ
 
 ### P1改善 (完了, commit 6438fc4)
 - 建物高さ: floors フィールド (tier別レンジ) × floorHeight 1.2f
-- プリセット個別調整: maxElevation/elevationScale/enableBridges/riverWidth/decorationDensity
+- プリセット個別調整: maxElevation/elevationScale/enableBridges/decorationDensity + WaterProfile(SO)
 - 河川-道路橋: BridgeTunnelDetector.DetectRiverCrossings
 - 海岸方向ランダム: 4方向 (Right/Bottom/Left/Top)
 
 ### P2改善 (完了, commit f7d410c)
 - 建物形状: 4種 (Box/L-shape/Cylinder/Stepped), shapeType フィールド
-- Per-tier道路マテリアル: 3 outer + 3 inner (roadOuterMaterials[3])
+- Per-tier道路マテリアル: 3 outer + 3 inner → P4で Road.shader 統合1ストリップに刷新
 - 地形テクスチャ: GridGround.shader に elevation/slope ブレンド追加
-- 川幅変化: riverWidthGrowth = 1.8f (上流→下流)
+- 川幅変化: WaterProfile.RiverConfig.widthGrowth (上流→下流)
 
 ### P3改善 (完了, commit a25d4ec)
 - Rural閉路: 隣接スポーク間クロスリンク (距離<200f, 70%確率)
@@ -808,6 +927,35 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - Grid大通り: 2本の斜め大通り + 中心Hub ノード
 - 海岸-建物排除: ray-cast point-in-polygon テスト
 - 丘陵-道路協調: 丘陵中心を道路ノードから最低30f離す (3回ナッジ)
+
+### P4改善: 道路レンダリングシステム刷新
+- **RoadProfile SO**: 車線数・幅・標示・路面荒れ具合をInspectorで調整可能
+- **Road.shader**: URP HLSL、UV駆動の車線標示+路面ノイズ (17プロパティ)
+- **1ストリップ統合**: outer+inner 2層 → 単一ストリップ (draw call約半減)
+- **交差点自動拡張**: degree≥3 ノードに円盤メッシュ (標示なし専用マテリアル)
+- **デフォルトプロファイル3種**: Modern / Rural / Historic (RoadProfileCreator)
+- **テーマ連携**: MapTheme に markingColor / curbColor 追加、Road.shader プロパティへ色適用
+- **後方互換**: roadProfile=null → fallback生成、旧Material配列は [HideInInspector] で保持
+
+### P5改善: 地形品質向上
+- **H1 丘クラスタ**: ランダム散布 → クラスタベース配置 (Ridge/MoundGroup/ValleyFramer/Solitary)
+  - 4種のクラスタタイプ、方向・サイズ・間隔の自動制御
+  - 新データ: ClusterType enum, HillCluster struct, MapTerrain.hillClusters
+- **H2 装飾拡張**: 4種 → 12種、地形対応配置
+  - 高度・傾斜・水距離に基づく自動選択
+  - DecorationPlacer に ElevationMap/MapTerrain 参照を追加
+- **H3 傾斜プロファイル**: 均一 Gaussian → 5種 SlopeProfile
+  - ElevationMap.ComputeFalloff が SlopeProfile で分岐
+  - MapPreset.steepnessBias でプロファイル確率制御
+- **Q1 等高線**: GridGround.shader に topographic contour lines (2ワールドユニット間隔)
+- **Q2 地面解像度**: GroundGridRes 20→40 (滑らかな地形表現)
+- **Q3 二段階グリッド**: 細グリッド + 5倍の粗グリッド
+- **Q4 建物高さバリエーション**: ±7.5% ランダム (IDハッシュ基準)
+- **Q5 斜面着色強化**: 0.6→0.75
+- **Q6 建物マテリアル粗さ**: Smoothness 0.3-0.6 バリエーション (ハッシュbit24-31)
+- **デバッグ可視化**: AnalysisVisualizer Terrain モード (Tab 3段階切替)
+  - クラスタ中心+方向矢印、丘楕円輪郭、装飾位置ドット
+  - MapControlUI にクラスタ・装飾統計情報追加
 
 ---
 
@@ -855,11 +1003,13 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 | hasCoast | bool | 海岸 | ✓ | ✗ | ✗ | ✗ |
 | hasRiver | bool | 河川 | ✓ | ✓ | ✗ | ✗ |
 | hillDensity | float | 丘陵 | 0.30 | 0.75 | 0.00 | 0.95 |
-| riverWidth | float | 川幅 | 14 | 10 | 12 | 8 |
+| waterProfile | WaterProfile | 水面プロファイル | null* | null* | null* | null* |
 | decorationDensity | float | 装飾 | 0.6 | 0.3 | 0.7 | 0.2 |
 | maxElevation | float | 最大高度 | 10 | 12 | 0 | 40 |
 | elevationScale | float | 高度倍率 | 0.8 | 1.0 | 0.0 | 1.5 |
 | enableBridges | bool | 橋有効 | ✓ | ✓ | ✗ | ✓ |
+| steepnessBias | float | 急峻プロファイル確率 | 0.5 | 0.5 | 0.5 | 0.5 |
+| roadProfile | RoadProfile | 道路プロファイル | null* | null* | null* | null* |
 | worldWidth/Height | float | ワールドサイズ | 860×580 | 860×580 | 860×580 | 860×580 |
 
 ---

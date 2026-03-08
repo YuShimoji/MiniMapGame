@@ -10,5 +10,7 @@ namespace MiniMapGame.Data
         public float radiusY;
         public float angle;
         public int layers;
+        public SlopeProfile profile;
+        public int clusterId; // -1 = independent
     }
 }

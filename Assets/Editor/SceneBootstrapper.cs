@@ -55,10 +55,12 @@ namespace MiniMapGame.EditorTools
         [MenuItem("MiniMapGame/Bootstrap Test Scene")]
         public static void BootstrapTestScene()
         {
-            // Ensure prefabs and presets exist
+            // Ensure prefabs, presets, and profiles exist
             CreateBuildingPrefabs();
             CreateGameLoopPrefabs();
             MapPresetCreator.CreateDefaultPresets();
+            RoadProfileCreator.CreateDefaultProfiles();
+            AutoBindRoadProfiles();
             CreateMapEventBusAsset();
 
             // 1. Map Manager root
@@ -89,6 +91,33 @@ namespace MiniMapGame.EditorTools
             if (mapRenderer.bridgePillarMaterial == null)
                 mapRenderer.bridgePillarMaterial = CreateLitMaterial("BridgePillar", new Color(0.35f, 0.35f, 0.38f));
 
+            // New Road.shader materials
+            if (mapRenderer.roadMaterials == null || mapRenderer.roadMaterials.Length < 3)
+                mapRenderer.roadMaterials = new Material[3];
+
+            var roadShader = Shader.Find("MiniMapGame/Road");
+            Color[] defaultBase = { new(0.22f, 0.31f, 0.41f), new(0.26f, 0.34f, 0.42f), new(0.30f, 0.37f, 0.44f) };
+            Color[] defaultCasing = { new(0.17f, 0.24f, 0.35f), new(0.20f, 0.27f, 0.36f), new(0.24f, 0.30f, 0.38f) };
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (mapRenderer.roadMaterials[i] == null)
+                {
+                    var mat = roadShader != null
+                        ? new Material(roadShader)
+                        : new Material(Shader.Find("Universal Render Pipeline/Lit"));
+
+                    mat.SetColor("_BaseColor", defaultBase[i]);
+                    mat.SetColor("_CasingColor", defaultCasing[i]);
+                    mat.SetColor("_MarkingColor", new Color(0.85f, 0.85f, 0.75f));
+                    mat.SetColor("_CurbColor", new Color(0.3f, 0.3f, 0.3f));
+
+                    EnsureFolder("Assets/Resources/Materials");
+                    AssetDatabase.CreateAsset(mat, $"Assets/Resources/Materials/Road_T{i}_Mat.mat");
+                    mapRenderer.roadMaterials[i] = mat;
+                }
+            }
+
             // 3. BuildingSpawner
             var buildingSpawnerGo = FindOrCreate("BuildingSpawner", mapManagerGo.transform);
             var buildingSpawner = EnsureComponent<BuildingSpawner>(buildingSpawnerGo);
@@ -109,15 +138,10 @@ namespace MiniMapGame.EditorTools
             var waterShader = Shader.Find("MiniMapGame/Water");
             if (waterShader != null)
             {
-                if (waterRenderer.riverMaterial == null)
+                if (waterRenderer.waterMaterial == null)
                 {
-                    waterRenderer.riverMaterial = new Material(waterShader);
-                    waterRenderer.riverMaterial.SetColor("_BaseColor", new Color(0.08f, 0.18f, 0.35f, 0.75f));
-                }
-                if (waterRenderer.coastMaterial == null)
-                {
-                    waterRenderer.coastMaterial = new Material(waterShader);
-                    waterRenderer.coastMaterial.SetColor("_BaseColor", new Color(0.06f, 0.14f, 0.30f, 0.80f));
+                    waterRenderer.waterMaterial = new Material(waterShader);
+                    waterRenderer.waterMaterial.SetColor("_BaseColor", new Color(0.08f, 0.18f, 0.35f, 0.75f));
                 }
             }
 
@@ -256,6 +280,46 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(decorationSpawner);
             Debug.Log("[SceneBootstrapper] Test scene bootstrapped. Press Play to generate map.");
             Debug.Log("[SceneBootstrapper] NOTE: Ensure 'Ground' layer and 'Player' tag exist in Tags & Layers.");
+        }
+
+        // ── Road Profile Auto-Binding ──
+
+        private static void AutoBindRoadProfiles()
+        {
+            // Mapping: GeneratorType → RoadProfile asset name
+            var profileMap = new System.Collections.Generic.Dictionary<GeneratorType, string>
+            {
+                { GeneratorType.Organic, "RoadProfile_Modern" },
+                { GeneratorType.Grid, "RoadProfile_Modern" },
+                { GeneratorType.Rural, "RoadProfile_Rural" },
+                { GeneratorType.Mountain, "RoadProfile_Rural" }
+            };
+
+            string[] presetPaths =
+            {
+                "Assets/Resources/Presets/Preset_Coastal.asset",
+                "Assets/Resources/Presets/Preset_Rural.asset",
+                "Assets/Resources/Presets/Preset_Grid.asset",
+                "Assets/Resources/Presets/Preset_Mountain.asset"
+            };
+
+            foreach (var path in presetPaths)
+            {
+                var preset = AssetDatabase.LoadAssetAtPath<MapPreset>(path);
+                if (preset == null || preset.roadProfile != null) continue;
+
+                if (profileMap.TryGetValue(preset.generatorType, out var profileName))
+                {
+                    var profile = AssetDatabase.LoadAssetAtPath<RoadProfile>(
+                        $"Assets/Resources/RoadProfiles/{profileName}.asset");
+                    if (profile != null)
+                    {
+                        preset.roadProfile = profile;
+                        EditorUtility.SetDirty(preset);
+                        Debug.Log($"[SceneBootstrapper] Bound {profileName} to {preset.displayName}");
+                    }
+                }
+            }
         }
 
         // ── Building Prefabs ──

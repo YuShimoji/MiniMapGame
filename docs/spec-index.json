@@ -78,7 +78,7 @@
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#9-地形生成",
-    "summary": "TerrainGenerator: 海岸(4方向)・河川・丘陵の生成"
+    "summary": "TerrainGenerator(クラスタベース丘陵: Ridge/MoundGroup/ValleyFramer/Solitary) + WaterGenerator(河川・海岸) + WaterTerrainInteraction(carving) + ElevationMap(5種SlopeProfile+CarvingData)"
   },
   {
     "id": "SP-010",
@@ -87,16 +87,16 @@
     "pct": 100,
     "cat": "system",
     "file": "SPEC.md#10-unity-シーンアーキテクチャ",
-    "summary": "MapManager統合、14ステップ生成パイプライン、プロシージャルメッシュレンダリング"
+    "summary": "MapManager統合、18ステップ生成パイプライン、RoadProfile/Road.shader駆動の道路レンダリング"
   },
   {
     "id": "SP-011",
-    "title": "インテリアマップシステム",
-    "status": "done",
+    "title": "インテリアマップシステム (v1 legacy)",
+    "status": "legacy",
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#11-インテリアマップシステム",
-    "summary": "BSP部屋分割 + InteriorController + ミニゲーム連携"
+    "summary": "v1 BSP部屋分割 + InteriorController + ミニゲーム連携。SP-026 (v2) で置換予定"
   },
   {
     "id": "SP-012",
@@ -132,7 +132,7 @@
     "pct": 100,
     "cat": "system",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "River ribbon + Coast polygon + Water.shader"
+    "summary": "WaterProfile SO駆動。typed waterBodies + depth UV2 + roughness vertex color + Water.shader(shallow/deep/foam)"
   },
   {
     "id": "SP-016",
@@ -141,7 +141,7 @@
     "pct": 100,
     "cat": "system",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "DecorationPlacer/Spawner 4種 + LOD 3段階"
+    "summary": "DecorationPlacer/Spawner 12種(道路4+地形8) + 地形対応配置(高度/傾斜/水距離) + LOD 3段階"
   },
   {
     "id": "SP-017",
@@ -159,7 +159,7 @@
     "pct": 100,
     "cat": "ui",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "MapTheme SO (Dark/Parchment), per-tier道路色"
+    "summary": "MapTheme SO (Dark/Parchment), per-tier道路色 + markingColor/curbColor"
   },
   {
     "id": "SP-019",
@@ -196,5 +196,50 @@
     "cat": "ui",
     "file": "SPEC.md#21-今後の方針・ユーザー要望",
     "summary": "ポーズメニュー、設定画面、カメラプリセット"
+  },
+  {
+    "id": "SP-023",
+    "title": "RoadProfile（道路プロファイルSO）",
+    "status": "done",
+    "pct": 100,
+    "cat": "data",
+    "file": "SPEC.md#10-unity-シーンアーキテクチャ",
+    "summary": "RoadTierConfig(車線数/幅/標示/路面) × 3 tier。デフォルト3種(Modern/Rural/Historic)"
+  },
+  {
+    "id": "SP-024",
+    "title": "Road.shader（道路シェーダー）",
+    "status": "done",
+    "pct": 100,
+    "cat": "system",
+    "file": "SPEC.md#10-unity-シーンアーキテクチャ",
+    "summary": "URP HLSL、UV駆動の車線標示+路面ノイズ、17プロパティ、交差点自動拡張"
+  },
+  {
+    "id": "SP-025",
+    "title": "水系生成強化",
+    "status": "partial",
+    "pct": 28,
+    "cat": "core",
+    "file": "docs/specs/water-generation-enhancements.md",
+    "summary": "W-1:メタ地理川流路, W-2:入り江・岬, W-3:砂州, W-4:浜辺帯, W-5:蛇行自動調整, W-6:河口デルタ, W-7:水辺配置システム"
+  },
+  {
+    "id": "SP-026",
+    "title": "Interior System v2",
+    "status": "partial",
+    "pct": 85,
+    "cat": "core",
+    "file": "docs/specs/interior-system-v2.md",
+    "summary": "建物内部v2: Phase1-3完了。カテゴリ別間取り生成+マルチフロアレンダリング+カメラLOD+デバッグプレビュー+統合パイプライン。残: レガシー削除/家具配置/RoomTrigger更新"
+  },
+  {
+    "id": "SP-027",
+    "title": "デバッグセットアップガイド",
+    "status": "done",
+    "pct": 100,
+    "cat": "infra",
+    "file": "docs/debug-setup.md",
+    "summary": "Bootstrap手順、ランタイム操作(F1/Tab)、Analysis/Terrainデバッグオーバーレイ、H1/H2/H3/Q1-Q6検証チェックリスト"
   }
 ]

@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11ecfc61b0d95a94290f6b1a13d21dbd, type: 3}
+  m_Name: RoadProfile_Rural
+  m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.RoadProfile
+  tiers:
+  - tierName: Country Road
+    laneCount: 2
+    laneWidth: 0.35
+    shoulderWidth: 0.05
+    curbWidth: 0.05
+    hasCenterLine: 1
+    centerLineSolid: 0
+    hasLaneDividers: 0
+    hasEdgeLines: 0
+    markingWidth: 0.012
+    dashLength: 3
+    dashGap: 3
+    roughness: 0.5
+    wear: 0.4
+    crackDensity: 0.2
+  - tierName: Farm Track
+    laneCount: 1
+    laneWidth: 0.4
+    shoulderWidth: 0.04
+    curbWidth: 0.03
+    hasCenterLine: 0
+    centerLineSolid: 0
+    hasLaneDividers: 0
+    hasEdgeLines: 0
+    markingWidth: 0
+    dashLength: 0
+    dashGap: 0
+    roughness: 0.7
+    wear: 0.6
+    crackDensity: 0.35
+  - tierName: Path
+    laneCount: 1
+    laneWidth: 0.22
+    shoulderWidth: 0.02
+    curbWidth: 0.02
+    hasCenterLine: 0
+    centerLineSolid: 0
+    hasLaneDividers: 0
+    hasEdgeLines: 0
+    markingWidth: 0
+    dashLength: 0
+    dashGap: 0
+    roughness: 0.85
+    wear: 0.75
+    crackDensity: 0.5

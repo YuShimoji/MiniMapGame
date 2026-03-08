@@ -20,15 +20,22 @@ namespace MiniMapGame.Data
         public float worldHeight = 580f;
         public float borderPadding = 50f;
 
+        [Header("Roads")]
+        public RoadProfile roadProfile;
+
         [Header("Water")]
-        public float riverWidth = 12f;
+        public WaterProfile waterProfile;
 
         [Header("Decoration")]
         [Range(0f, 1f)] public float decorationDensity = 0.5f;
 
+        [Header("Interior")]
+        public MiniMapGame.Interior.InteriorPreset defaultInteriorPreset;
+
         [Header("Elevation")]
         public float maxElevation = 15f;
         public float elevationScale = 1f;
+        [Range(0f, 1f)] public float steepnessBias = 0.5f;
         public bool enableBridges = true;
         public bool enableTunnels = false;
     }
