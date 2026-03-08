@@ -6,9 +6,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（地形品質向上の実装完了・検証待ち）
-直近の状態: P5地形品質向上を実装完了。H1丘クラスタ/H2装飾12種/H3傾斜5プロファイル + Q1-Q6視覚改善。デバッグ可視化(AnalysisVisualizer Terrainモード)追加。SPEC.md/spec-index.json同期済み。
-次の作業: Unity Editorで4プリセット×複数シードの手動検証 → steepnessBias調整 → 発見物配置設計
+現フェーズ: α（地形・道路・水系の品質向上完了、手動検証待ち）
+直近の状態: P4道路レンダリングシステム刷新を実装完了。RoadProfile SO + Road.shader(UV駆動車線標示・路面ノイズ) + 1ストリップ統合 + 交差点自動拡張 + プリセット自動バインド(Coastal/Grid→Modern, Rural/Mountain→Rural) + BuildingPlacer連携。仕様ドキュメント(SPEC.md §10.2-10.4, §7, §18 P4, §20 / spec-index.json SP-023,SP-024 / CLAUDE.md)全同期済み。水系W-1/W-5も前セッションで完了済み。
+次の作業: Unity Editorで道路描画の手動検証(Bootstrap実行→4プリセット×テーマ切替) → 道路将来拡張(B:交差点形状改善/D:探索連動劣化/E:SPEC道路幅テーブル修正)または水系W-2(入り江・岬)実装
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -20,6 +20,11 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-08 | GameLoop関連コードは凍結(コード残存/開発対象外) | 削除 / 凍結 / 継続開発 | 方向性が変わる可能性あり。削除は早計 |
 | 2026-03-09 | P5地形品質向上: H1/H2/H3全実装 + Q1-Q6全実装 | 段階的 / 全部 | 探索体験の基盤として地形品質が最優先 |
 | 2026-03-09 | デバッグ可視化はAnalysisVisualizerに統合(Tab切替) | 統合 / 別コンポーネント / Editorウィンドウ | 既存インフラ活用、追加依存なし |
+| 2026-03-09 | W-1: 川流路を勾配降下方式に変更 | 固定方向 / 勾配降下 / ランダム角度 | メタ地理（標高場）から自然に流れが決まる。丘陵配置→川方向の因果関係が明確 |
+| 2026-03-09 | W-5: プリセット別蛇行をGenerate内で自動調整 | CreateDefaultFallback引数追加 / Generate内調整 | RiverConfig structコピーで非破壊的。カスタムWaterProfile時はスキップ |
+| 2026-03-09 | W-7: 水辺配置は「排除」ではなく「出現率制御」 | 完全排除 / 出現率制御 / 条件付き配置 | 入り江にレストラン等の配置を許容。マクロ(WaterfrontCharacter) × ミクロ(BuildingContext)の2層制御 |
+| 2026-03-09 | P4: 道路をRoadProfile SO + Road.shader駆動に刷新 | マテリアル手動設定 / SO+シェーダー統合 | デザイナー調整可能性・draw call削減・プリセット別表現が必要 |
+| 2026-03-09 | プリセット→プロファイル: Coastal/Grid→Modern, Rural/Mountain→Rural | 個別指定 / GeneratorType自動マッピング | Bootstrap時自動化、手動設定は上書きしない設計 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
@@ -94,7 +99,7 @@ Assets/
 3. WaterGenerator.DetermineCoastSide → coastSide
 4. TerrainGenerator.Generate(rng, center, preset, coastSide, nodes) → terrain (hills only)
 5. ElevationMap 生成 (from terrain hills)
-6. WaterGenerator.Generate → terrain.waterBodies (ElevationMap参照で谷追従)
+6. WaterGenerator.Generate → terrain.waterBodies (W-1: 勾配降下川流路 + W-5: プリセット別蛇行調整)
 7. WaterTerrainInteraction.ApplyWaterCarving → ElevationMapへcarving適用
 8. ElevationMap.ApplyToNodes → 最終地形形状を反映
 9. BuildingPlacer.Place → buildings

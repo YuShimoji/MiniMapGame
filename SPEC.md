@@ -490,13 +490,15 @@ namespace MiniMapGame.Core
    - ランドマーク判定: `rng > 0.95 && tier == 0`
    - SpatialHashで重複チェック → 重複なしなら挿入
 
-**道路幅テーブル** (JSX `tierW`, `tierBW`):
+**道路幅テーブル** (JSX `tierW`, `tierBW` 由来、セットバック距離として使用):
 
 | Tier | 道路半幅 [min,max] | 建物幅 [min,max] |
 |------|-------------------|-----------------|
 | 0 (幹線) | 12, 8 | 16, 12 |
 | 1 (街路) | 8, 5 | 11, 8 |
 | 2 (路地) | 5, 3 | 7, 5 |
+
+**RoadProfile連携**: `preset.roadProfile` が存在する場合、`effectiveHw = max(上記半幅, profile.TotalWidth*0.5)` で下限を保証。通常プロファイルではレイアウト不変、極端に広い道路でのみ自動拡大。
 
 ---
 
@@ -526,19 +528,23 @@ namespace MiniMapGame.Core
 
 ## 9. 地形生成
 
-MapPresetの設定に基づき、`TerrainGenerator` が `MapTerrain` を生成。
-JSX `genTerrain()` の移植。
+TerrainGenerator（丘陵）+ WaterGenerator（河川・海岸）で MapTerrain を生成。
+WaterTerrainInteraction で水体が地形をカービング。ElevationMap が最終標高を統合管理。
 
-### 9.1 海岸線
+### 9.1 海岸線 (WaterGenerator)
 - `hasCoast == true` の場合のみ
-- マップ右端に沿って不規則なポリゴンを生成
-- 起点: `(worldWidth * (0.62 + rng * 0.1), 0)`
-- 右端→下端→上向きにウェーブポイント
+- WaterGenerator.DetermineCoastSide で4方向ランダム決定 (rng消費1回)
+- WaterProfile.CoastConfig 駆動: inlandReach / coastlineRoughness / depthBase
+- 各方向専用の生成メソッド (GenerateCoastRight/Bottom/Left/Top)
 
-### 9.2 河川
+### 9.2 河川 (W-1: メタ地理ベース勾配降下)
 - `hasRiver == true` の場合のみ
-- マップ上端から下端まで蛇行するスプライン
-- x偏向量: rural=35, それ以外=55
+- **源流決定**: ElevationMapを8×8グリッドサンプリング → 上位3高標高候補から1点選択。海岸ポリゴン内除外
+- **勾配降下歩行**: 各ステップで中心差分勾配 (delta=10) を計算、降下方向に沿って前進
+- **安定化**: momentum保持 / 最大旋回角45° / ループ検出(20u) / 平坦地はmomentum維持
+- **終端**: マップ端到達 or 海岸ポリゴン進入 (最低4ステップガード)
+- **蛇行**: meanderFrequency駆動のsin波 + ジッター（進行方向の垂直成分として適用）
+- **W-5自動調整**: デフォルトWaterProfile時、GeneratorType別にfreq/sway乗算 (Rural 0.6/0.65, Mountain 1.6/0.4, Grid 0.2/0.3)
 
 ### 9.3 丘陵 (クラスタベース生成)
 
@@ -936,6 +942,8 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - **デフォルトプロファイル3種**: Modern / Rural / Historic (RoadProfileCreator)
 - **テーマ連携**: MapTheme に markingColor / curbColor 追加、Road.shader プロパティへ色適用
 - **後方互換**: roadProfile=null → fallback生成、旧Material配列は [HideInInspector] で保持
+- **プリセット自動バインド**: Bootstrap時 Coastal/Grid→Modern、Rural/Mountain→Rural を自動割当
+- **BuildingPlacer連携**: RoadProfile.TotalWidthを建物セットバックの下限として参照
 
 ### P5改善: 地形品質向上
 - **H1 丘クラスタ**: ランダム散布 → クラスタベース配置 (Ridge/MoundGroup/ValleyFramer/Solitary)

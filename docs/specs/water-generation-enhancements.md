@@ -15,9 +15,9 @@ Phase 1-3 で構築済みのインフラ（WaterProfile, WaterBodyData, WaterTer
 
 ---
 
-## W-1: メタ地理ベースの川流路決定
+## W-1: メタ地理ベースの川流路決定 **[DONE]**
 
-### 現状
+### 旧実装
 - 川は常に北→南（y=-5 → y=h+10）に固定
 - `flowResponsiveness` で左右の地形追従はあるが、流れの大方向は固定
 - `WaterBodyData.flowDirection` フィールドは存在するが未活用
@@ -78,9 +78,21 @@ Vector2 flowDir = -gradient.normalized;  // 降下方向
 - 追加なし（勾配追従はElevationMapから自動決定）
 - 既存 `flowResponsiveness` が勾配追従の強度として再利用される
 
+### 実装定数
+- 勾配サンプリング: `delta = 10f`
+- momentum保持率: `gradWeight = Lerp(0.3, 0.8, flowResponsiveness)`（既存パラメータ再利用）
+- 最大旋回角: 45°/step
+- ループ検出: 20u閾値（sqrMag < 400）、3点飛ばしチェック、直近8点除外
+- 源流候補の最低標高: `0.1f` 未満は「平坦」→ エッジフォールバック
+- 安全弁: `maxSteps = 500`
+- 最大河川長推定: `sqrt(w² + h²) × 0.8`
+- 海岸進入ガード: 最低4ステップ後に終端判定開始
+
 ### 影響範囲
-- `WaterGenerator.GenerateRiver` の書き換え（源流決定 + 歩行ロジック）
-- `WaterGenerator.FindRiverSource` 新メソッド追加
+- `WaterGenerator.GenerateRiver` 書き換え済み
+- `WaterGenerator.FindRiverSource` 新メソッド追加済み
+- `WaterGenerator.ComputeGradientFlow` 新メソッド追加済み
+- `WaterGenerator.RotateVector` 新メソッド追加済み
 - 他ファイルへの影響なし（下流のwidth/depth/carvingは進行率tで制御済み）
 
 ---
@@ -180,28 +192,27 @@ Vector2 flowDir = -gradient.normalized;  // 降下方向
 
 ---
 
-## W-5: プリセット別 meanderFrequency 自動調整
+## W-5: プリセット別 meanderFrequency 自動調整 **[DONE]**
 
-### 現状
+### 旧実装
 - meanderFrequency は WaterProfile で統一値（デフォルト 0.5）
-- Rural もCoastal も同じ蛇行パターン
+- Rural のみ `GenerateRiver` 内で `sway *= 0.65f` の特殊分岐
 
-### 提案
-GeneratorType に応じて蛇行特性を自動調整するデフォルトを設定する。
+### 実装
+`WaterGenerator.ApplyPresetMeanderTuning` で GeneratorType に応じて乗算調整。
+`WaterGenerator.Generate` 内で `preset.waterProfile == null` の場合のみ適用。
 
-| GeneratorType | meanderFrequency | swayAmount倍率 | 表現意図 |
-|--------------|------------------|---------------|---------|
-| Organic | 0.5 (デフォルト) | 1.0x | 標準的な都市河川 |
-| Rural | 0.3 | 0.65x (実装済み) | ゆったりした田園の川 |
-| Mountain | 0.8 | 0.4x | 狭い渓谷、急カーブ |
-| Grid | 0.1 | 0.3x | 直線的な運河風 |
+| GeneratorType | meanderFrequency倍率 | swayAmount倍率 | 表現意図 |
+|--------------|---------------------|---------------|---------|
+| Organic | 1.0x (デフォルト) | 1.0x | 標準的な都市河川 |
+| Rural | 0.6x | 0.65x | ゆったりした田園の川 |
+| Mountain | 1.6x | 0.4x | 狭い渓谷、急カーブ |
+| Grid | 0.2x | 0.3x | 直線的な運河風 |
 
-**実装方針**:
-- WaterProfile が null（デフォルトフォールバック）の場合のみ自動調整
-- カスタム WaterProfile を設定した場合はデザイナーの値を尊重
-
-### 未決事項
-- [ ] CreateDefaultFallback() にGeneratorType引数を追加するか、GenerateRiver内で調整するか
+**設計判断**:
+- `Generate` メソッド内で `RiverConfig` struct をコピー→調整（値型のため元のWaterProfile不変）
+- `GenerateRiver` 内の Rural 特殊分岐は除去 → 統一的なチューニングパイプラインに移行
+- カスタム WaterProfile 設定時はデザイナーの値をそのまま尊重
 
 ---
 
