@@ -7,8 +7,8 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 
 ## PROJECT CONTEXT
 現フェーズ: α（地形・道路・水系の品質向上完了、手動検証待ち）
-直近の状態: Gate-1（P4道路手動検証）運用を docs に追加し、検証記録テンプレートを新設。Pre-Gate仕様整理を開始し、E仕様（道路幅テーブル表記）を `max,min` に統一。SP-028/029/030 を spec-index に追加・更新済み。コード実装は未着手で、手動検証待ち。
-次の作業: Unity Editorで道路描画の手動検証(Bootstrap実行→4プリセット×テーマ切替, 結果を docs/verification/road-p4-gate-results.md に記録) → B/D/W-2 を一問一答で仕様確定。Bは「実装コスト優先=モック、見た目優先=最終段階」方針で、既存地形生成ツールの調査結果を踏まえて最終形状を決定。
+直近の状態: P4道路レンダリングシステム刷新を実装完了。RoadProfile SO + Road.shader(UV駆動車線標示・路面ノイズ) + 1ストリップ統合 + 交差点自動拡張 + プリセット自動バインド(Coastal/Grid→Modern, Rural/Mountain→Rural) + BuildingPlacer連携。仕様ドキュメント(SPEC.md §10.2-10.4, §7, §18 P4, §20 / spec-index.json SP-023,SP-024 / AGENTS.md)全同期済み。水系W-1/W-5も前セッションで完了済み。
+次の作業: Unity Editorで道路描画の手動検証(Bootstrap実行→4プリセット×テーマ切替, 必須Gate-1。記録: docs/verification/road-p4-gate-results.md) → 道路将来拡張(B:交差点形状改善/D:探索連動劣化/E:SPEC道路幅テーブル修正)または水系W-2(入り江・岬)実装
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -26,7 +26,6 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-09 | P4: 道路をRoadProfile SO + Road.shader駆動に刷新 | マテリアル手動設定 / SO+シェーダー統合 | デザイナー調整可能性・draw call削減・プリセット別表現が必要 |
 | 2026-03-09 | プリセット→プロファイル: Coastal/Grid→Modern, Rural/Mountain→Rural | 個別指定 / GeneratorType自動マッピング | Bootstrap時自動化、手動設定は上書きしない設計 |
 | 2026-03-09 | E仕様: 道路幅テーブル表記を `max,min` に統一 | `min,max` 維持 / `max,min` 統一 | 実装配列が降順値(例:12→8)のため、読み誤りを防止 |
-| 2026-03-09 | B実装方針: 実装コスト優先はモック、見た目優先を最終段階で採用 | コスト優先を本実装 / モック化 / 見た目優先先行 | 手戻り抑制しつつ最終品質を見た目重視で確保するため |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
@@ -132,3 +131,12 @@ Assets/
 - WARNING: 既存コード矛盾、未使用依存
 - INFO: スタイル提案、最適化候補
 - IGNORE: TMP Examples, Tutorial scaffolding
+
+## Gate Policy (No Exception)
+- Gate-1（P4道路手動検証）を完了するまで、B/D/E/W-2へ進まない
+- 4プリセット×2テーマを最低1シード（推奨3シード）で確認し、結果を `docs/verification/road-p4-gate-results.md` に記録する
+- FAIL項目が1つでもある場合は次タスクへ進行せず、修正タスク化して再検証する
+
+## Spec Workflow
+- 仕様の確定は一問一答で進める（同時に複数論点を確定しない）
+- 未確定事項は `docs/specs/` に「保留」として残し、仮実装前に必ず確認する

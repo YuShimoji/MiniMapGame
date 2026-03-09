@@ -241,5 +241,32 @@
     "cat": "infra",
     "file": "docs/debug-setup.md",
     "summary": "Bootstrap手順、ランタイム操作(F1/Tab)、Analysis/Terrainデバッグオーバーレイ、H1/H2/H3/Q1-Q6検証チェックリスト"
+  },
+  {
+    "id": "SP-028",
+    "title": "P4道路手動検証ゲート",
+    "status": "partial",
+    "pct": 0,
+    "cat": "infra",
+    "file": "docs/verification/road-p4-gate-results.md",
+    "summary": "Gate-1(必須): 4プリセット×2テーマを手動確認し、FAILゼロを確認して次タスクへ進行する"
+  },
+  {
+    "id": "SP-029",
+    "title": "Pre-Gate仕様整理",
+    "status": "partial",
+    "pct": 55,
+    "cat": "infra",
+    "file": "docs/specs/pre-gate-spec-refinement.md",
+    "summary": "Gate-1待ち時間に進める仕様監査・論点分解・一問一答キューを整理"
+  },
+  {
+    "id": "SP-030",
+    "title": "道路幅テーブル整合監査",
+    "status": "done",
+    "pct": 100,
+    "cat": "infra",
+    "file": "docs/specs/road-width-table-audit.md",
+    "summary": "E仕様の事前監査。道路幅表記をmax,minに統一し、SPECとBuildingPlacerの数値一致を確認"
   }
 ]

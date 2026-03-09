@@ -148,6 +148,41 @@
 
 ---
 
+## Gate-1: P4道路手動検証（必須）
+
+このGateは **例外なし** で実施する。完了前に B/D/E/W-2 へ進まない。
+
+### 実施マトリクス（最低要件）
+
+| 軸 | 要件 |
+|----|------|
+| Preset | Coastal / Rural / Grid / Mountain |
+| Theme | Dark / Parchment |
+| Seed | 最低1シード（推奨3シード） |
+
+最低8ケース（4×2）を実施し、推奨では24ケース（4×2×3）を実施する。
+
+### チェック項目（各ケース共通）
+
+- [ ] 道路が描画される（欠損・透明化なし）
+- [ ] 車線標示がTierに応じて不自然でない
+- [ ] 交差点（degree>=3）で円盤拡張が破綻しない（穴・Z-fight・極端な重なりなし）
+- [ ] 建物が道路にめり込まない（RoadProfile連携セットバックが機能）
+- [ ] Coastal/Grid は Modern、Rural/Mountain は Rural に自動バインドされる
+- [ ] Theme切替時に道路の marking/curb 色が追従する
+
+### 判定ルール
+
+- **PASS**: 全ケースで重大破綻なし、FAIL 0件
+- **FAIL**: 1件でも破綻あり
+- FAIL時は修正タスク化し、修正後に同一ケースを再実行する
+
+### 記録先
+
+結果は `docs/verification/road-p4-gate-results.md` に記録する。
+
+---
+
 ## Troubleshooting
 
 ### Bootstrap後にプレイしてもマップが表示されない
