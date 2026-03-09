@@ -69,3 +69,6 @@ Thumbs.db
 
 # Windows artifacts
 nul
+
+# Large generated TMP asset (excluded to avoid GitHub 100MB limit)
+Assets/Resources/Noto-sans_WebSubset SDF.asset
