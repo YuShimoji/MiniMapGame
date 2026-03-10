@@ -232,28 +232,49 @@ namespace MiniMapGame.EditorTools
             {
                 case InteriorRoomType.Entrance:
                     return new Color(0.2f, 0.8f, 0.2f); // Green
+                case InteriorRoomType.Hallway:
+                case InteriorRoomType.Stairwell:
                 case InteriorRoomType.Corridor:
                     return new Color(0.6f, 0.6f, 0.6f); // Gray
-                case InteriorRoomType.Storage:
-                    return new Color(0.8f, 0.6f, 0.2f); // Orange
-                case InteriorRoomType.Office:
-                    return new Color(0.2f, 0.4f, 0.8f); // Blue
-                case InteriorRoomType.Shop:
-                    return new Color(0.8f, 0.2f, 0.8f); // Magenta
-                case InteriorRoomType.Utility:
-                    return new Color(0.5f, 0.3f, 0.1f); // Brown
-                case InteriorRoomType.Special:
-                    return new Color(0.8f, 0.8f, 0.2f); // Yellow
-                case InteriorRoomType.Living:
+                case InteriorRoomType.LivingRoom:
+                case InteriorRoomType.DiningRoom:
                     return new Color(0.2f, 0.6f, 0.6f); // Cyan
                 case InteriorRoomType.Kitchen:
                     return new Color(0.9f, 0.4f, 0.2f); // Red-Orange
                 case InteriorRoomType.Bathroom:
+                case InteriorRoomType.Restroom:
                     return new Color(0.4f, 0.7f, 0.9f); // Light Blue
                 case InteriorRoomType.Bedroom:
                     return new Color(0.6f, 0.3f, 0.7f); // Purple
-                case InteriorRoomType.Production:
-                    return new Color(0.7f, 0.5f, 0.3f); // Tan
+                case InteriorRoomType.Storage:
+                case InteriorRoomType.Backroom:
+                case InteriorRoomType.Archive:
+                    return new Color(0.8f, 0.6f, 0.2f); // Orange
+                case InteriorRoomType.Office:
+                case InteriorRoomType.MeetingRoom:
+                case InteriorRoomType.Lobby:
+                    return new Color(0.2f, 0.4f, 0.8f); // Blue
+                case InteriorRoomType.Shopfront:
+                case InteriorRoomType.Counter:
+                case InteriorRoomType.DisplayArea:
+                case InteriorRoomType.SeatingArea:
+                case InteriorRoomType.Bar:
+                    return new Color(0.8f, 0.2f, 0.8f); // Magenta
+                case InteriorRoomType.Utility:
+                case InteriorRoomType.LoadingDock:
+                case InteriorRoomType.MachineryRoom:
+                case InteriorRoomType.Workshop:
+                case InteriorRoomType.Shaft:
+                    return new Color(0.7f, 0.5f, 0.3f); // Tan / industrial
+                case InteriorRoomType.Laboratory:
+                case InteriorRoomType.ServerRoom:
+                case InteriorRoomType.SecretRoom:
+                case InteriorRoomType.Vault:
+                case InteriorRoomType.Ruin:
+                case InteriorRoomType.Rooftop:
+                case InteriorRoomType.Basement:
+                case InteriorRoomType.WallVoid:
+                    return new Color(0.8f, 0.8f, 0.2f); // Yellow
                 default:
                     return new Color(0.5f, 0.5f, 0.5f); // Default Gray
             }

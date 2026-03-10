@@ -83,11 +83,11 @@ Shader "MiniMapGame/GridGround"
                 // Dual-scale grid: fine + coarse
                 float2 worldUV = input.positionWS.xz / _GridSize;
                 float2 grid = abs(frac(worldUV - 0.5) - 0.5) / fwidth(worldUV);
-                float line = min(grid.x, grid.y);
+                float fineLineDistance = min(grid.x, grid.y);
                 float2 worldUV2 = input.positionWS.xz / (_GridSize * 5.0);
                 float2 grid2 = abs(frac(worldUV2 - 0.5) - 0.5) / fwidth(worldUV2);
-                float line2 = min(grid2.x, grid2.y);
-                float gridMask = max(1.0 - saturate(line), (1.0 - saturate(line2)) * 0.5);
+                float coarseLineDistance = min(grid2.x, grid2.y);
+                float gridMask = max(1.0 - saturate(fineLineDistance), (1.0 - saturate(coarseLineDistance)) * 0.5);
 
                 // Elevation-based color blending
                 float elev = input.positionWS.y;

@@ -277,5 +277,32 @@
     "cat": "infra",
     "file": "docs/git-auth-troubleshooting.md",
     "summary": "HTTPS + GCM の認証経路、push失敗時の確認手順、既知エラーの切り分けを整理"
+  },
+  {
+    "id": "SP-032",
+    "title": "地表合成レンダリングパイプライン",
+    "status": "partial",
+    "pct": 12,
+    "cat": "system",
+    "file": "docs/specs/ground-surface-compositing.md",
+    "summary": "Ground carrier mesh + CPU semantic masks + GridGround.shader 合成で、道路/水/建物の独立メッシュを維持したまま航空地図風の地表表現へ更新する設計"
+  },
+  {
+    "id": "SP-033",
+    "title": "SP-032 MVP実装計画",
+    "status": "partial",
+    "pct": 18,
+    "cat": "system",
+    "file": "docs/specs/ground-surface-mvp-implementation-plan.md",
+    "summary": "SP-032 を Gate-1 完了後すぐ着手できるよう、MVP 範囲・新規クラス・既存ファイル変更点・受け入れ条件を実装粒度まで分解した計画"
+  },
+  {
+    "id": "SP-034",
+    "title": "Gate-1 実行ランブック",
+    "status": "done",
+    "pct": 100,
+    "cat": "infra",
+    "file": "docs/verification/road-p4-gate-runbook.md",
+    "summary": "P4道路手動検証 Gate-1 を最短で実施するための手順、推奨 seed、記録ルール、NG 切り分けを整理"
   }
 ]

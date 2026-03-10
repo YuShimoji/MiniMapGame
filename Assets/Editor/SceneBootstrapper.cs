@@ -196,9 +196,9 @@ namespace MiniMapGame.EditorTools
             // 5. Player
             var playerGo = FindOrCreate("Player");
             playerGo.tag = "Player";
-            var agent = EnsureComponent<NavMeshAgent>(playerGo);
-            agent.speed = 5f;
-            agent.angularSpeed = 360f;
+            var existingAgent = playerGo.GetComponent<NavMeshAgent>();
+            if (existingAgent != null)
+                Object.DestroyImmediate(existingAgent);
             var playerMovement = EnsureComponent<PlayerMovement>(playerGo);
             camCtrl.playerTarget = playerGo.transform;
 
@@ -241,6 +241,7 @@ namespace MiniMapGame.EditorTools
             // 12. Theme System
             MapThemeCreator.CreateDefaultThemes();
             SetupThemeManager(mapManager, mapRenderer, buildingSpawner, waterRenderer, viz, cam);
+            SetupVerificationChecklistUI(canvas, mapManager);
 
             // 13. Player HUD
             SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
@@ -448,7 +449,11 @@ namespace MiniMapGame.EditorTools
             var canvasGo = FindOrCreate("UICanvas");
             canvas = EnsureComponent<Canvas>(canvasGo);
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            EnsureComponent<CanvasScaler>(canvasGo);
+            var scaler = EnsureComponent<CanvasScaler>(canvasGo);
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
             EnsureComponent<GraphicRaycaster>(canvasGo);
             return canvas;
         }
@@ -456,16 +461,27 @@ namespace MiniMapGame.EditorTools
         private static void SetupInteractionUI(PlayerMovement playerMovement, Canvas canvas)
         {
             var msgGo = FindOrCreate("InteractionMessage", canvas.transform);
-            var tmp = EnsureComponent<TextMeshProUGUI>(msgGo);
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.fontSize = 18f;
-            tmp.color = new Color(0.8f, 0.9f, 1f, 0.9f);
+            RemoveComponentIfPresent<TextMeshProUGUI>(msgGo);
+            RemoveComponentIfPresent<Image>(msgGo);
+            RemoveComponentIfPresent<Outline>(msgGo);
+            SetRectFromBottomCenter(msgGo, 0f, 28f, 560f, 52f);
 
-            var rect = msgGo.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.3f, 0f);
-            rect.anchorMax = new Vector2(0.7f, 0.08f);
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            var bgGo = FindOrCreate("Background", msgGo.transform);
+            var bg = EnsureComponent<Image>(bgGo);
+            bg.color = new Color(0.03f, 0.05f, 0.08f, 0.84f);
+            var outline = EnsureComponent<Outline>(bgGo);
+            outline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.45f);
+            outline.effectDistance = new Vector2(2f, -2f);
+            SetRect(bgGo, Vector2.zero, Vector2.one);
+
+            var textGo = FindOrCreate("Text", msgGo.transform);
+            var tmp = EnsureComponent<TextMeshProUGUI>(textGo);
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.fontSize = 20f;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.color = new Color(0.92f, 0.97f, 1f, 0.96f);
+            tmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRect(textGo, Vector2.zero, Vector2.one);
 
             playerMovement.interactionMessageText = tmp;
             msgGo.SetActive(false);
@@ -475,60 +491,127 @@ namespace MiniMapGame.EditorTools
         {
             var uiGo = FindOrCreate("GameLoopUI", canvas.transform);
             var ui = EnsureComponent<GameLoopUI>(uiGo);
+            SetRect(uiGo, Vector2.zero, Vector2.one);
 
-            // HUD - top left
-            var hudGo = FindOrCreate("HUD", uiGo.transform);
-            SetRect(hudGo, new Vector2(0, 0.85f), new Vector2(0.25f, 1f));
+            var hudCard = CreateCard(uiGo.transform, "HUD", 24f, 112f, 260f, 96f,
+                new Color(0.03f, 0.05f, 0.08f, 0.68f));
+            var hudTitle = CreateTMPChild(hudCard.transform, "HUDTitle", "Run Snapshot",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            hudTitle.fontSize = 12f;
+            hudTitle.fontStyle = FontStyles.Bold;
+            hudTitle.color = new Color(0.58f, 0.72f, 0.82f, 0.94f);
+            SetRectFromTopStretch(hudTitle.gameObject, 16f, 10f, 228f, 16f);
 
-            ui.valueText = CreateTMPChild(hudGo.transform, "ValueText", "Value: 0",
-                new Vector2(0, 0.66f), new Vector2(1, 1f), TextAlignmentOptions.TopLeft);
-            ui.encounterText = CreateTMPChild(hudGo.transform, "EncounterText", "Encounters: 0",
-                new Vector2(0, 0.33f), new Vector2(1, 0.66f), TextAlignmentOptions.TopLeft);
-            ui.itemCountText = CreateTMPChild(hudGo.transform, "ItemCountText", "Items: 0",
-                new Vector2(0, 0), new Vector2(1, 0.33f), TextAlignmentOptions.TopLeft);
+            ui.valueText = CreateTMPChild(hudCard.transform, "ValueText", "Value: 0",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            ui.valueText.fontSize = 16f;
+            ui.valueText.fontStyle = FontStyles.Bold;
+            ui.valueText.color = new Color(0.93f, 0.86f, 0.63f, 0.95f);
+            SetRectFromTopStretch(ui.valueText.gameObject, 16f, 30f, 228f, 18f);
 
-            // Center message overlay
+            ui.encounterText = CreateTMPChild(hudCard.transform, "EncounterText", "Encounters: 0",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            ui.encounterText.fontSize = 14f;
+            ui.encounterText.color = new Color(0.9f, 0.72f, 0.66f, 0.9f);
+            SetRectFromTopStretch(ui.encounterText.gameObject, 16f, 52f, 228f, 16f);
+
+            ui.itemCountText = CreateTMPChild(hudCard.transform, "ItemCountText", "Items: 0",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            ui.itemCountText.fontSize = 14f;
+            ui.itemCountText.color = new Color(0.72f, 0.85f, 0.94f, 0.9f);
+            SetRectFromTopStretch(ui.itemCountText.gameObject, 16f, 72f, 228f, 16f);
+
             var msgGo = FindOrCreate("GameLoopMessage", uiGo.transform);
-            ui.messageText = EnsureComponent<TextMeshProUGUI>(msgGo);
+            RemoveComponentIfPresent<TextMeshProUGUI>(msgGo);
+            RemoveComponentIfPresent<Image>(msgGo);
+            RemoveComponentIfPresent<Outline>(msgGo);
+            SetRectFromCenter(msgGo, 0f, 0f, 760f, 120f);
+
+            var msgBgGo = FindOrCreate("Background", msgGo.transform);
+            var msgBg = EnsureComponent<Image>(msgBgGo);
+            msgBg.color = new Color(0.05f, 0.07f, 0.1f, 0.88f);
+            var msgOutline = EnsureComponent<Outline>(msgBgGo);
+            msgOutline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.45f);
+            msgOutline.effectDistance = new Vector2(2f, -2f);
+            SetRect(msgBgGo, Vector2.zero, Vector2.one);
+
+            var msgTextGo = FindOrCreate("Text", msgGo.transform);
+            ui.messageText = EnsureComponent<TextMeshProUGUI>(msgTextGo);
             ui.messageText.alignment = TextAlignmentOptions.Center;
-            ui.messageText.fontSize = 32f;
-            ui.messageText.color = new Color(1f, 0.4f, 0.3f, 0.95f);
-            SetRect(msgGo, new Vector2(0.2f, 0.4f), new Vector2(0.8f, 0.6f));
+            ui.messageText.fontSize = 28f;
+            ui.messageText.fontStyle = FontStyles.Bold;
+            ui.messageText.color = new Color(1f, 0.83f, 0.58f, 0.98f);
+            ui.messageText.textWrappingMode = TextWrappingModes.Normal;
+            SetRect(msgTextGo, Vector2.zero, Vector2.one);
             msgGo.SetActive(false);
 
-            // Extraction decision panel
             var extractPanel = FindOrCreate("ExtractionPanel", uiGo.transform);
             ui.extractionPanel = extractPanel;
-            SetRect(extractPanel, new Vector2(0.3f, 0.3f), new Vector2(0.7f, 0.7f));
-
             var bgImg = EnsureComponent<Image>(extractPanel);
-            bgImg.color = new Color(0.05f, 0.08f, 0.12f, 0.9f);
+            bgImg.color = new Color(0.04f, 0.06f, 0.1f, 0.96f);
+            var extractOutline = EnsureComponent<Outline>(extractPanel);
+            extractOutline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.4f);
+            extractOutline.effectDistance = new Vector2(2f, -2f);
+            SetRectFromCenter(extractPanel, 0f, -10f, 620f, 360f);
+
+            var extractHeader = CreateTMPChild(extractPanel.transform, "ExtractHeader", "Extraction Decision",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            extractHeader.fontSize = 24f;
+            extractHeader.fontStyle = FontStyles.Bold;
+            extractHeader.color = new Color(0.94f, 0.97f, 1f, 0.98f);
+            SetRectFromTopStretch(extractHeader.gameObject, 28f, 24f, 564f, 28f);
+
+            var extractSub = CreateTMPChild(extractPanel.transform, "ExtractSub", "Leave now or continue exploring this seed.",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            extractSub.fontSize = 13f;
+            extractSub.color = new Color(0.62f, 0.75f, 0.84f, 0.9f);
+            SetRectFromTopStretch(extractSub.gameObject, 28f, 58f, 564f, 18f);
 
             ui.extractionInfoText = CreateTMPChild(extractPanel.transform, "ExtractInfo", "Extract?",
-                new Vector2(0.05f, 0.4f), new Vector2(0.95f, 0.95f), TextAlignmentOptions.Center);
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            ui.extractionInfoText.fontSize = 18f;
+            ui.extractionInfoText.color = new Color(0.9f, 0.94f, 1f, 0.95f);
+            ui.extractionInfoText.textWrappingMode = TextWrappingModes.Normal;
+            SetRectFromTopStretch(ui.extractionInfoText.gameObject, 28f, 104f, 564f, 132f);
 
-            // Buttons
-            var extractBtnGo = CreateButton(extractPanel.transform, "ExtractButton", "EXTRACT",
-                new Vector2(0.1f, 0.05f), new Vector2(0.45f, 0.35f), new Color(0.2f, 0.7f, 0.4f));
+            var extractBtnGo = CreateStyledButton(extractPanel.transform, "ExtractButton", "Extract Now",
+                28f, 282f, 268f, 48f, new Color(0.2f, 0.7f, 0.4f));
             ui.extractButton = extractBtnGo.GetComponent<Button>();
 
-            var continueBtnGo = CreateButton(extractPanel.transform, "ContinueButton", "CONTINUE",
-                new Vector2(0.55f, 0.05f), new Vector2(0.9f, 0.35f), new Color(0.5f, 0.5f, 0.6f));
+            var continueBtnGo = CreateStyledButton(extractPanel.transform, "ContinueButton", "Keep Exploring",
+                324f, 282f, 268f, 48f, new Color(0.4f, 0.45f, 0.58f));
             ui.continueButton = continueBtnGo.GetComponent<Button>();
 
             extractPanel.SetActive(false);
 
-            // Result panel
             var resultPanel = FindOrCreate("ResultPanel", uiGo.transform);
             ui.resultPanel = resultPanel;
-            SetRect(resultPanel, new Vector2(0.2f, 0.2f), new Vector2(0.8f, 0.8f));
-
             var resultBg = EnsureComponent<Image>(resultPanel);
-            resultBg.color = new Color(0.03f, 0.06f, 0.1f, 0.95f);
+            resultBg.color = new Color(0.03f, 0.06f, 0.1f, 0.97f);
+            var resultOutline = EnsureComponent<Outline>(resultPanel);
+            resultOutline.effectColor = new Color(0.27f, 0.48f, 0.38f, 0.38f);
+            resultOutline.effectDistance = new Vector2(2f, -2f);
+            SetRectFromCenter(resultPanel, 0f, -10f, 700f, 420f);
+
+            var resultHeader = CreateTMPChild(resultPanel.transform, "ResultHeader", "Run Complete",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            resultHeader.fontSize = 28f;
+            resultHeader.fontStyle = FontStyles.Bold;
+            resultHeader.color = new Color(0.92f, 0.97f, 1f, 0.98f);
+            SetRectFromTopStretch(resultHeader.gameObject, 32f, 28f, 636f, 30f);
+
+            var resultSub = CreateTMPChild(resultPanel.transform, "ResultSub", "Final snapshot for this exploration loop.",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            resultSub.fontSize = 13f;
+            resultSub.color = new Color(0.62f, 0.75f, 0.84f, 0.9f);
+            SetRectFromTopStretch(resultSub.gameObject, 32f, 64f, 636f, 18f);
 
             ui.resultText = CreateTMPChild(resultPanel.transform, "ResultText", "",
-                new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.95f), TextAlignmentOptions.Center);
-            ui.resultText.fontSize = 24f;
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            ui.resultText.fontSize = 22f;
+            ui.resultText.color = new Color(0.92f, 0.95f, 1f, 0.95f);
+            ui.resultText.textWrappingMode = TextWrappingModes.Normal;
+            SetRectFromTopStretch(ui.resultText.gameObject, 32f, 112f, 636f, 250f);
 
             resultPanel.SetActive(false);
 
@@ -565,110 +648,143 @@ namespace MiniMapGame.EditorTools
             controlUI.mapManager = mapManager;
             controlUI.analysisVisualizer = viz;
 
-            // Background
             var panelBg = EnsureComponent<Image>(panelGo);
-            panelBg.color = new Color(0.04f, 0.06f, 0.1f, 0.92f);
-            SetRect(panelGo, new Vector2(0f, 0.3f), new Vector2(0.18f, 0.95f));
+            panelBg.color = new Color(0.04f, 0.07f, 0.11f, 0.94f);
+            SetRectFromTopLeft(panelGo, 24f, 88f, 360f, 760f);
 
-            float yPos = 0.92f;
-            float rowH = 0.065f;
+            float cursorY = 24f;
 
-            // Title
-            var titleTmp = CreateTMPChild(panelGo.transform, "CtrlTitle", "Map Control (F1)",
-                new Vector2(0.05f, yPos - rowH), new Vector2(0.95f, yPos), TextAlignmentOptions.Top);
-            titleTmp.fontSize = 14f;
-            yPos -= rowH + 0.02f;
+            var titleTmp = CreateTMPChild(panelGo.transform, "CtrlTitle", "Bootstrap Controls",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            titleTmp.fontSize = 27f;
+            titleTmp.fontStyle = FontStyles.Bold;
+            titleTmp.color = new Color(0.93f, 0.97f, 1f, 0.98f);
+            SetRectFromTopStretch(titleTmp.gameObject, 22f, cursorY, 338f, 34f);
+            cursorY += 34f;
 
-            // Preset name
-            controlUI.presetNameText = CreateTMPChild(panelGo.transform, "PresetName", "---",
-                new Vector2(0.05f, yPos - rowH), new Vector2(0.95f, yPos), TextAlignmentOptions.Center);
-            controlUI.presetNameText.fontSize = 16f;
+            var subtitleTmp = CreateTMPChild(panelGo.transform, "CtrlSubtitle", "F1: toggle panel  |  Fast visual verification workspace",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            subtitleTmp.fontSize = 12f;
+            subtitleTmp.color = new Color(0.56f, 0.71f, 0.82f, 0.9f);
+            SetRectFromTopStretch(subtitleTmp.gameObject, 22f, cursorY, 338f, 22f);
+            cursorY += 38f;
+
+            var selectedBg = CreateCard(panelGo.transform, "SelectedPresetCard", 18f, cursorY, 324f, 78f,
+                new Color(0.08f, 0.12f, 0.17f, 0.96f));
+            var selectedLabel = CreateTMPChild(selectedBg.transform, "SelectedPresetLabel", "ACTIVE PRESET",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            selectedLabel.fontSize = 11f;
+            selectedLabel.color = new Color(0.55f, 0.68f, 0.77f, 0.9f);
+            SetRectFromTopStretch(selectedLabel.gameObject, 16f, 12f, 292f, 18f);
+
+            controlUI.presetNameText = CreateTMPChild(selectedBg.transform, "PresetName", "---",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            controlUI.presetNameText.fontSize = 24f;
+            controlUI.presetNameText.fontStyle = FontStyles.Bold;
             controlUI.presetNameText.color = new Color(0.9f, 0.85f, 0.6f);
-            yPos -= rowH + 0.01f;
+            SetRectFromTopStretch(controlUI.presetNameText.gameObject, 16f, 30f, 292f, 34f);
+            cursorY += 96f;
 
-            // Preset buttons (2x2 grid)
+            CreateSectionLabel(panelGo.transform, "PresetsLabel", "Map Presets", cursorY);
+            cursorY += 24f;
+
             controlUI.coastalPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Coastal.asset");
             controlUI.ruralPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Rural.asset");
             controlUI.gridPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Grid.asset");
             controlUI.mountainPreset = AssetDatabase.LoadAssetAtPath<MapPreset>("Assets/Resources/Presets/Preset_Mountain.asset");
 
-            float btnH = 0.055f;
-            controlUI.coastalButton = CreateButton(panelGo.transform, "BtnCoastal", "港湾都市",
-                new Vector2(0.05f, yPos - btnH), new Vector2(0.48f, yPos), new Color(0.15f, 0.35f, 0.55f)).GetComponent<Button>();
-            controlUI.ruralButton = CreateButton(panelGo.transform, "BtnRural", "田舎町",
-                new Vector2(0.52f, yPos - btnH), new Vector2(0.95f, yPos), new Color(0.35f, 0.45f, 0.2f)).GetComponent<Button>();
-            yPos -= btnH + 0.01f;
-            controlUI.gridButton = CreateButton(panelGo.transform, "BtnGrid", "NYC Grid",
-                new Vector2(0.05f, yPos - btnH), new Vector2(0.48f, yPos), new Color(0.4f, 0.35f, 0.25f)).GetComponent<Button>();
-            controlUI.mountainButton = CreateButton(panelGo.transform, "BtnMountain", "山道",
-                new Vector2(0.52f, yPos - btnH), new Vector2(0.95f, yPos), new Color(0.3f, 0.3f, 0.35f)).GetComponent<Button>();
-            yPos -= btnH + 0.02f;
+            const float buttonHeight = 44f;
+            const float buttonWidth = 324f;
+            controlUI.coastalButton = CreateStyledButton(panelGo.transform, "BtnCoastal", "Coastal", 18f, cursorY, buttonWidth, buttonHeight,
+                new Color(0.13f, 0.36f, 0.54f)).GetComponent<Button>();
+            cursorY += 52f;
+            controlUI.ruralButton = CreateStyledButton(panelGo.transform, "BtnRural", "Rural", 18f, cursorY, buttonWidth, buttonHeight,
+                new Color(0.29f, 0.41f, 0.2f)).GetComponent<Button>();
+            cursorY += 52f;
+            controlUI.gridButton = CreateStyledButton(panelGo.transform, "BtnGrid", "NYC Grid", 18f, cursorY, buttonWidth, buttonHeight,
+                new Color(0.43f, 0.31f, 0.18f)).GetComponent<Button>();
+            cursorY += 52f;
+            controlUI.mountainButton = CreateStyledButton(panelGo.transform, "BtnMountain", "Mountain", 18f, cursorY, buttonWidth, buttonHeight,
+                new Color(0.28f, 0.31f, 0.38f)).GetComponent<Button>();
+            cursorY += 64f;
 
-            // Seed input
-            CreateTMPChild(panelGo.transform, "SeedLabel", "Seed:",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MidlineLeft);
+            CreateSectionLabel(panelGo.transform, "GenerationLabel", "Generation", cursorY);
+            cursorY += 26f;
+
+            var seedLabel = CreateTMPChild(panelGo.transform, "SeedLabel", "Seed",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            seedLabel.fontSize = 13f;
+            seedLabel.color = new Color(0.74f, 0.82f, 0.9f, 0.95f);
+            SetRectFromTopStretch(seedLabel.gameObject, 18f, cursorY, 120f, 18f);
+            cursorY += 22f;
 
             var seedGo = FindOrCreate("SeedInput", panelGo.transform);
             var seedInput = EnsureComponent<TMP_InputField>(seedGo);
             seedInput.contentType = TMP_InputField.ContentType.IntegerNumber;
-            SetRect(seedGo, new Vector2(0.32f, yPos - 0.05f), new Vector2(0.95f, yPos));
-            // Input field requires text and placeholder children
+            SetRectFromTopStretch(seedGo, 18f, cursorY, 324f, 42f);
             EnsureInputFieldChildren(seedGo);
             controlUI.seedInput = seedInput;
-            yPos -= 0.07f;
+            cursorY += 58f;
 
-            // Density slider
             controlUI.densityLabel = CreateTMPChild(panelGo.transform, "DensityLabel", "Building Density: 80%",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.95f, yPos), TextAlignmentOptions.MidlineLeft);
-            yPos -= 0.05f;
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            controlUI.densityLabel.fontSize = 13f;
+            controlUI.densityLabel.color = new Color(0.74f, 0.82f, 0.9f, 0.95f);
+            SetRectFromTopStretch(controlUI.densityLabel.gameObject, 18f, cursorY, 324f, 18f);
+            cursorY += 24f;
 
             var sliderGo = FindOrCreate("DensitySlider", panelGo.transform);
             var slider = EnsureComponent<Slider>(sliderGo);
             slider.minValue = 0f;
             slider.maxValue = 1f;
             slider.value = 0.8f;
-            SetRect(sliderGo, new Vector2(0.05f, yPos - 0.05f), new Vector2(0.95f, yPos));
+            SetRectFromTopStretch(sliderGo, 18f, cursorY, 324f, 28f);
             EnsureSliderChildren(sliderGo);
             controlUI.buildingDensitySlider = slider;
-            yPos -= 0.07f;
+            cursorY += 44f;
 
-            // Regenerate + Random buttons
-            controlUI.regenerateButton = CreateButton(panelGo.transform, "BtnRegenerate", "Regenerate",
-                new Vector2(0.05f, yPos - 0.06f), new Vector2(0.48f, yPos), new Color(0.25f, 0.5f, 0.35f)).GetComponent<Button>();
-            controlUI.randomButton = CreateButton(panelGo.transform, "BtnRandom", "Random",
-                new Vector2(0.52f, yPos - 0.06f), new Vector2(0.95f, yPos), new Color(0.4f, 0.3f, 0.5f)).GetComponent<Button>();
-            yPos -= 0.08f;
+            controlUI.regenerateButton = CreateStyledButton(panelGo.transform, "BtnRegenerate", "Regenerate", 18f, cursorY, 156f, 44f,
+                new Color(0.23f, 0.49f, 0.35f)).GetComponent<Button>();
+            controlUI.randomButton = CreateStyledButton(panelGo.transform, "BtnRandom", "Random", 186f, cursorY, 156f, 44f,
+                new Color(0.39f, 0.3f, 0.5f)).GetComponent<Button>();
+            cursorY += 60f;
 
-            // Theme buttons
-            CreateTMPChild(panelGo.transform, "ThemeLabel", "Theme:",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.3f, yPos), TextAlignmentOptions.MidlineLeft);
-            yPos -= 0.05f;
+            CreateSectionLabel(panelGo.transform, "ThemeLabel", "Theme", cursorY);
+            cursorY += 26f;
 
-            controlUI.darkThemeButton = CreateButton(panelGo.transform, "BtnDark", "ダーク",
-                new Vector2(0.05f, yPos - 0.055f), new Vector2(0.48f, yPos), new Color(0.08f, 0.1f, 0.16f)).GetComponent<Button>();
-            controlUI.parchmentThemeButton = CreateButton(panelGo.transform, "BtnParchment", "羊皮紙",
-                new Vector2(0.52f, yPos - 0.055f), new Vector2(0.95f, yPos), new Color(0.72f, 0.68f, 0.55f)).GetComponent<Button>();
+            controlUI.darkThemeButton = CreateStyledButton(panelGo.transform, "BtnDark", "Dark", 18f, cursorY, 156f, 42f,
+                new Color(0.08f, 0.1f, 0.16f)).GetComponent<Button>();
+            controlUI.parchmentThemeButton = CreateStyledButton(panelGo.transform, "BtnParchment", "Parchment", 186f, cursorY, 156f, 42f,
+                new Color(0.72f, 0.68f, 0.55f)).GetComponent<Button>();
             // Set parchment button text to dark color for readability
             var parchBtnText = controlUI.parchmentThemeButton.GetComponentInChildren<TextMeshProUGUI>();
             if (parchBtnText != null) parchBtnText.color = new Color(0.2f, 0.18f, 0.12f);
-            yPos -= 0.08f;
+            cursorY += 58f;
 
-            // Save/Load buttons
-            CreateTMPChild(panelGo.transform, "SaveLoadLabel", "Save/Load:",
-                new Vector2(0.05f, yPos - 0.04f), new Vector2(0.4f, yPos), TextAlignmentOptions.MidlineLeft);
-            yPos -= 0.05f;
+            CreateSectionLabel(panelGo.transform, "SaveLoadLabel", "Persistence", cursorY);
+            cursorY += 26f;
 
-            controlUI.saveButton = CreateButton(panelGo.transform, "BtnSave", "Save",
-                new Vector2(0.05f, yPos - 0.055f), new Vector2(0.48f, yPos), new Color(0.2f, 0.45f, 0.3f)).GetComponent<Button>();
-            controlUI.loadButton = CreateButton(panelGo.transform, "BtnLoad", "Load",
-                new Vector2(0.52f, yPos - 0.055f), new Vector2(0.95f, yPos), new Color(0.3f, 0.3f, 0.5f)).GetComponent<Button>();
-            yPos -= 0.08f;
+            controlUI.saveButton = CreateStyledButton(panelGo.transform, "BtnSave", "Save", 18f, cursorY, 156f, 42f,
+                new Color(0.2f, 0.45f, 0.3f)).GetComponent<Button>();
+            controlUI.loadButton = CreateStyledButton(panelGo.transform, "BtnLoad", "Load", 186f, cursorY, 156f, 42f,
+                new Color(0.3f, 0.3f, 0.5f)).GetComponent<Button>();
+            cursorY += 60f;
 
-            // Stats text
-            controlUI.statsText = CreateTMPChild(panelGo.transform, "StatsText", "",
-                new Vector2(0.05f, 0.02f), new Vector2(0.95f, yPos), TextAlignmentOptions.TopLeft);
-            controlUI.statsText.fontSize = 11f;
+            var statsCard = CreateCard(panelGo.transform, "StatsCard", 18f, cursorY, 324f, 184f,
+                new Color(0.07f, 0.1f, 0.14f, 0.95f));
+            var statsHeader = CreateTMPChild(statsCard.transform, "StatsHeader", "Analysis Snapshot",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            statsHeader.fontSize = 13f;
+            statsHeader.fontStyle = FontStyles.Bold;
+            statsHeader.color = new Color(0.8f, 0.88f, 0.95f, 0.96f);
+            SetRectFromTopStretch(statsHeader.gameObject, 16f, 14f, 292f, 18f);
+
+            controlUI.statsText = CreateTMPChild(statsCard.transform, "StatsText", "",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            controlUI.statsText.fontSize = 12f;
             controlUI.statsText.color = new Color(0.5f, 0.6f, 0.7f, 0.8f);
+            SetRectFromTopStretch(controlUI.statsText.gameObject, 16f, 40f, 292f, 130f);
+            controlUI.statsText.overflowMode = TextOverflowModes.Ellipsis;
 
             EditorUtility.SetDirty(controlUI);
         }
@@ -771,20 +887,25 @@ namespace MiniMapGame.EditorTools
             miniCam.targetTexture = rt;
 
             // RawImage in Canvas (bottom-right corner)
-            var mapImageGo = FindOrCreate("MiniMapImage", canvas.transform);
+            var frameGo = CreateCard(canvas.transform, "MiniMapFrame", 0f, 0f, 268f, 198f,
+                new Color(0.04f, 0.06f, 0.09f, 0.88f));
+            SetRectFromBottomRight(frameGo, 24f, 24f, 268f, 198f);
+
+            var mapTitle = CreateTMPChild(frameGo.transform, "MiniMapTitle", "Mini Map",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            mapTitle.fontSize = 13f;
+            mapTitle.fontStyle = FontStyles.Bold;
+            mapTitle.color = new Color(0.84f, 0.9f, 0.97f, 0.95f);
+            SetRectFromTopStretch(mapTitle.gameObject, 16f, 12f, 236f, 18f);
+
+            var mapImageGo = FindOrCreate("MiniMapImage", frameGo.transform);
+            RemoveComponentIfPresent<Image>(mapImageGo);
             var rawImage = EnsureComponent<RawImage>(mapImageGo);
             rawImage.texture = rt;
             rawImage.color = Color.white;
-
-            var mapRect = mapImageGo.GetComponent<RectTransform>();
-            mapRect.anchorMin = new Vector2(0.72f, 0.02f);
-            mapRect.anchorMax = new Vector2(0.98f, 0.32f);
-            mapRect.offsetMin = Vector2.zero;
-            mapRect.offsetMax = Vector2.zero;
+            SetRectFromTopStretch(mapImageGo, 16f, 40f, 236f, 142f);
 
             // Border outline
-            var borderImg = EnsureComponent<Image>(mapImageGo);
-            // Image is behind RawImage — use Outline component instead
             var outline = EnsureComponent<Outline>(mapImageGo);
             outline.effectColor = new Color(0.3f, 0.45f, 0.6f, 0.8f);
             outline.effectDistance = new Vector2(2, 2);
@@ -855,9 +976,11 @@ namespace MiniMapGame.EditorTools
             hud.playerTransform = playerTransform;
             SetRect(hudGo, Vector2.zero, Vector2.one);
 
-            // HP Bar — top-left area
-            var hpBarGo = FindOrCreate("HPBar", hudGo.transform);
-            SetRect(hpBarGo, new Vector2(0.01f, 0.93f), new Vector2(0.2f, 0.97f));
+            var hpCard = CreateCard(hudGo.transform, "HPCard", 24f, 24f, 260f, 72f,
+                new Color(0.03f, 0.05f, 0.08f, 0.72f));
+
+            var hpBarGo = FindOrCreate("HPBar", hpCard.transform);
+            SetRectFromTopStretch(hpBarGo, 16f, 26f, 228f, 16f);
 
             var hpBg = EnsureComponent<Image>(hpBarGo);
             hpBg.color = new Color(0.1f, 0.08f, 0.08f, 0.8f);
@@ -882,31 +1005,96 @@ namespace MiniMapGame.EditorTools
             hud.hpFillImage = fillImg;
 
             // HP text
-            hud.hpText = CreateTMPChild(hudGo.transform, "HPText", "HP: 100/100",
-                new Vector2(0.01f, 0.89f), new Vector2(0.2f, 0.93f), TextAlignmentOptions.MidlineLeft);
-            hud.hpText.fontSize = 13f;
+            hud.hpText = CreateTMPChild(hpCard.transform, "HPText", "HP: 100/100",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            hud.hpText.fontSize = 15f;
             hud.hpText.color = new Color(0.9f, 0.95f, 1f, 0.9f);
+            hud.hpText.fontStyle = FontStyles.Bold;
+            SetRectFromTopStretch(hud.hpText.gameObject, 16f, 10f, 228f, 18f);
 
-            // Compass — top center
-            hud.compassText = CreateTMPChild(hudGo.transform, "CompassText", "N",
-                new Vector2(0.46f, 0.93f), new Vector2(0.54f, 0.99f), TextAlignmentOptions.Center);
-            hud.compassText.fontSize = 28f;
+            var centerCard = CreateCard(hudGo.transform, "HeadingCard", 0f, 20f, 180f, 76f,
+                new Color(0.03f, 0.05f, 0.08f, 0.62f));
+            var centerRect = centerCard.GetComponent<RectTransform>();
+            centerRect.anchorMin = new Vector2(0.5f, 1f);
+            centerRect.anchorMax = new Vector2(0.5f, 1f);
+            centerRect.pivot = new Vector2(0.5f, 1f);
+            centerRect.anchoredPosition = new Vector2(0f, -20f);
+
+            hud.compassText = CreateTMPChild(centerCard.transform, "CompassText", "N",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.Center);
+            hud.compassText.fontSize = 32f;
             hud.compassText.color = new Color(0.85f, 0.9f, 1f, 0.95f);
             hud.compassText.fontStyle = FontStyles.Bold;
+            SetRectFromTopStretch(hud.compassText.gameObject, 12f, 8f, 156f, 34f);
 
-            // Proximity info — below compass
-            hud.proximityText = CreateTMPChild(hudGo.transform, "ProximityText", "Exit: ---",
-                new Vector2(0.42f, 0.89f), new Vector2(0.58f, 0.93f), TextAlignmentOptions.Center);
-            hud.proximityText.fontSize = 12f;
+            hud.proximityText = CreateTMPChild(centerCard.transform, "ProximityText", "Exit: ---",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.Center);
+            hud.proximityText.fontSize = 13f;
             hud.proximityText.color = new Color(0.6f, 0.8f, 0.6f, 0.85f);
+            SetRectFromTopStretch(hud.proximityText.gameObject, 12f, 42f, 156f, 18f);
 
-            // Inventory summary — top-right
-            hud.inventoryText = CreateTMPChild(hudGo.transform, "InventoryText", "V:0  Items:0  Left:0",
-                new Vector2(0.75f, 0.93f), new Vector2(0.99f, 0.97f), TextAlignmentOptions.MidlineRight);
-            hud.inventoryText.fontSize = 12f;
+            var inventoryCard = CreateCard(hudGo.transform, "InventoryCard", 0f, 24f, 260f, 56f,
+                new Color(0.03f, 0.05f, 0.08f, 0.72f));
+            SetRectFromTopRight(inventoryCard, 24f, 24f, 260f, 56f);
+
+            hud.inventoryText = CreateTMPChild(inventoryCard.transform, "InventoryText", "V:0  Items:0  Left:0",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.MidlineRight);
+            hud.inventoryText.fontSize = 14f;
             hud.inventoryText.color = new Color(0.9f, 0.85f, 0.6f, 0.9f);
+            SetRectFromTopStretch(hud.inventoryText.gameObject, 16f, 10f, 228f, 24f);
 
             EditorUtility.SetDirty(hud);
+        }
+
+        private static void SetupVerificationChecklistUI(Canvas canvas, MapManager mapManager)
+        {
+            var systemGo = FindOrCreate("VerificationChecklistSystem");
+            var checklist = EnsureComponent<VerificationChecklistUI>(systemGo);
+            var panelGo = FindOrCreate("VerificationChecklistPanel", canvas.transform);
+            var panelChecklist = panelGo.GetComponent<VerificationChecklistUI>();
+            if (panelChecklist != null)
+                Object.DestroyImmediate(panelChecklist);
+            checklist.mapManager = mapManager;
+            checklist.themeManager = Object.FindAnyObjectByType<ThemeManager>();
+            checklist.panelRoot = panelGo;
+
+            var bg = EnsureComponent<Image>(panelGo);
+            bg.color = new Color(0.03f, 0.05f, 0.08f, 0.84f);
+            var outline = EnsureComponent<Outline>(panelGo);
+            outline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.35f);
+            outline.effectDistance = new Vector2(2f, -2f);
+            SetRectFromTopRight(panelGo, 24f, 96f, 320f, 420f);
+
+            var title = CreateTMPChild(panelGo.transform, "VerificationTitle", "Gate-1 Checklist",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            title.fontSize = 22f;
+            title.fontStyle = FontStyles.Bold;
+            title.color = new Color(0.93f, 0.97f, 1f, 0.98f);
+            SetRectFromTopStretch(title.gameObject, 18f, 18f, 284f, 24f);
+
+            var subtitle = CreateTMPChild(panelGo.transform, "VerificationSubtitle", "Road manual verification helper",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            subtitle.fontSize = 12f;
+            subtitle.color = new Color(0.6f, 0.74f, 0.84f, 0.9f);
+            SetRectFromTopStretch(subtitle.gameObject, 18f, 44f, 284f, 18f);
+
+            var summaryText = CreateTMPChild(panelGo.transform, "VerificationSummary", "",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            summaryText.fontSize = 13f;
+            summaryText.color = new Color(0.91f, 0.95f, 1f, 0.95f);
+            summaryText.textWrappingMode = TextWrappingModes.Normal;
+            SetRectFromTopStretch(summaryText.gameObject, 18f, 82f, 284f, 72f);
+            checklist.summaryText = summaryText;
+
+            var body = CreateTMPChild(panelGo.transform, "VerificationBody", "",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            body.fontSize = 12f;
+            body.color = new Color(0.78f, 0.86f, 0.94f, 0.9f);
+            body.textWrappingMode = TextWrappingModes.Normal;
+            SetRectFromTopStretch(body.gameObject, 18f, 160f, 284f, 242f);
+            checklist.checklistText = body;
+
+            EditorUtility.SetDirty(checklist);
         }
 
         // ── Interior System ──
@@ -1068,6 +1256,52 @@ namespace MiniMapGame.EditorTools
             return go;
         }
 
+        private static GameObject CreateStyledButton(Transform parent, string name, string label,
+            float left, float top, float width, float height, Color color)
+        {
+            var go = FindOrCreate(name, parent);
+            var img = EnsureComponent<Image>(go);
+            img.color = color;
+            EnsureComponent<Button>(go);
+            SetRectFromTopLeft(go, left, top, width, height);
+
+            var outline = EnsureComponent<Outline>(go);
+            outline.effectColor = new Color(1f, 1f, 1f, 0.08f);
+            outline.effectDistance = new Vector2(1f, -1f);
+
+            var textGo = FindOrCreate($"{name}_Text", go.transform);
+            var tmp = EnsureComponent<TextMeshProUGUI>(textGo);
+            tmp.text = label;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.fontSize = 16f;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.color = Color.white;
+            SetRect(textGo, Vector2.zero, Vector2.one);
+            tmp.textWrappingMode = TextWrappingModes.NoWrap;
+
+            return go;
+        }
+
+        private static GameObject CreateCard(Transform parent, string name, float left, float top, float width, float height, Color color)
+        {
+            var go = FindOrCreate(name, parent);
+            var image = EnsureComponent<Image>(go);
+            image.color = color;
+            SetRectFromTopLeft(go, left, top, width, height);
+            return go;
+        }
+
+        private static TextMeshProUGUI CreateSectionLabel(Transform parent, string name, string text, float top)
+        {
+            var label = CreateTMPChild(parent, name, text,
+                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
+            label.fontSize = 12f;
+            label.fontStyle = FontStyles.Bold;
+            label.color = new Color(0.57f, 0.72f, 0.82f, 0.94f);
+            SetRectFromTopStretch(label.gameObject, 18f, top, 324f, 18f);
+            return label;
+        }
+
         private static void SetRect(GameObject go, Vector2 anchorMin, Vector2 anchorMax)
         {
             var rect = go.GetComponent<RectTransform>();
@@ -1076,6 +1310,72 @@ namespace MiniMapGame.EditorTools
             rect.anchorMax = anchorMax;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+        }
+
+        private static void SetRectFromTopLeft(GameObject go, float left, float top, float width, float height)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(left, -top);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private static void SetRectFromTopRight(GameObject go, float right, float top, float width, float height)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-right, -top);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private static void SetRectFromBottomRight(GameObject go, float right, float bottom, float width, float height)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.anchoredPosition = new Vector2(-right, bottom);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private static void SetRectFromBottomCenter(GameObject go, float offsetX, float bottom, float width, float height)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(offsetX, bottom);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private static void SetRectFromCenter(GameObject go, float offsetX, float offsetY, float width, float height)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(offsetX, offsetY);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private static void SetRectFromTopStretch(GameObject go, float left, float top, float width, float height)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(left, -top);
+            rect.sizeDelta = new Vector2(width, height);
         }
 
         private static void EnsureFolder(string path)
@@ -1093,12 +1393,20 @@ namespace MiniMapGame.EditorTools
 
         private static GameObject FindOrCreate(string name, Transform parent = null)
         {
-            var existing = GameObject.Find(name);
-            if (existing != null) return existing;
+            if (parent != null)
+            {
+                var child = parent.Find(name);
+                if (child != null) return child.gameObject;
+            }
+            else
+            {
+                var existing = GameObject.Find(name);
+                if (existing != null) return existing;
+            }
 
             var go = new GameObject(name);
             if (parent != null)
-                go.transform.SetParent(parent);
+                go.transform.SetParent(parent, false);
             return go;
         }
 
@@ -1107,6 +1415,13 @@ namespace MiniMapGame.EditorTools
             var comp = go.GetComponent<T>();
             if (comp == null) comp = go.AddComponent<T>();
             return comp;
+        }
+
+        private static void RemoveComponentIfPresent<T>(GameObject go) where T : Component
+        {
+            var comp = go.GetComponent<T>();
+            if (comp != null)
+                Object.DestroyImmediate(comp);
         }
 
         // ── Lighting ──

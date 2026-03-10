@@ -204,7 +204,7 @@ namespace MiniMapGame.Runtime
 
             mat.SetFloat("_CurbRatio", config.curbWidth / total);
             mat.SetFloat("_ShoulderRatio", config.shoulderWidth / total);
-            mat.SetInteger("_LaneCount", config.laneCount);
+            mat.SetFloat("_LaneCount", config.laneCount);
             mat.SetFloat("_MarkingWidthRatio", config.markingWidth / total);
             mat.SetFloat("_HasCenterLine", config.hasCenterLine ? 1f : 0f);
             mat.SetFloat("_CenterLineSolid", config.centerLineSolid ? 1f : 0f);

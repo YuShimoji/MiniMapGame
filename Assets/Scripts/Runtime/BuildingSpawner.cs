@@ -23,7 +23,12 @@ namespace MiniMapGame.Runtime
         private readonly List<GameObject> _spawnedBuildings = new();
         private Color _normalColor = new(0.22f, 0.28f, 0.38f);
         private Color _landmarkColor = new(0.10f, 0.16f, 0.25f);
-        private static readonly MaterialPropertyBlock _propBlock = new();
+        private MaterialPropertyBlock _propBlock;
+
+        private void Awake()
+        {
+            _propBlock = new MaterialPropertyBlock();
+        }
 
         public void SetThemeColors(Color normal, Color landmark)
         {
@@ -173,6 +178,9 @@ namespace MiniMapGame.Runtime
 
         private void ApplyBuildingVariation(GameObject go, string buildingId, bool isLandmark)
         {
+            if (_propBlock == null)
+                _propBlock = new MaterialPropertyBlock();
+
             int hash = buildingId.GetHashCode();
             float rv = ((hash & 0xFF) / 255f - 0.5f) * 0.06f;
             float gv = (((hash >> 8) & 0xFF) / 255f - 0.5f) * 0.06f;

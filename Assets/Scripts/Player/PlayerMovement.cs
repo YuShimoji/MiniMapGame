@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using TMPro;
+using MiniMapGame.Data;
 using MiniMapGame.Runtime;
 
 namespace MiniMapGame.Player
@@ -9,6 +10,7 @@ namespace MiniMapGame.Player
     {
         private NavMeshAgent _agent;
         private Camera _mainCamera;
+        private MapManager _mapManager;
 
         [Header("Movement Speed Settings")]
         public float minSpeed = 2f;
@@ -29,15 +31,9 @@ namespace MiniMapGame.Player
 
         void Start()
         {
-            _agent = GetComponent<NavMeshAgent>();
             _mainCamera = Camera.main;
+            _mapManager = FindAnyObjectByType<MapManager>();
 
-            if (_agent == null)
-            {
-                Debug.LogError("PlayerMovement: NavMeshAgent not found.");
-                enabled = false;
-                return;
-            }
             if (_mainCamera == null)
             {
                 Debug.LogError("PlayerMovement: Main Camera not found.");
@@ -48,8 +44,16 @@ namespace MiniMapGame.Player
             if (interactionMessageText != null)
                 interactionMessageText.gameObject.SetActive(false);
 
-            _agent.updateRotation = false;
-            _agent.updateUpAxis = false;
+            if (_mapManager != null)
+                _mapManager.OnMapGenerated += HandleMapGenerated;
+
+            TryEnsureAgent();
+        }
+
+        void OnDestroy()
+        {
+            if (_mapManager != null)
+                _mapManager.OnMapGenerated -= HandleMapGenerated;
         }
 
         void Update()
@@ -85,6 +89,29 @@ namespace MiniMapGame.Player
                 float targetAngle = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
                 transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
             }
+        }
+
+        private void HandleMapGenerated(MapData _)
+        {
+            TryEnsureAgent();
+        }
+
+        private void TryEnsureAgent()
+        {
+            if (_agent == null)
+                _agent = GetComponent<NavMeshAgent>();
+
+            if (_agent == null)
+            {
+                if (!NavMesh.SamplePosition(transform.position, out var hit, 20f, NavMesh.AllAreas))
+                    return;
+
+                _agent = gameObject.AddComponent<NavMeshAgent>();
+                _agent.Warp(hit.position);
+            }
+
+            _agent.updateRotation = false;
+            _agent.updateUpAxis = false;
         }
 
         void OnTriggerEnter(Collider other)

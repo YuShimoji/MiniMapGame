@@ -1032,6 +1032,7 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 
 ### 未実装・次期候補
 - **パフォーマンス最適化**: メッシュ結合、GPU instancing、オブジェクトプール
+- **地表合成レンダリング**: `SP-032` 参照。Ground carrier mesh + CPU semantic masks + GridGround.shader 合成で、道路/水/建物の鮮明な独立メッシュを維持したまま航空地図風の地表表現へ更新
 - **プレイヤー体験**: エンカウント演出、アイテム収集エフェクト、脱出カウントダウン
 - **マップ多様性**: 新ジェネレータ追加 (Island, Maze等)
 - **建物内装**: インテリア装飾のバリエーション強化

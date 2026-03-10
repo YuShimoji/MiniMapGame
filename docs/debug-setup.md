@@ -180,6 +180,22 @@
 ### 記録先
 
 結果は `docs/verification/road-p4-gate-results.md` に記録する。
+実行手順と推奨 seed は `docs/verification/road-p4-gate-runbook.md` を参照する。
+
+---
+
+## Planned Validation: SP-032 地表合成レンダリング（実装後）
+
+この節は **未実装** の `SP-032` 向け。Ground semantic mask + compositing shader 導入後に有効化する。
+
+- [ ] 同一seedで semantic mask 結果が一致する
+- [ ] Theme切替時に mask は再生成されず、色だけ変化する
+- [ ] hillshade が地形の起伏読解を助け、主照明依存で破綻しない
+- [ ] contour が平地でうるさすぎず、斜面で読める
+- [ ] 道路縁 / 水際 / 建物基部の補助表現がにじみ過多にならない
+- [ ] Ground / Road / Water の Z-fighting が発生しない
+- [ ] 4プリセット × 2テーマで大破綻がない
+- [ ] Generate再実行時の GC / フレーム落ちが許容範囲
 
 ---
 
@@ -192,6 +208,12 @@
 ### デバッグオーバーレイが表示されない
 - Tab キーを押して切替（Off → Analysis → Terrain → Off の3段階）
 - `AnalysisVisualizer` の `mapManager` 参照が設定されているか確認
+
+### F1 の Control Panel が表示されない
+- Play 中に Game ビューへフォーカスした状態で `F1` を押す
+- Hierarchy に `UICanvas/MapControlPanel` があるか確認する
+- Console の先頭例外が `SceneBootstrapper.SetupInteractionUI` / UI 生成周辺なら bootstrap が途中停止している
+- Gate-1 実行前に `docs/verification/road-p4-gate-runbook.md` の補足も参照する
 
 ### 装飾が全く配置されない
 - プリセットの `decorationDensity` が 0 でないか確認

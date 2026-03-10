@@ -8,7 +8,7 @@ Shader "MiniMapGame/Road"
         _CurbColor ("Curb Color", Color) = (0.3, 0.3, 0.3, 1)
         _CurbRatio ("Curb Ratio", Float) = 0.071
         _ShoulderRatio ("Shoulder Ratio", Float) = 0.107
-        _LaneCount ("Lane Count", Int) = 4
+        _LaneCount ("Lane Count", Float) = 4
         _MarkingWidthRatio ("Marking Width Ratio", Float) = 0.014
         _HasCenterLine ("Has Center Line", Float) = 1
         _CenterLineSolid ("Center Line Solid", Float) = 1
@@ -52,7 +52,7 @@ Shader "MiniMapGame/Road"
                 half4 _CurbColor;
                 float _CurbRatio;
                 float _ShoulderRatio;
-                int _LaneCount;
+                float _LaneCount;
                 float _MarkingWidthRatio;
                 float _HasCenterLine;
                 float _CenterLineSolid;
@@ -166,9 +166,9 @@ Shader "MiniMapGame/Road"
                     }
 
                     // Lane dividers
-                    if (_HasLaneDividers > 0.5 && _LaneCount > 2)
+                    if (_HasLaneDividers > 0.5 && _LaneCount > 2.5)
                     {
-                        int halfLanes = max(_LaneCount / 2, 1);
+                        int halfLanes = max((int)floor(_LaneCount * 0.5), 1);
 
                         // Limit iterations to avoid shader complexity
                         for (int i = 1; i < min(halfLanes, 4); i++)

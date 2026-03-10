@@ -48,7 +48,12 @@ namespace MiniMapGame.Runtime
         };
 
         private int _currentLOD = -1;
-        private static readonly MaterialPropertyBlock _propBlock = new();
+        private MaterialPropertyBlock _propBlock;
+
+        private void Awake()
+        {
+            _propBlock = new MaterialPropertyBlock();
+        }
 
         public void Spawn(MapData data)
         {
@@ -421,10 +426,12 @@ namespace MiniMapGame.Runtime
             if (col != null) Destroy(col);
         }
 
-        private static void ApplyColor(GameObject go, Color color)
+        private void ApplyColor(GameObject go, Color color)
         {
             var r = go.GetComponent<Renderer>();
             if (r == null) return;
+            if (_propBlock == null)
+                _propBlock = new MaterialPropertyBlock();
             _propBlock.SetColor("_BaseColor", color);
             r.SetPropertyBlock(_propBlock);
         }

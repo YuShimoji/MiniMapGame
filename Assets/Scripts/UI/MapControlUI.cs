@@ -60,7 +60,24 @@ namespace MiniMapGame.UI
         public KeyCode toggleKey = KeyCode.F1;
         public GameObject controlPanel;
 
+        [Header("Responsive Layout")]
+        public float referenceScreenWidth = 1920f;
+        public float referenceScreenHeight = 1080f;
+        [Range(0.5f, 1f)] public float minPanelScale = 0.65f;
+        [Range(1f, 1.5f)] public float maxPanelScale = 1f;
+
         private float? _customDensity;
+        private RectTransform _controlPanelRect;
+        private Vector3 _panelBaseScale = Vector3.one;
+        private Vector2 _panelBaseAnchoredPosition;
+        private int _lastScreenWidth = -1;
+        private int _lastScreenHeight = -1;
+
+        void Awake()
+        {
+            ApplyUiLabels();
+            UpdatePresetName();
+        }
 
         void Start()
         {
@@ -95,6 +112,9 @@ namespace MiniMapGame.UI
             if (mapManager != null)
                 mapManager.OnMapGenerated += OnMapGenerated;
 
+            CacheResponsiveLayoutState();
+            ApplyResponsiveLayout(force: true);
+            ApplyUiLabels();
             UpdatePresetName();
         }
 
@@ -108,6 +128,8 @@ namespace MiniMapGame.UI
         {
             if (Input.GetKeyDown(toggleKey) && controlPanel != null)
                 controlPanel.SetActive(!controlPanel.activeSelf);
+
+            ApplyResponsiveLayout();
         }
 
         private void SelectPreset(MapPreset preset)
@@ -176,7 +198,39 @@ namespace MiniMapGame.UI
         private void UpdatePresetName()
         {
             if (presetNameText != null && mapManager != null && mapManager.activePreset != null)
-                presetNameText.text = mapManager.activePreset.displayName;
+                presetNameText.text = GetPresetDisplayLabel(mapManager.activePreset);
+        }
+
+        private void ApplyUiLabels()
+        {
+            SetButtonLabel(coastalButton, GetPresetDisplayLabel(coastalPreset));
+            SetButtonLabel(ruralButton, GetPresetDisplayLabel(ruralPreset));
+            SetButtonLabel(gridButton, GetPresetDisplayLabel(gridPreset));
+            SetButtonLabel(mountainButton, GetPresetDisplayLabel(mountainPreset));
+            SetButtonLabel(darkThemeButton, "Dark");
+            SetButtonLabel(parchmentThemeButton, "Parchment");
+        }
+
+        private static void SetButtonLabel(Button button, string label)
+        {
+            if (button == null) return;
+            var text = button.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+                text.text = label;
+        }
+
+        private static string GetPresetDisplayLabel(MapPreset preset)
+        {
+            if (preset == null) return "---";
+
+            return preset.generatorType switch
+            {
+                GeneratorType.Grid => "Grid",
+                GeneratorType.Mountain => "Mountain",
+                GeneratorType.Rural => "Rural",
+                _ when preset.hasCoast => "Coastal",
+                _ => string.IsNullOrWhiteSpace(preset.displayName) ? "Preset" : preset.displayName
+            };
         }
 
         private void OnMapGenerated(MapData data)
@@ -231,6 +285,40 @@ namespace MiniMapGame.UI
 
                 statsText.text = sb.ToString().TrimEnd();
             }
+        }
+
+        private void CacheResponsiveLayoutState()
+        {
+            if (controlPanel == null) return;
+
+            _controlPanelRect = controlPanel.GetComponent<RectTransform>();
+            if (_controlPanelRect == null) return;
+
+            _panelBaseScale = _controlPanelRect.localScale;
+            _panelBaseAnchoredPosition = _controlPanelRect.anchoredPosition;
+        }
+
+        private void ApplyResponsiveLayout(bool force = false)
+        {
+            if (_controlPanelRect == null)
+                CacheResponsiveLayoutState();
+
+            if (_controlPanelRect == null) return;
+
+            int screenWidth = Screen.width;
+            int screenHeight = Screen.height;
+            if (!force && screenWidth == _lastScreenWidth && screenHeight == _lastScreenHeight)
+                return;
+
+            _lastScreenWidth = screenWidth;
+            _lastScreenHeight = screenHeight;
+
+            float widthScale = screenWidth / Mathf.Max(referenceScreenWidth, 1f);
+            float heightScale = screenHeight / Mathf.Max(referenceScreenHeight, 1f);
+            float panelScale = Mathf.Clamp(Mathf.Min(widthScale, heightScale), minPanelScale, maxPanelScale);
+
+            _controlPanelRect.localScale = _panelBaseScale * panelScale;
+            _controlPanelRect.anchoredPosition = _panelBaseAnchoredPosition * panelScale;
         }
     }
 }
