@@ -268,5 +268,14 @@
     "cat": "infra",
     "file": "docs/specs/road-width-table-audit.md",
     "summary": "E仕様の事前監査。道路幅表記をmax,minに統一し、SPECとBuildingPlacerの数値一致を確認"
+  },
+  {
+    "id": "SP-031",
+    "title": "Git認証トラブルシュート",
+    "status": "done",
+    "pct": 100,
+    "cat": "infra",
+    "file": "docs/git-auth-troubleshooting.md",
+    "summary": "HTTPS + GCM の認証経路、push失敗時の確認手順、既知エラーの切り分けを整理"
   }
 ]

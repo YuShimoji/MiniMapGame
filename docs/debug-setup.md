@@ -200,3 +200,7 @@
 ### steepnessBias が効いていない
 - 既存プリセット .asset ファイルは steepnessBias=0 がデフォルト
 - Inspector で各プリセットの steepnessBias を 0.5 に設定する
+
+### `git push` が失敗する
+- 本環境は HTTPS + Git Credential Manager (GCM) を利用
+- 再確認手順は `docs/git-auth-troubleshooting.md` を参照
