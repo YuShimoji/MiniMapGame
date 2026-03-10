@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEditor;
@@ -184,6 +185,8 @@ namespace MiniMapGame.EditorTools
             cam.orthographic = false;
             cam.fieldOfView = 60f;
             var camCtrl = EnsureComponent<CameraController>(cam.gameObject);
+            camCtrl.initialDistance = 120f;
+            camCtrl.distanceMinMax = new Vector2(10f, 300f);
 
             // Camera anti-aliasing (SMAA Low)
             var urpCamData = cam.GetUniversalAdditionalCameraData();
@@ -455,6 +458,15 @@ namespace MiniMapGame.EditorTools
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 0.5f;
             EnsureComponent<GraphicRaycaster>(canvasGo);
+
+            // EventSystem is required for all UI interaction (buttons, inputs, sliders)
+            if (Object.FindAnyObjectByType<EventSystem>() == null)
+            {
+                var esGo = FindOrCreate("EventSystem");
+                EnsureComponent<EventSystem>(esGo);
+                EnsureComponent<StandaloneInputModule>(esGo);
+            }
+
             return canvas;
         }
 
@@ -642,8 +654,17 @@ namespace MiniMapGame.EditorTools
 
         private static void SetupMapControlUI(Canvas canvas, MapManager mapManager, AnalysisVisualizer viz)
         {
+            // MapControlUI lives on a separate GO so F1 toggle can hide the panel
+            // without disabling the MonoBehaviour that listens for F1.
+            var controllerGo = FindOrCreate("MapControlUIController", canvas.transform);
+            var controlUI = EnsureComponent<MiniMapGame.UI.MapControlUI>(controllerGo);
+            // Controller GO needs a RectTransform but is invisible (no Image/Graphic)
+            var controllerRect = EnsureComponent<RectTransform>(controllerGo);
+            controllerRect.anchorMin = Vector2.zero;
+            controllerRect.anchorMax = Vector2.zero;
+            controllerRect.sizeDelta = Vector2.zero;
+
             var panelGo = FindOrCreate("MapControlPanel", canvas.transform);
-            var controlUI = EnsureComponent<MiniMapGame.UI.MapControlUI>(panelGo);
             controlUI.controlPanel = panelGo;
             controlUI.mapManager = mapManager;
             controlUI.analysisVisualizer = viz;
@@ -1576,8 +1597,28 @@ namespace MiniMapGame.EditorTools
             int layer = LayerMask.NameToLayer(layerName);
             if (layer == -1)
             {
-                Debug.LogWarning($"[SceneBootstrapper] Layer '{layerName}' not found. " +
-                    $"Please create it in Edit > Project Settings > Tags and Layers.");
+                // Try to auto-create the layer in an empty slot (8-31 are user layers)
+                var tagManager = new SerializedObject(
+                    AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+                var layersProp = tagManager.FindProperty("layers");
+                bool created = false;
+                for (int i = 8; i < layersProp.arraySize; i++)
+                {
+                    var slot = layersProp.GetArrayElementAtIndex(i);
+                    if (string.IsNullOrEmpty(slot.stringValue))
+                    {
+                        slot.stringValue = layerName;
+                        tagManager.ApplyModifiedPropertiesWithoutUndo();
+                        Debug.Log($"[SceneBootstrapper] Created layer '{layerName}' at index {i}.");
+                        created = true;
+                        break;
+                    }
+                }
+                if (!created)
+                {
+                    Debug.LogWarning($"[SceneBootstrapper] Layer '{layerName}' not found and no empty slots available. " +
+                        $"Please create it in Edit > Project Settings > Tags and Layers.");
+                }
             }
         }
     }

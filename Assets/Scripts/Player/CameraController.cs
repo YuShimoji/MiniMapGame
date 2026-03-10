@@ -107,8 +107,9 @@ namespace MiniMapGame.Player
                 if (Time.time - _lastPanTime > panReleaseReturnTime)
                     _state = CameraState.Following;
             }
-            else if (Input.GetAxis("Mouse ScrollWheel") == 0)
+            else if (_state == CameraState.ManualOrbit)
             {
+                // Return to Following when right-click is released
                 _state = CameraState.Following;
             }
         }
@@ -155,13 +156,7 @@ namespace MiniMapGame.Player
                 _currentOrbitAngles.x = Mathf.Clamp(_currentOrbitAngles.x, pitchMinMax.x, pitchMinMax.y);
                 _targetOrbitAngles = _currentOrbitAngles;
             }
-            else if (_state == CameraState.Following && playerTarget != null)
-            {
-                _targetOrbitAngles.y = playerTarget.eulerAngles.y;
-                _currentOrbitAngles = Vector2.SmoothDamp(_currentOrbitAngles,
-                    new Vector2(_currentOrbitAngles.x, _targetOrbitAngles.y),
-                    ref _orbitVelocity, followRotationSmoothTime);
-            }
+            // Following: keep current orbit angles (no rotation tracking of player heading)
         }
 
         void ApplyCameraTransform()

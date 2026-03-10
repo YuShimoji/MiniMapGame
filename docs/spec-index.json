@@ -245,7 +245,7 @@
   {
     "id": "SP-028",
     "title": "P4道路手動検証ゲート",
-    "status": "partial",
+    "status": "todo",
     "pct": 0,
     "cat": "infra",
     "file": "docs/verification/road-p4-gate-results.md",

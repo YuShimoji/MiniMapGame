@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
   m_Name: Preset_Rural
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
-  displayName: "\u7530\u820E\u753A"
+  displayName: Rural
   generatorType: 3
   arterialRange: {x: 3, y: 4}
   hasRingRoad: 0
@@ -21,7 +21,7 @@ MonoBehaviour:
   hasCoast: 0
   hasRiver: 1
   hillDensity: 0.75
-  description: "\u758E\u3089\u306A\u96C6\u843D\u3002\u5E83\u3044\u8FB2\u6751\u5730\u5E2F\u3068\u5DDD\u3002"
+  description: Sparse settlement. Wide farmland with a river.
   worldWidth: 860
   worldHeight: 580
   borderPadding: 50

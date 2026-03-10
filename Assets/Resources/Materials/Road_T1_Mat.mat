@@ -25,19 +25,19 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _CenterLineSolid: 1
-    - _CrackDensity: 0.05
-    - _CurbRatio: 0.071
+    - _CenterLineSolid: 0
+    - _CrackDensity: 0.08
+    - _CurbRatio: 0.083333336
     - _DashGap: 1.5
-    - _DashLength: 2
+    - _DashLength: 1.5
     - _HasCenterLine: 1
     - _HasEdgeLines: 1
-    - _HasLaneDividers: 1
-    - _LaneCount: 4
-    - _MarkingWidthRatio: 0.014
-    - _Roughness: 0.2
-    - _ShoulderRatio: 0.107
-    - _Wear: 0.1
+    - _HasLaneDividers: 0
+    - _LaneCount: 2
+    - _MarkingWidthRatio: 0.016666666
+    - _Roughness: 0.25
+    - _ShoulderRatio: 0.11111111
+    - _Wear: 0.15
     m_Colors:
     - _BaseColor: {r: 0.26, g: 0.34, b: 0.42, a: 1}
     - _CasingColor: {r: 0.2, g: 0.27, b: 0.36, a: 1}

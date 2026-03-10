@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
   m_Name: Preset_Grid
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
-  displayName: "NYC\u30B0\u30EA\u30C3\u30C9"
+  displayName: NYC Grid
   generatorType: 1
   arterialRange: {x: 5, y: 7}
   hasRingRoad: 0
@@ -21,7 +21,7 @@ MonoBehaviour:
   hasCoast: 0
   hasRiver: 0
   hillDensity: 0
-  description: "\u6574\u7136\u3068\u3057\u305F\u30D6\u30ED\u30C3\u30AF\u69CB\u9020\u3002\u9AD8\u5BC6\u5EA6\u5E02\u8857\u5730\u3002"
+  description: Orderly block structure. Dense urban district.
   worldWidth: 860
   worldHeight: 580
   borderPadding: 50

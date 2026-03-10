@@ -21,7 +21,7 @@ namespace MiniMapGame.EditorTools
 
             CreatePreset(folder, "Preset_Coastal", new PresetDef
             {
-                displayName = "港湾都市",
+                displayName = "Coastal",
                 generatorType = GeneratorType.Organic,
                 arterialRange = new Vector2Int(6, 8),
                 hasRingRoad = true,
@@ -35,12 +35,12 @@ namespace MiniMapGame.EditorTools
                 enableBridges = true,
                 waterProfile = null, // Uses WaterProfile.CreateDefaultFallback()
                 decorationDensity = 0.6f,
-                description = "有機的な港町。入り組んだ路地と港湾区域。"
+                description = "Organic harbor town with winding alleys and a waterfront district."
             });
 
             CreatePreset(folder, "Preset_Rural", new PresetDef
             {
-                displayName = "田舎町",
+                displayName = "Rural",
                 generatorType = GeneratorType.Rural,
                 arterialRange = new Vector2Int(3, 4),
                 hasRingRoad = false,
@@ -54,12 +54,12 @@ namespace MiniMapGame.EditorTools
                 enableBridges = true,
                 waterProfile = null,
                 decorationDensity = 0.3f,
-                description = "疎らな集落。広い農村地帯と川。"
+                description = "Sparse settlement. Wide farmland with a river."
             });
 
             CreatePreset(folder, "Preset_Grid", new PresetDef
             {
-                displayName = "NYCグリッド",
+                displayName = "NYC Grid",
                 generatorType = GeneratorType.Grid,
                 arterialRange = new Vector2Int(5, 7),
                 hasRingRoad = false,
@@ -73,12 +73,12 @@ namespace MiniMapGame.EditorTools
                 enableBridges = false,
                 waterProfile = null,
                 decorationDensity = 0.7f,
-                description = "整然としたブロック構造。高密度市街地。"
+                description = "Orderly block structure. Dense urban district."
             });
 
             CreatePreset(folder, "Preset_Mountain", new PresetDef
             {
-                displayName = "山道",
+                displayName = "Mountain",
                 generatorType = GeneratorType.Mountain,
                 arterialRange = new Vector2Int(2, 3),
                 hasRingRoad = false,
@@ -92,7 +92,7 @@ namespace MiniMapGame.EditorTools
                 enableBridges = true,
                 waterProfile = null,
                 decorationDensity = 0.2f,
-                description = "険しい山岳路。行き止まりと分岐が多い。"
+                description = "Treacherous mountain trail. Many dead-ends and forks."
             });
 
             AssetDatabase.SaveAssets();

@@ -38,7 +38,7 @@ namespace MiniMapGame.EditorTools
                 AssetDatabase.CreateAsset(t, path);
             }
 
-            t.displayName = "ダーク";
+            t.displayName = "Dark";
 
             // Background
             t.backgroundColor = HexColor("06090d");
@@ -122,7 +122,7 @@ namespace MiniMapGame.EditorTools
                 AssetDatabase.CreateAsset(t, path);
             }
 
-            t.displayName = "パーチメント";
+            t.displayName = "Parchment";
 
             // Background
             t.backgroundColor = HexColor("e8e0cc");

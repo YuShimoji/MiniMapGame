@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
   m_Name: Preset_Coastal
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
-  displayName: "\u6E2F\u6E7E\u90FD\u5E02"
+  displayName: Coastal
   generatorType: 0
   arterialRange: {x: 6, y: 8}
   hasRingRoad: 1
@@ -21,7 +21,7 @@ MonoBehaviour:
   hasCoast: 1
   hasRiver: 1
   hillDensity: 0.3
-  description: "\u6709\u6A5F\u7684\u306A\u6E2F\u753A\u3002\u5165\u308A\u7D44\u3093\u3060\u8DEF\u5730\u3068\u6E2F\u6E7E\u533A\u57DF\u3002"
+  description: Organic harbor town with winding alleys and a waterfront district.
   worldWidth: 860
   worldHeight: 580
   borderPadding: 50

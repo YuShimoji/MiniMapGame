@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 using TMPro;
 using MiniMapGame.Data;
 using MiniMapGame.Runtime;
@@ -65,8 +66,8 @@ namespace MiniMapGame.Player
             float zoomRatio = Mathf.InverseLerp(minCameraDistance, maxCameraDistance, camDist);
             _agent.speed = Mathf.Lerp(minSpeed, maxSpeed, Mathf.Clamp01(zoomRatio));
 
-            // Click-to-move
-            if (Input.GetMouseButtonDown(0))
+            // Click-to-move (skip if clicking on UI)
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
                 Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Ground")))

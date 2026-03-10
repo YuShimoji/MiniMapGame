@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95514bbd029165142beecfd6630dbdb0, type: 3}
   m_Name: Theme_Dark
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapTheme
-  displayName: "\u30C0\u30FC\u30AF"
+  displayName: Dark
   backgroundColor: {r: 0.023529412, g: 0.03529412, b: 0.050980393, a: 1}
   groundColor: {r: 0.03529412, g: 0.047058824, b: 0.07058824, a: 1}
   roadOuter0: {r: 0.17254902, g: 0.24313726, b: 0.34509805, a: 1}

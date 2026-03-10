@@ -21,7 +21,7 @@ namespace MiniMapGame.EditorTools
 
             CreatePreset(folder, "InteriorPreset_Modern", new PresetDef
             {
-                displayName = "モダン都市建築",
+                displayName = "Modern Urban",
                 style = InteriorStyle.Modern,
                 minRoomSize = 4f,
                 maxRoomSize = 12f,
@@ -44,12 +44,12 @@ namespace MiniMapGame.EditorTools
                 wallColor = new Color(0.4f, 0.42f, 0.45f),
                 corridorColor = new Color(0.6f, 0.6f, 0.62f),
                 secretRoomColor = new Color(0.3f, 0.15f, 0.5f),
-                description = "モダンな都市建築。整然とした部屋配置と機能的な動線。"
+                description = "Modern urban architecture. Orderly room layout with functional circulation."
             });
 
             CreatePreset(folder, "InteriorPreset_Urban", new PresetDef
             {
-                displayName = "都心ビル",
+                displayName = "Downtown Office",
                 style = InteriorStyle.Urban,
                 minRoomSize = 3.5f,
                 maxRoomSize = 10f,
@@ -72,12 +72,12 @@ namespace MiniMapGame.EditorTools
                 wallColor = new Color(0.35f, 0.37f, 0.4f),
                 corridorColor = new Color(0.48f, 0.48f, 0.52f),
                 secretRoomColor = new Color(0.35f, 0.18f, 0.55f),
-                description = "密集した都心ビル。多数の小部屋と複雑な構造。"
+                description = "Dense downtown building. Many small rooms and complex structure."
             });
 
             CreatePreset(folder, "InteriorPreset_Suburban", new PresetDef
             {
-                displayName = "郊外住宅",
+                displayName = "Suburban Home",
                 style = InteriorStyle.Suburban,
                 minRoomSize = 4.5f,
                 maxRoomSize = 14f,
@@ -100,12 +100,12 @@ namespace MiniMapGame.EditorTools
                 wallColor = new Color(0.45f, 0.42f, 0.38f),
                 corridorColor = new Color(0.62f, 0.6f, 0.55f),
                 secretRoomColor = new Color(0.5f, 0.3f, 0.6f),
-                description = "ゆったりとした郊外住宅。広めの部屋と開放的な空間。"
+                description = "Spacious suburban home. Larger rooms and open layout."
             });
 
             CreatePreset(folder, "InteriorPreset_Rural", new PresetDef
             {
-                displayName = "田舎の建物",
+                displayName = "Rural Cottage",
                 style = InteriorStyle.Rural,
                 minRoomSize = 5f,
                 maxRoomSize = 16f,
@@ -128,12 +128,12 @@ namespace MiniMapGame.EditorTools
                 wallColor = new Color(0.4f, 0.35f, 0.28f),
                 corridorColor = new Color(0.55f, 0.5f, 0.42f),
                 secretRoomColor = new Color(0.4f, 0.25f, 0.5f),
-                description = "素朴な田舎の建物。不規則な間取りと質素な内装。"
+                description = "Simple rural building. Irregular layout with modest furnishing."
             });
 
             CreatePreset(folder, "InteriorPreset_Ruin", new PresetDef
             {
-                displayName = "廃墟",
+                displayName = "Ruin",
                 style = InteriorStyle.Mixed,
                 minRoomSize = 3f,
                 maxRoomSize = 10f,
@@ -156,12 +156,12 @@ namespace MiniMapGame.EditorTools
                 wallColor = new Color(0.28f, 0.26f, 0.24f),
                 corridorColor = new Color(0.35f, 0.33f, 0.3f),
                 secretRoomColor = new Color(0.3f, 0.15f, 0.4f),
-                description = "崩壊した廃墟。壁の崩落と不気味な空間配置。"
+                description = "Crumbling ruin. Collapsed walls and eerie spatial layout."
             });
 
             CreatePreset(folder, "InteriorPreset_Bizarre", new PresetDef
             {
-                displayName = "異常建築",
+                displayName = "Bizarre",
                 style = InteriorStyle.Bizarre,
                 minRoomSize = 3f,
                 maxRoomSize = 18f,
@@ -184,7 +184,7 @@ namespace MiniMapGame.EditorTools
                 wallColor = new Color(0.3f, 0.25f, 0.35f),
                 corridorColor = new Color(0.42f, 0.38f, 0.48f),
                 secretRoomColor = new Color(0.6f, 0.1f, 0.6f),
-                description = "非ユークリッド的な異常建築。常識外の空間構成。"
+                description = "Non-Euclidean bizarre architecture. Defies spatial logic."
             });
 
             AssetDatabase.SaveAssets();

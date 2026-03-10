@@ -6,9 +6,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（地形・道路・水系の品質向上完了、手動検証待ち）
-直近の状態: Gate-1（P4道路手動検証）運用を docs に追加し、検証記録テンプレートと runbook を整備。Pre-Gate仕様整理を継続し、SP-032（地表合成レンダリング設計）と SP-033（MVP実装計画）を docs/specs に追加した。Bootstrap UI には F2 の検証チェックリスト導線を追加し、`SceneBootstrapper` の UI 構築で `Graphic` 競合により bootstrap が中断する不具合を修正済み。ただし Unity Editor での再検証と Gate-1 実行記録は未完了。
-次の作業: Unity Editorで `MiniMapGame > Bootstrap Test Scene` を再実行し、Play中に F1/F2 のUI導線を確認したうえで、4プリセット×2テーマの Gate-1 を `docs/verification/road-p4-gate-results.md` に記録する。PASSなら SP-033 の MVP 実装着手、FAILなら bootstrap/road 表示不具合を修正タスク化して再検証する。
+現フェーズ: α（Gate-1ブロッカー修正完了、手動検証待ち）
+直近の状態: Gate-1手動検証を開始したところ複数のブロッカーを発見し修正。修正内容: (1) F1パネルトグル不具合→MapControlUIを別GOに分離, (2) 日本語displayName文字化け→全SO/Creatorを英語化, (3) UIクリック不能→EventSystem自動追加, (4) カメラ地上近すぎ→initialDistance=120, distanceMinMax=(10,300), (5) Groundレイヤー未作成→TagManager経由で自動作成, (6) 再生時ハング→NavMeshベイクをCoroutine化(BakeNavMeshAsync), (7) カメラ追従でアングルが戻る→Following時のプレイヤーyaw追従を無効化, (8) UIクリックで地面移動→IsPointerOverGameObjectガード追加。全修正コード済み・未検証。
+次の作業: Bootstrap再実行→Play→全修正の動作確認→Gate-1検証続行。
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -29,6 +29,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-09 | B実装方針: 実装コスト優先はモック、見た目優先を最終段階で採用 | コスト優先を本実装 / モック化 / 見た目優先先行 | 手戻り抑制しつつ最終品質を見た目重視で確保するため |
 | 2026-03-10 | SP-032地表表現は「carrier mesh + CPU semantic masks + compositing shader」で進める | Unity Terrain移行 / 地面メッシュ維持 + mask合成 | 道路・水・建物のエッジを保ったまま、疑似オルソフォト風の可読性を上げるため |
 | 2026-03-10 | SP-032のMVPは単一Ground mesh + 2枚maskで開始し、chunkingはIdeal段階へ後送り | 先にchunking / 先に単一meshMVP | Gate-1完了後に最小リスクで導入し、後段で高解像度化へ繋げるため |
+| 2026-03-11 | SO displayNameを英語化（CJKフォント不採用） | A:英語化 / B:CJKフォント追加 / C:バイリンガル | LiberationSans SDFがCJK非対応。フォント追加はアセットサイズ増大。UIテキストは英語で十分 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
@@ -85,11 +86,12 @@ Assets/
                     IEncounterTrigger, IValueObject, IExtractDecision, IMapEventBus
     Player/         PlayerMovement, CameraController
     UI/             MapControlUI, PlayerHUD, MiniMapController,
-                    WorldPositionTrackerUI, LabelController
+                    WorldPositionTrackerUI, LabelController,
+                    VerificationChecklistUI
     MiniGame/       MiniGameManager, MiniGameTypes, IMiniGame, RoomTrigger,
                     TimingCombatGame, MemoryMatchGame, TrapDodgeGame
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
-                    RoadProfileCreator
+                    RoadProfileCreator, InteriorDebugPreview
   Shaders/          GridGround.shader, Water.shader, Road.shader
   Resources/
     Presets/        Preset_Coastal.asset 等

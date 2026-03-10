@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.AI.Navigation;
@@ -121,14 +122,14 @@ namespace MiniMapGame.Runtime
             // Ground plane (needed for NavMesh and player raycast)
             EnsureGroundPlane();
 
-            // Bake NavMesh after all geometry is in place
-            BakeNavMesh();
-
-            OnMapGenerated?.Invoke(CurrentMap);
+            // Bake NavMesh asynchronously to avoid blocking the main thread
+            StartCoroutine(BakeNavMeshAsync());
         }
 
         public void Clear()
         {
+            StopAllCoroutines();
+
             if (mapRenderer != null) mapRenderer.Clear();
             if (buildingSpawner != null) buildingSpawner.Clear();
             if (waterRenderer != null) waterRenderer.Clear();
@@ -223,7 +224,7 @@ namespace MiniMapGame.Runtime
             return mesh;
         }
 
-        private void BakeNavMesh()
+        private IEnumerator BakeNavMeshAsync()
         {
             if (navMeshSurface == null && groundPlane != null)
             {
@@ -235,9 +236,17 @@ namespace MiniMapGame.Runtime
             if (navMeshSurface != null)
             {
                 navMeshSurface.collectObjects = CollectObjects.All;
+
+                // Yield one frame so the scene renders before the blocking bake
+                yield return null;
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 navMeshSurface.BuildNavMesh();
-                Debug.Log("[MapManager] NavMesh baked successfully.");
+                sw.Stop();
+                Debug.Log($"[MapManager] NavMesh baked successfully ({sw.ElapsedMilliseconds}ms).");
             }
+
+            OnMapGenerated?.Invoke(CurrentMap);
         }
 
         private static IMapGenerator CreateGenerator(GeneratorType type)
