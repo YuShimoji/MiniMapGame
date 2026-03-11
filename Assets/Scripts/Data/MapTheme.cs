@@ -75,17 +75,17 @@ namespace MiniMapGame.Data
         public Color ambientParticleColor = new Color(0.5f, 0.7f, 1f, 0.15f);
 
         [Header("Ground")]
-        public Color gridLineColor;
+        public Color gridLineColor = new Color(0.22f, 0.26f, 0.20f, 1f);
         public float gridSize = 20f;
-        public float gridOpacity = 0.15f;
+        public float gridOpacity = 0.12f;
 
         [Header("Ground Surface Compositing")]
-        public Color groundMidColor = new Color(0.08f, 0.06f, 0.04f, 1f);
-        public Color groundHighColor = new Color(0.10f, 0.09f, 0.08f, 1f);
-        public Color groundSlopeColor = new Color(0.06f, 0.05f, 0.04f, 1f);
-        public Color groundMoistureTint = new Color(0.02f, 0.04f, 0.06f, 1f);
-        public Color groundRoadTint = new Color(0.06f, 0.055f, 0.05f, 1f);
-        public Color groundBuildingTint = new Color(0.055f, 0.05f, 0.045f, 1f);
-        public Color groundContourColor = new Color(0.02f, 0.025f, 0.035f, 1f);
+        public Color groundMidColor = new Color(0.38f, 0.34f, 0.26f, 1f);
+        public Color groundHighColor = new Color(0.48f, 0.44f, 0.38f, 1f);
+        public Color groundSlopeColor = new Color(0.34f, 0.30f, 0.26f, 1f);
+        public Color groundMoistureTint = new Color(0.18f, 0.28f, 0.32f, 1f);
+        public Color groundRoadTint = new Color(0.38f, 0.36f, 0.33f, 1f);
+        public Color groundBuildingTint = new Color(0.36f, 0.33f, 0.30f, 1f);
+        public Color groundContourColor = new Color(0.18f, 0.22f, 0.16f, 1f);
     }
 }

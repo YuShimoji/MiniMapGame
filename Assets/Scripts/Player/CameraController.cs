@@ -67,13 +67,12 @@ namespace MiniMapGame.Player
             if (playerTarget != null)
             {
                 _focusPoint = playerTarget.position + focusOffset;
-                _targetOrbitAngles = new Vector2(45f, playerTarget.eulerAngles.y);
             }
             else
             {
                 _focusPoint = Vector3.zero;
-                _targetOrbitAngles = new Vector2(45f, 0f);
             }
+            _targetOrbitAngles = new Vector2(50f, 0f);
             _currentOrbitAngles = _targetOrbitAngles;
             ApplyCameraTransform();
         }

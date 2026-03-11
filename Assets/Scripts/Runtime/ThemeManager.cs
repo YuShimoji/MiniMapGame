@@ -24,6 +24,23 @@ namespace MiniMapGame.Runtime
         public PostProcessingManager postProcessingManager;
         public AmbientParticleController ambientParticles;
 
+        private void OnEnable()
+        {
+            if (mapManager != null)
+                mapManager.OnMapGenerated += HandleMapGenerated;
+        }
+
+        private void Start()
+        {
+            ApplyTheme(activeTheme);
+        }
+
+        private void OnDisable()
+        {
+            if (mapManager != null)
+                mapManager.OnMapGenerated -= HandleMapGenerated;
+        }
+
         public void ApplyTheme()
         {
             ApplyTheme(activeTheme);
@@ -56,17 +73,27 @@ namespace MiniMapGame.Runtime
         {
             if (mapManager == null) return;
 
-            // Prefer the runtime material instance; fall back to shared asset
-            Material mat = GetGroundMaterialInstance();
+            ApplyGroundToMaterial(mapManager.groundMaterial, theme);
+
+            if (mapManager.groundPlane == null) return;
+
+            var mr = mapManager.groundPlane.GetComponent<MeshRenderer>();
+            if (mr == null) return;
+
+            var runtimeMat = mr.sharedMaterial;
+            if (runtimeMat != null && runtimeMat != mapManager.groundMaterial)
+                ApplyGroundToMaterial(runtimeMat, theme);
+        }
+
+        private static void ApplyGroundToMaterial(Material mat, MapTheme theme)
+        {
             if (mat == null) return;
 
-            // Base & grid
             mat.SetColor("_BaseColor", theme.groundColor);
             mat.SetColor("_GridColor", theme.gridLineColor);
             mat.SetFloat("_GridSize", theme.gridSize);
             mat.SetFloat("_GridOpacity", theme.gridOpacity);
 
-            // Surface compositing colors
             mat.SetColor("_MidColor", theme.groundMidColor);
             mat.SetColor("_HighColor", theme.groundHighColor);
             mat.SetColor("_SlopeColor", theme.groundSlopeColor);
@@ -76,17 +103,9 @@ namespace MiniMapGame.Runtime
             mat.SetColor("_ContourColor", theme.groundContourColor);
         }
 
-        private Material GetGroundMaterialInstance()
+        private void HandleMapGenerated(MapData _)
         {
-            // Try to get the runtime instance from the ground plane's renderer
-            if (mapManager.groundPlane != null)
-            {
-                var mr = mapManager.groundPlane.GetComponent<MeshRenderer>();
-                if (mr != null && mr.material != null)
-                    return mr.material;
-            }
-            // Fall back to shared material for pre-generation theme setup
-            return mapManager.groundMaterial;
+            ApplyTheme(activeTheme);
         }
 
         private void ApplyRoadMaterials(MapTheme theme)

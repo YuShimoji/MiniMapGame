@@ -2,14 +2,14 @@
 
 **Status**: partial
 **Category**: system
-**実装率**: 18% (設計・タスク分解のみ、未実装)
+**実装率**: 80% (Slice 1-4 実装済み、Slice 5 検証・色調整中)
 
 ## 目的
 
 `SP-032` を Gate-1 完了後すぐ着手できる粒度まで分解する。
 本書は「何をどの順番で実装するか」「どのファイルをどう触るか」「どこまでを MVP とするか」を固定する。
 
-> **Blocker**: Gate-1（P4道路手動検証）が未完了のため、本書は**実装準備専用**である。
+> Gate-1 は art direction 依存で保留。SP-032 MVP は先行着手し Slice 1-4 完了。
 
 ---
 
@@ -318,65 +318,87 @@ public Color groundBuildingInfluenceColor;
 
 ## 実装スライス
 
-### Slice 1: Infrastructure
+### Slice 1: Infrastructure — DONE
 
 対象:
 
-- `GroundSemanticMaskSet`
-- `GroundSurfacePresetDefaults`
-- `MapManager` の runtime material lifecycle
+- `GroundSemanticMaskSet` — 新規作成済み
+- `GroundSurfacePresetDefaults` — 新規作成済み
+- `MapManager` の runtime material lifecycle — 実装済み
 
-完了条件:
+実装内容:
 
-- 生成前後で texture / material の破棄責務が明確
-- mask 未生成でも従来表示が壊れない
+- `MapManager` に `groundGridResolution=96`, `groundMaskResolution=1024` フィールド追加
+- `_groundMaterialInstance` で共有マテリアル汚染を防止
+- `CurrentMaskSet` プロパティで外部からマスク参照可能
+- `Clear()` でテクスチャ・マテリアルインスタンスを破棄
 
-### Slice 2: CPU Baker
-
-対象:
-
-- `GroundSemanticMaskBaker`
-- `RoadCurveSampler`
-
-完了条件:
-
-- 同一 seed で 동일な texture を返す
-- road / water / building influence が expected UV 位置に焼かれる
-
-### Slice 3: Ground Shader
+### Slice 2: CPU Baker — DONE
 
 対象:
 
-- `GridGround.shader`
+- `GroundSemanticMaskBaker` — 新規作成済み
+- `RoadCurveSampler` — 新規作成済み
 
-完了条件:
+実装内容:
 
-- hillshade / contour / moisture / road / building tint が動く
-- debug grid が default off になる
+- 道路ベジエポリライン事前計算 + PointToSegmentDistance
+- 交差点（degree>=3ノード）の位置・半径事前計算
+- 水辺ポイント事前計算（pathPoints を間引きサンプル）
+- 全テクセルで elevation/slope/curvature/jitter + moisture/road/building/intersection を計算
+- `Texture2D.Apply(false, true)` で GPU-only 化
 
-### Slice 4: Theme Integration
-
-対象:
-
-- `MapTheme`
-- `ThemeManager`
-
-完了条件:
-
-- theme 切替で色だけ更新される
-- semantic texture の再生成が発生しない
-
-### Slice 5: Validation Hooks
+### Slice 3: Ground Shader — DONE
 
 対象:
 
-- debug docs
+- `GridGround.shader` — 全面書き換え済み
+
+実装内容:
+
+- 13 ステップ合成パイプライン（SP-032 Shader 設計セクション参照）
+- mesh UV でマスクテクスチャをサンプル（worldXZ→UV 変換は不要）
+- hillshade は `_GroundHeightSlopeTex_TexelSize` ベースの 4-tap
+- dual-scale grid は距離フェード付きで常時表示（debug mode 未導入）
+
+実装との差分:
+
+- `_MacroNoiseTex` は MVP では省略
+- `_GridMode` は未実装（grid は常時表示 + distance fade）
+- property 名は仕様提案から簡略化（`_ElevTintLowColor` → `_MidColor` 等）
+
+### Slice 4: Theme Integration — DONE
+
+対象:
+
+- `MapTheme` — 7 色フィールド追加済み
+- `ThemeManager` — マテリアルインスタンス対応済み
+
+実装内容:
+
+- `MapTheme` に `groundMidColor`, `groundHighColor`, `groundSlopeColor`,
+  `groundMoistureTint`, `groundRoadTint`, `groundBuildingTint`, `groundContourColor` 追加
+- `ThemeManager.ApplyGround()` は `GetGroundMaterialInstance()` で runtime instance 優先
+- strength は theme に持たせず `GroundSurfacePresetDefaults` で管理
+
+実装との差分:
+
+- 仕様提案の `groundElevationLowColor` / `groundElevationHighColor` は
+  `groundMidColor` / `groundHighColor` に名称変更
+
+### Slice 5: Validation Hooks — PENDING
+
+対象:
+
+- debug docs 更新
 - optional logging
+- 色パレット調整
 
-完了条件:
+残タスク:
 
-- manual validation checklist を実行可能
-- 破棄漏れ、GC spike、ズレ検出の観点が揃う
+- 既存 MapTheme SO アセットの Ground Surface Compositing 値を Inspector で更新
+- 4 preset × 2 theme の手動検証
+- Console ログ確認（mask bake 時間、NavMesh bake 時間）
 
 ---
 
@@ -426,10 +448,10 @@ public Color groundBuildingInfluenceColor;
 
 ---
 
-## 実装開始前の最終確認
+## 実装開始前の最終確認（実施済み）
 
-- Gate-1 の結果が `PASS`
-- `docs/verification/road-p4-gate-results.md` が記録済み
-- `SP-032` と本書の保留事項が増えていない
-- `MapRenderer.cs` のユーザー変更と道路 sampling 分離が衝突しない
+- ~~Gate-1 の結果が `PASS`~~ → Gate-1 は保留、SP-032 を先行実装
+- ~~`docs/verification/road-p4-gate-results.md` が記録済み~~ → 保留
+- `SP-032` と本書の保留事項が増えていない → OK
+- `MapRenderer.cs` のユーザー変更と道路 sampling 分離が衝突しない → `RoadCurveSampler` で分離済み
 

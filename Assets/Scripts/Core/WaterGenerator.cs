@@ -100,6 +100,13 @@ namespace MiniMapGame.Core
             float baseX = w * (1f - reach);
             float jitter = roughness * 0.12f;
 
+            // W-2: Bay/cape pre-computation
+            float coastLength = h;
+            float amplitude = reach * w * config.bayAmplitude;
+            float[] baySigns = null;
+            if (config.bayAmplitude > 0f && config.baySpacing > 1f)
+                baySigns = PrecomputeBaySigns(rng, coastLength, config.baySpacing);
+
             coast.pathPoints.Add(new Vector2(baseX + rng.Next() * w * 0.1f, 0f));
             coast.pathPoints.Add(new Vector2(w, 0f));
             coast.pathPoints.Add(new Vector2(w, h));
@@ -107,7 +114,14 @@ namespace MiniMapGame.Core
             float y = h;
             while (y > 0f)
             {
-                float x = baseX + w * (rng.Next() - 0.5f) * jitter;
+                float bayDisp = 0f;
+                if (baySigns != null)
+                {
+                    float along = h - y;
+                    bayDisp = ComputeBayOffset(along, coastLength, amplitude,
+                        config.baySpacing, baySigns);
+                }
+                float x = baseX + w * (rng.Next() - 0.5f) * jitter + bayDisp;
                 coast.pathPoints.Add(new Vector2(x, y));
                 y -= config.stepSizeMin + rng.Next() * (config.stepSizeMax - config.stepSizeMin);
             }
@@ -120,6 +134,13 @@ namespace MiniMapGame.Core
             float baseY = h * (1f - reach);
             float jitter = roughness * 0.12f;
 
+            // W-2: Bay/cape pre-computation
+            float coastLength = w;
+            float amplitude = reach * h * config.bayAmplitude;
+            float[] baySigns = null;
+            if (config.bayAmplitude > 0f && config.baySpacing > 1f)
+                baySigns = PrecomputeBaySigns(rng, coastLength, config.baySpacing);
+
             coast.pathPoints.Add(new Vector2(0f, baseY + rng.Next() * h * 0.1f));
             coast.pathPoints.Add(new Vector2(0f, h));
             coast.pathPoints.Add(new Vector2(w, h));
@@ -127,7 +148,14 @@ namespace MiniMapGame.Core
             float x = w;
             while (x > 0f)
             {
-                float cy = baseY + h * (rng.Next() - 0.5f) * jitter;
+                float bayDisp = 0f;
+                if (baySigns != null)
+                {
+                    float along = w - x;
+                    bayDisp = ComputeBayOffset(along, coastLength, amplitude,
+                        config.baySpacing, baySigns);
+                }
+                float cy = baseY + h * (rng.Next() - 0.5f) * jitter + bayDisp;
                 coast.pathPoints.Add(new Vector2(x, cy));
                 x -= config.stepSizeMin + rng.Next() * (config.stepSizeMax - config.stepSizeMin);
             }
@@ -140,6 +168,13 @@ namespace MiniMapGame.Core
             float baseX = w * reach;
             float jitter = roughness * 0.12f;
 
+            // W-2: Bay/cape pre-computation (left coast: negate displacement)
+            float coastLength = h;
+            float amplitude = reach * w * config.bayAmplitude;
+            float[] baySigns = null;
+            if (config.bayAmplitude > 0f && config.baySpacing > 1f)
+                baySigns = PrecomputeBaySigns(rng, coastLength, config.baySpacing);
+
             coast.pathPoints.Add(new Vector2(baseX - rng.Next() * w * 0.1f, 0f));
             coast.pathPoints.Add(new Vector2(0f, 0f));
             coast.pathPoints.Add(new Vector2(0f, h));
@@ -147,7 +182,14 @@ namespace MiniMapGame.Core
             float y = h;
             while (y > 0f)
             {
-                float x = baseX + w * (rng.Next() - 0.5f) * jitter;
+                float bayDisp = 0f;
+                if (baySigns != null)
+                {
+                    float along = h - y;
+                    bayDisp = ComputeBayOffset(along, coastLength, amplitude,
+                        config.baySpacing, baySigns) * -1f; // invert for left coast
+                }
+                float x = baseX + w * (rng.Next() - 0.5f) * jitter + bayDisp;
                 coast.pathPoints.Add(new Vector2(x, y));
                 y -= config.stepSizeMin + rng.Next() * (config.stepSizeMax - config.stepSizeMin);
             }
@@ -160,6 +202,13 @@ namespace MiniMapGame.Core
             float baseY = h * reach;
             float jitter = roughness * 0.12f;
 
+            // W-2: Bay/cape pre-computation (top coast: negate displacement)
+            float coastLength = w;
+            float amplitude = reach * h * config.bayAmplitude;
+            float[] baySigns = null;
+            if (config.bayAmplitude > 0f && config.baySpacing > 1f)
+                baySigns = PrecomputeBaySigns(rng, coastLength, config.baySpacing);
+
             coast.pathPoints.Add(new Vector2(0f, baseY - rng.Next() * h * 0.1f));
             coast.pathPoints.Add(new Vector2(0f, 0f));
             coast.pathPoints.Add(new Vector2(w, 0f));
@@ -167,7 +216,14 @@ namespace MiniMapGame.Core
             float x = w;
             while (x > 0f)
             {
-                float cy = baseY + h * (rng.Next() - 0.5f) * jitter;
+                float bayDisp = 0f;
+                if (baySigns != null)
+                {
+                    float along = w - x;
+                    bayDisp = ComputeBayOffset(along, coastLength, amplitude,
+                        config.baySpacing, baySigns) * -1f; // invert for top coast
+                }
+                float cy = baseY + h * (rng.Next() - 0.5f) * jitter + bayDisp;
                 coast.pathPoints.Add(new Vector2(x, cy));
                 x -= config.stepSizeMin + rng.Next() * (config.stepSizeMax - config.stepSizeMin);
             }
@@ -292,6 +348,10 @@ namespace MiniMapGame.Core
                 stepCount++;
             }
 
+            // W-3: Apply sandbanks at meander bends
+            if (config.sandbankStrength > 0f)
+                ApplySandbanks(river, config.sandbankStrength);
+
             river.ComputeBounds();
             return river;
         }
@@ -371,6 +431,75 @@ namespace MiniMapGame.Core
             float cos = Mathf.Cos(radians);
             float sin = Mathf.Sin(radians);
             return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
+        }
+
+        // ─── W-2: Bay/cape coastline patterns ──────────────────────────────
+
+        /// <summary>
+        /// Pre-compute random sign for each bay/cape feature along the coastline.
+        /// +1 = cape (land protrudes), -1 = bay (water indents).
+        /// </summary>
+        private static float[] PrecomputeBaySigns(SeededRng rng, float coastLength, float baySpacing)
+        {
+            int count = Mathf.Max(1, Mathf.RoundToInt(coastLength / baySpacing));
+            var signs = new float[count];
+            for (int i = 0; i < count; i++)
+                signs[i] = rng.Next() > 0.5f ? 1f : -1f;
+            return signs;
+        }
+
+        /// <summary>
+        /// Compute bay/cape displacement at a position along the coastline.
+        /// Returns positive for cape, negative for bay.
+        /// Uses smooth cosine bumps centered on each segment.
+        /// </summary>
+        private static float ComputeBayOffset(float along, float coastLength,
+            float amplitude, float baySpacing, float[] baySigns)
+        {
+            int count = baySigns.Length;
+            float segLen = coastLength / count;
+            float offset = 0f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float segCenter = (i + 0.5f) * segLen;
+                float localT = (along - segCenter) / (segLen * 0.5f);
+                if (Mathf.Abs(localT) <= 1f)
+                {
+                    float shape = 0.5f + 0.5f * Mathf.Cos(localT * Mathf.PI);
+                    offset += baySigns[i] * amplitude * shape;
+                }
+            }
+
+            return offset;
+        }
+
+        // ─── W-3: Sandbanks at river meanders ──────────────────────────────
+
+        /// <summary>
+        /// Reduce river depth at high-curvature bends to create sandbank visuals.
+        /// The shader's ShallowColor renders reduced-depth areas lighter.
+        /// </summary>
+        private static void ApplySandbanks(WaterBodyData river, float strength)
+        {
+            var points = river.pathPoints;
+            if (points.Count < 3) return;
+
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                Vector2 d1 = (points[i] - points[i - 1]).normalized;
+                Vector2 d2 = (points[i + 1] - points[i]).normalized;
+                float cross = Mathf.Abs(d1.x * d2.y - d1.y * d2.x);
+
+                const float curvatureThreshold = 0.1f;
+                if (cross > curvatureThreshold)
+                {
+                    float intensity = Mathf.Clamp01((cross - curvatureThreshold) / 0.5f);
+                    float factor = 1f - strength * intensity;
+                    factor = Mathf.Max(factor, 0.2f);
+                    river.depths[i] *= factor;
+                }
+            }
         }
 
         // ─── W-5: Per-preset meander auto-tuning ─────────────────────────

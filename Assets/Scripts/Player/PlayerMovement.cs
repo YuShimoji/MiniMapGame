@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.EventSystems;
 using TMPro;
 using MiniMapGame.Data;
 using MiniMapGame.Runtime;
@@ -13,13 +12,9 @@ namespace MiniMapGame.Player
         private Camera _mainCamera;
         private MapManager _mapManager;
 
-        [Header("Movement Speed Settings")]
-        public float minSpeed = 2f;
-        public float maxSpeed = 8f;
-
-        [Header("Camera Distance → Speed Mapping")]
-        public float minCameraDistance = 5f;
-        public float maxCameraDistance = 50f;
+        [Header("Movement")]
+        public float moveSpeed = 12f;
+        public float rotationSmoothTime = 0.08f;
 
         [Header("Interaction UI")]
         public TextMeshProUGUI interactionMessageText;
@@ -29,6 +24,7 @@ namespace MiniMapGame.Player
 
         private Collider _currentInteractionCollider;
         private BuildingInteraction _currentBuilding;
+        private float _rotationVelocity;
 
         void Start()
         {
@@ -59,36 +55,45 @@ namespace MiniMapGame.Player
 
         void Update()
         {
-            if (_agent == null || _mainCamera == null) return;
+            if (_mainCamera == null) return;
 
-            // Speed based on camera distance (Perspective-compatible)
-            float camDist = Vector3.Distance(_mainCamera.transform.position, transform.position);
-            float zoomRatio = Mathf.InverseLerp(minCameraDistance, maxCameraDistance, camDist);
-            _agent.speed = Mathf.Lerp(minSpeed, maxSpeed, Mathf.Clamp01(zoomRatio));
-
-            // Click-to-move (skip if clicking on UI)
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            // Retry agent creation until NavMesh is available
+            if (_agent == null || !_agent.isOnNavMesh)
             {
-                Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Ground")))
-                {
-                    if (_agent.isOnNavMesh)
-                        _agent.SetDestination(hit.point);
-                }
+                TryEnsureAgent();
+                if (_agent == null || !_agent.isOnNavMesh) return;
             }
 
-            // Interact with building
+            // WASD / arrow key input
+            float h = Input.GetAxisRaw("Horizontal");
+            float v = Input.GetAxisRaw("Vertical");
+
+            if (h * h + v * v > 0.01f)
+            {
+                // Camera-relative direction on XZ plane
+                Vector3 camFwd = _mainCamera.transform.forward;
+                camFwd.y = 0f;
+                camFwd.Normalize();
+                Vector3 camRight = _mainCamera.transform.right;
+                camRight.y = 0f;
+                camRight.Normalize();
+
+                Vector3 moveDir = (camFwd * v + camRight * h).normalized;
+
+                _agent.Move(moveDir * moveSpeed * Time.deltaTime);
+
+                // Smooth rotation toward movement direction
+                float targetAngle = Mathf.Atan2(moveDir.x, moveDir.z) * Mathf.Rad2Deg;
+                float smoothAngle = Mathf.SmoothDampAngle(
+                    transform.eulerAngles.y, targetAngle,
+                    ref _rotationVelocity, rotationSmoothTime);
+                transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+            }
+
+            // Building interaction
             if (_currentBuilding != null && Input.GetKeyDown(interactKey))
             {
                 _currentBuilding.Interact();
-            }
-
-            // Face movement direction
-            if (_agent.velocity.sqrMagnitude > 0.01f)
-            {
-                Vector3 dir = _agent.velocity.normalized;
-                float targetAngle = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
-                transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
             }
         }
 
@@ -110,9 +115,19 @@ namespace MiniMapGame.Player
                 _agent = gameObject.AddComponent<NavMeshAgent>();
                 _agent.Warp(hit.position);
             }
+            else if (!_agent.isOnNavMesh)
+            {
+                // Agent exists but off-mesh — re-warp to nearest valid position
+                if (NavMesh.SamplePosition(transform.position, out var hit, 50f, NavMesh.AllAreas))
+                    _agent.Warp(hit.position);
+                else
+                    return;
+            }
 
             _agent.updateRotation = false;
             _agent.updateUpAxis = false;
+            _agent.ResetPath();
+            _agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
         }
 
         void OnTriggerEnter(Collider other)

@@ -3,30 +3,30 @@ Shader "MiniMapGame/GridGround"
     Properties
     {
         [Header(Base Colors)]
-        _BaseColor ("Base Color (Low Elev)", Color) = (0.035, 0.047, 0.07, 1)
-        _MidColor ("Mid Elevation Color", Color) = (0.08, 0.06, 0.04, 1)
-        _HighColor ("High Elevation Color", Color) = (0.10, 0.09, 0.08, 1)
+        _BaseColor ("Base Color (Low Elev)", Color) = (0.28, 0.33, 0.24, 1)
+        _MidColor ("Mid Elevation Color", Color) = (0.38, 0.34, 0.26, 1)
+        _HighColor ("High Elevation Color", Color) = (0.48, 0.44, 0.38, 1)
 
         [Header(Semantic Tints)]
-        _MoistureTint ("Moisture Tint", Color) = (0.02, 0.04, 0.06, 1)
-        _RoadTint ("Road Influence Tint", Color) = (0.06, 0.055, 0.05, 1)
-        _BuildingTint ("Building Influence Tint", Color) = (0.055, 0.05, 0.045, 1)
-        _SlopeColor ("Slope Tint", Color) = (0.06, 0.05, 0.04, 1)
+        _MoistureTint ("Moisture Tint", Color) = (0.18, 0.28, 0.32, 1)
+        _RoadTint ("Road Influence Tint", Color) = (0.38, 0.36, 0.33, 1)
+        _BuildingTint ("Building Influence Tint", Color) = (0.36, 0.33, 0.30, 1)
+        _SlopeColor ("Slope Tint", Color) = (0.34, 0.30, 0.26, 1)
 
         [Header(Grid)]
-        _GridColor ("Grid Color", Color) = (0.06, 0.08, 0.12, 1)
+        _GridColor ("Grid Color", Color) = (0.22, 0.26, 0.20, 1)
         _GridSize ("Grid Size", Float) = 20
-        _GridOpacity ("Grid Opacity", Range(0, 1)) = 0.15
+        _GridOpacity ("Grid Opacity", Range(0, 1)) = 0.12
 
         [Header(Contour)]
         _ContourInterval ("Contour Interval (world units)", Float) = 2.0
         _ContourLineWidth ("Contour Line Width", Range(0.005, 0.1)) = 0.03
-        _ContourColor ("Contour Line Color", Color) = (0.02, 0.025, 0.035, 1)
+        _ContourColor ("Contour Line Color", Color) = (0.18, 0.22, 0.16, 1)
 
         [Header(Hillshade)]
         _HillshadeLightDir ("Hillshade Light Dir (XY)", Vector) = (-0.7, 0.7, 0, 0)
 
-        [Header(Compositing Strengths — set by MapManager)]
+        [Header(Compositing Strengths)]
         _HillshadeStrength ("Hillshade Strength", Range(0, 1)) = 0.55
         _ContourStrength ("Contour Strength", Range(0, 1)) = 0.25
         _MoistureStrength ("Moisture Strength", Range(0, 1)) = 0.45
@@ -35,7 +35,7 @@ Shader "MiniMapGame/GridGround"
         _NearStart ("Near Blend Start", Float) = 20
         _NearEnd ("Near Blend End", Float) = 80
 
-        [Header(Mask Textures — bound at runtime)]
+        [Header(Mask Textures)]
         _GroundHeightSlopeTex ("HeightSlope Mask", 2D) = "gray" {}
         _GroundSemanticTex ("Semantic Mask", 2D) = "black" {}
     }

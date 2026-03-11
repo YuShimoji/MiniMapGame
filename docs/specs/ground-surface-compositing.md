@@ -2,7 +2,7 @@
 
 **Status**: partial
 **Category**: system
-**実装率**: 12% (設計統合のみ、未実装)
+**実装率**: 80% (MVP Slice 1-4 実装済み、手動検証・色調整中)
 
 ## 概要
 
@@ -18,8 +18,8 @@ Unity Terrain へ移行せず、既存のプロシージャル地面メッシュ
 3. 道路・水面・建物の輪郭は既存どおり独立メッシュで鮮明に保つ
 4. Theme 切替時にマスク再生成を行わず、色だけ差し替えられる構成にする
 
-> **Gate note**: Gate-1（P4道路手動検証）完了前は本仕様の**実装着手は行わない**。
-> 本書は Gate 待ち期間に行う設計統合メモである。
+> **Gate note**: Gate-1 は art direction 依存で保留中。
+> SP-032 MVP は先行実装を開始し、Slice 1-4 が完了済み。
 
 ---
 
@@ -198,142 +198,114 @@ MVP では Worker 提案を統合し、**2枚の CPU 生成 mask + 1枚の固定
 ## Ideal の packed texture 構成
 
 ### `_GroundMask0` (RGBA8)
+
 - `M01 / M02 / M03 / M04`
 
 ### `_GroundMask1` (RGBA8)
+
 - `M05 / M06 / M07 / M08`
 
 ### `_GroundMask2` (RGBA8)
+
 - `M10 / M11 / M12 / M13`
 
 ### `_GroundMask3` (RGBA8)
+
 - `M14 / M15 / M16 / M09`
 
 > Theme 切替では上記 texture を再生成しない。色と強度だけ差し替える。
 
 ---
 
-## Shader 設計（`GridGround.shader` 更新方針）
+## Shader 設計（`GridGround.shader` — 実装済み）
 
-### keep
+### プロパティ一覧（MVP 実装）
 
-- `_BaseColor`
-- `_GridColor`
-- `_GridSize`
-- `_GridOpacity`
+#### Color
 
-### rename
+- `_BaseColor` — 低標高の基底色
+- `_MidColor` — 中標高カラー
+- `_HighColor` — 高標高カラー
+- `_MoistureTint` — 水辺湿潤ティント
+- `_RoadTint` — 道路影響ティント
+- `_BuildingTint` — 建物影響ティント
+- `_SlopeColor` — 急斜面ティント
+- `_GridColor` — グリッド線カラー
+- `_ContourColor` — 等高線カラー
 
-- `_MidColor` -> `_ElevTintLowColor`
-- `_HighColor` -> `_ElevTintHighColor`
-- `_ElevMidThreshold` -> `_ElevTintStart`
-- `_ElevHighThreshold` -> `_ElevTintEnd`
-- `_ElevBlendRange` -> `_ElevTintFeather`
-- `_SlopeColor` -> `_SlopeTintColor`
-- `_SlopeThreshold` -> `_SlopeTintStart`
+#### Scalar
 
-### add
+- `_GridSize`, `_GridOpacity`
+- `_ContourInterval`, `_ContourLineWidth`
+- `_HillshadeStrength`, `_ContourStrength`
+- `_MoistureStrength`, `_RoadInfluenceStrength`, `_BuildingInfluenceStrength`
+- `_NearStart`, `_NearEnd`
 
-**Color**
-- `_ContourColor`
-- `_HillshadeShadowColor`
-- `_MoistureTintColor`
-- `_RoadInfluenceColor`
-- `_BuildingInfluenceColor`
+#### Vector
 
-**Scalar**
-- `_ElevTintStrength`
-- `_HillshadeStrength`
-- `_HillshadeAzimuthDeg`
-- `_HillshadeAltitudeDeg`
-- `_HillshadeAmbient`
-- `_ContourInterval`
-- `_ContourWidth`
-- `_ContourStrength`
-- `_ContourJitter`
-- `_MoistureStrength`
-- `_RoadInfluenceStrength`
-- `_BuildingInfluenceStrength`
-- `_NearDetailStrength`
-- `_FarFlattenStrength`
-- `_NearStart`
-- `_NearEnd`
-- `_GridMode`
-- `_AnalysisGridOpacity`
+- `_HillshadeLightDir` — hillshade 用2D光源方向 (XY)
 
-**Vector**
-- `_MapWorldSize` (`x=worldWidth, y=worldHeight, z=1/worldWidth, w=1/worldHeight`)
-- `_MaskTexelSize`
+#### Texture
 
-**Texture**
-- `_GroundHeightSlopeTex`
-- `_GroundSemanticTex`
-- `_MacroNoiseTex`
+- `_GroundHeightSlopeTex` — CPU ベイク済み (default: gray)
+- `_GroundSemanticTex` — CPU ベイク済み (default: black)
 
-### フラグメント処理順
+### MVP で省略したもの（Ideal で追加予定）
 
-1. `positionWS.xz` から map UV を計算
-2. `_GroundHeightSlopeTex`, `_GroundSemanticTex`, `_MacroNoiseTex` をサンプル
-3. base ground color
-4. subdued elevation tint
-5. cartographic hillshade
-6. readable contour
-7. moisture / shore tint
-8. road influence tint
-9. building influence tint
-10. near/far readability blend
-11. optional debug / analysis grid overlay
-12. fog
+- `_MacroNoiseTex` — 低周波色むらノイズ
+- `_GridMode` / `_AnalysisGridOpacity` — debug overlay モード切替
+- `_MapWorldSize` — mesh UV で代用中
+- `_HillshadeAzimuthDeg` / `_HillshadeAltitudeDeg` — `_HillshadeLightDir` ベクトルで代用
 
-### 効果分類
+### フラグメント処理順（実装済み 13 ステップ）
 
-**world-space only**
-- カメラ距離ブレンド
-- fog
-- debug grid overlay
-
-**texture-driven**
-- moisture / shore
-- road influence
-- building influence
-- macro color variation
-
-**hybrid**
-- hillshade
-- contour
-- elevation tint
+1. mesh UV でマスクテクスチャをサンプル
+2. `_GroundHeightSlopeTex`, `_GroundSemanticTex` をデコード
+3. **Elevation gradient** — elevNorm で Base → Mid → High をブレンド
+4. **Slope tinting** — slopeNorm > 0.3 で急斜面カラーを混合
+5. **Hillshade** — HeightSlope.R の 4-tap 法線再構成 + 2D 光源ドット積
+6. **Curvature enhancement** — curvature で谷暗 / 尾根明を乗算
+7. **Contour lines** — worldElev / interval + jitter で等高線マスク生成
+8. **Moisture tint** — Semantic.R で水辺ティント混合
+9. **Road influence** — Semantic.G で道路ティント混合
+10. **Building influence** — Semantic.B で建物ティント混合
+11. **Intersection boost** — Semantic.A × roadInf で交差点を微増光
+12. **Near/far + Grid overlay** — カメラ距離で dual-scale grid をフェード
+13. **Lighting + Fog** — Lambert + ambient + URP fog
 
 ### 計算戦略
 
-**hillshade**
+#### hillshade
+
 - `_GroundHeightSlopeTex.R` の近傍4tapから法線相当を再構成
-- `azimuth / altitude` は地形読解用の固定光源として扱う
+- `_HillshadeLightDir.xy` で 2D 光源方向を指定（azimuth/altitude ではなく直接ベクトル）
 - 実シーン lighting とは分離し、読図性を優先する
 
-**readable contour**
-- `ElevationNorm` を基準に `major/minor` へ発展可能な形で実装
-- MVP は単一 contour、Ideal で `major interval` を追加
-- jitter は `_GroundHeightSlopeTex.A` を利用し、機械的な均一感を弱める
+#### readable contour
 
-**moisture / shore tint**
+- `worldElev / _ContourInterval` を基準に単一 contour を描画
+- jitter は `_GroundHeightSlopeTex.A` を利用し、機械的な均一感を弱める
+- Ideal で `major/minor interval` の 2 段を追加予定
+
+#### moisture / shore tint
+
 - `_GroundSemanticTex.R` を利用
 - 川沿い湿潤、海岸側遷移、岸辺暗化を 1 channel へ集約
 
-**road influence tint**
-- `_GroundSemanticTex.G` を利用
-- 道路直下は濃すぎないよう抑え、主に路肩と道路沿いの地面差を出す
+#### road influence tint
 
-**building influence tint**
+- `_GroundSemanticTex.G` を利用
+- 半ブレンドで色を混ぜ、道路直下が濃すぎないよう抑制
+
+#### building influence tint
+
 - `_GroundSemanticTex.B` を利用
 - footprint のハードマスクではなく、接地リングの読ませ方を主役にする
 
-### debug grid の扱い
+### grid の扱い（MVP）
 
-- `_GridMode = 0`: デフォルト無効
-- `_GridMode = 1`: Debug Overlay
-- `_GridMode = 2`: Analysis Overlay
-
-二段階グリッドは常設アートではなく、解析支援レイヤに降格する。
+- MVP では dual-scale grid を常時表示（distance fade あり）
+- Ideal で `_GridMode` を導入し debug/analysis overlay に降格予定
 
 ---
 
@@ -442,8 +414,9 @@ seed + preset GUID + roadProfile GUID + waterProfile GUID + maskVersion
 
 ---
 
-## 検証チェックリスト（実装後）
+## 検証チェックリスト（Slice 5）
 
+- [ ] 既存 MapTheme SO の Ground Surface Compositing 値を Inspector で更新する
 - [ ] 同一 seed で semantic mask の結果が一致する
 - [ ] Theme 切替時に mask は再生成されず、見た目だけ変わる
 - [ ] 道路縁 / 水際 / 建物基部で補助表現がにじみ過多にならない
@@ -453,6 +426,8 @@ seed + preset GUID + roadProfile GUID + waterProfile GUID + maskVersion
 - [ ] 4プリセット × 2テーマで大破綻がない
 - [ ] `Generate()` 再実行時の GC / フレーム落ちが許容範囲
 - [ ] NavMesh 再Bake後に歩行不能領域が増えていない
+- [ ] Console に `[MapManager] Ground masks baked` ログが出る
+- [ ] 標高グラデーション（低→中→高）が視認できる
 
 ---
 
@@ -462,3 +437,6 @@ seed + preset GUID + roadProfile GUID + waterProfile GUID + maskVersion
 - Ground 専用 profile（`GroundSurfaceProfile` SO）を導入するか
 - `major/minor contour` の2段実装を初回から入れるか
 - 橋 / トンネル例外 (`M09`) を MVP の 2枚構成へ含めるか
+- `_MacroNoiseTex` の導入タイミング（低周波色むら・微細ざらつき）
+- `_GridMode` の導入（debug/analysis overlay 切替）
+- 色パレットの最終確定（現在は地形図寄りの仮デフォルト値）

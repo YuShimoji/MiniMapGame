@@ -6,9 +6,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Gate-1ブロッカー修正完了、手動検証待ち）
-直近の状態: Gate-1手動検証を開始したところ複数のブロッカーを発見し修正。修正内容: (1) F1パネルトグル不具合→MapControlUIを別GOに分離, (2) 日本語displayName文字化け→全SO/Creatorを英語化, (3) UIクリック不能→EventSystem自動追加, (4) カメラ地上近すぎ→initialDistance=120, distanceMinMax=(10,300), (5) Groundレイヤー未作成→TagManager経由で自動作成, (6) 再生時ハング→NavMeshベイクをCoroutine化(BakeNavMeshAsync), (7) カメラ追従でアングルが戻る→Following時のプレイヤーyaw追従を無効化, (8) UIクリックで地面移動→IsPointerOverGameObjectガード追加。全修正コード済み・未検証。
-次の作業: Bootstrap再実行→Play→全修正の動作確認→Gate-1検証続行。
+現フェーズ: α（SP-032地表合成MVP Slice 1-4実装済み + 色パイプライン修正済み + 手動検証待ち）
+直近の状態: SP-032 Ground Surface Compositing MVP完了（GroundSemanticMaskBaker, GridGround.shader 13段階合成, ThemeManager lifecycle修正）。色パイプライン3ルート修正済み（SceneBootstrapper/MapThemeCreator/ThemeManager）。WASD三人称操作実装済み。水系W-2/W-3実装済み。
+次の作業: Bootstrap Test Scene再実行 → Play → 地表表示確認（4プリセット×2テーマ手動検証）→ SP-032 Slice 5完了 → Gate-1検証。
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -30,6 +30,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-10 | SP-032地表表現は「carrier mesh + CPU semantic masks + compositing shader」で進める | Unity Terrain移行 / 地面メッシュ維持 + mask合成 | 道路・水・建物のエッジを保ったまま、疑似オルソフォト風の可読性を上げるため |
 | 2026-03-10 | SP-032のMVPは単一Ground mesh + 2枚maskで開始し、chunkingはIdeal段階へ後送り | 先にchunking / 先に単一meshMVP | Gate-1完了後に最小リスクで導入し、後段で高解像度化へ繋げるため |
 | 2026-03-11 | SO displayNameを英語化（CJKフォント不採用） | A:英語化 / B:CJKフォント追加 / C:バイリンガル | LiberationSans SDFがCJK非対応。フォント追加はアセットサイズ増大。UIテキストは英語で十分 |
+| 2026-03-11 | W-4(浜辺遷移帯)をSP-032完了後に後送り | 先行実装 / SP-032後 | GridGround.shaderへの頂点カラー追加がSP-032の地表合成パイプライン刷新と競合するため |
+| 2026-03-11 | 操作モデルをクリック移動→WASD三人称に変更 | WASD / クリック維持 / 両対応 | クリック移動は追跡者逃走設計の名残。探索ゲームにはWASD/スティックが自然 |
+| 2026-03-11 | アートディレクション仕様はSP-032(地表)以外が未定義→後日SP新規策定 | 先に仕様 / プレイヤブル先行 | プレイヤブル先行を選択。画風仕様は別途策定 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
@@ -71,13 +74,15 @@ Assets/
     Core/           SeededRng, SpatialHash, MapGenUtils, MapAnalyzer,
                     TerrainGenerator, BuildingPlacer, DecorationPlacer,
                     BridgeTunnelDetector, ElevationMap, WaterGenerator,
-                    WaterTerrainInteraction, ISpatialBounds
+                    WaterTerrainInteraction, ISpatialBounds, RoadCurveSampler
     MapGen/         IMapGenerator, OrganicGenerator, GridGenerator,
                     MountainGenerator, RuralGenerator
     Runtime/        MapManager, MapRenderer, BuildingSpawner, BuildingInteraction,
                     AnalysisVisualizer, ThemeManager, WaterRenderer,
                     DecorationSpawner, PostProcessingManager,
-                    AmbientParticleController
+                    AmbientParticleController,
+                    GroundSemanticMaskBaker, GroundSemanticMaskSet,
+                    GroundSurfacePresetDefaults
     Interior/       InteriorMapGenerator, InteriorMapData,
                     InteriorRenderer, InteriorController
     GameLoop/       GameLoopController, GameState, PlayerStats,
@@ -111,12 +116,13 @@ Assets/
 9. BuildingPlacer.Place → buildings
 10. MapAnalyzer.Analyze → analysis
 11. BridgeTunnelDetector.Detect → edge.layer (waterBodies参照)
+11b. GroundSemanticMaskBaker.Bake → HeightSlopeTex + SemanticTex (SP-032)
 12. MapRenderer.Render → road meshes (RoadProfile駆動, Road.shader)
 13. BuildingSpawner.Spawn → building GOs (4 shapes × floor-based height)
 14. WaterRenderer.Render → water meshes (typed waterBodies, depth UV2, roughness vertex color)
 15. DecorationPlacer.Place → decorations
 16. DecorationSpawner.Spawn → decoration GOs + LOD
-17. EnsureGroundPlane → elevation-following ground mesh
+17. EnsureGroundPlane → elevation-following ground mesh (material instance + mask bind + preset defaults)
 18. BakeNavMesh
 
 ## Key Decisions
@@ -130,6 +136,7 @@ Assets/
 - 装飾: DecorationPlacer/Spawner (StreetLight/Tree/Bench/Bollard) + LOD 3段階
 - 海岸: 4方向ランダム, 丘陵は海岸・道路ノード回避
 - セーブ/ロード: JSON → `Application.persistentDataPath/save.json`
+- 地表: SP-032 mask-driven compositing (CPU bake 2xRGBA8 → GridGround.shader 13段階合成, ThemeManager lifecycle管理)
 
 ## ALERT FILTER
 - CRITICAL: ビルドエラー、データ不整合、セキュリティ

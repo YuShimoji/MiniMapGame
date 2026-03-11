@@ -25,6 +25,9 @@ namespace MiniMapGame.Data
             public float terrainCarveRadius;
             [Range(0f, 1f)] public float flowResponsiveness;
 
+            [Header("Sandbank")]
+            [Range(0f, 1f)] public float sandbankStrength;
+
             [Header("Visual")]
             [Range(0f, 1f)] public float roughness;
             [Range(0f, 1f)] public float transparency;
@@ -39,6 +42,10 @@ namespace MiniMapGame.Data
             [Range(0f, 1f)] public float coastlineRoughness;
             public float stepSizeMin;
             public float stepSizeMax;
+
+            [Header("Bay/Cape")]
+            [Range(0f, 0.5f)] public float bayAmplitude;
+            public float baySpacing;
 
             [Header("Depth")]
             public float depthBase;
@@ -74,6 +81,7 @@ namespace MiniMapGame.Data
                 terrainCarveStrength = 1.0f,
                 terrainCarveRadius = 25f,
                 flowResponsiveness = 0.5f,
+                sandbankStrength = 0.4f,
                 roughness = 0.3f,
                 transparency = 0.25f,
                 foamThreshold = 0.15f
@@ -85,6 +93,8 @@ namespace MiniMapGame.Data
                 coastlineRoughness = 0.5f,
                 stepSizeMin = 25f,
                 stepSizeMax = 55f,
+                bayAmplitude = 0.3f,
+                baySpacing = 120f,
                 depthBase = 1.5f,
                 depthVariation = 0.2f,
                 terrainCarveStrength = 0.3f,

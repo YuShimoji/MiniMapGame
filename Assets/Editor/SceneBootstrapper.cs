@@ -162,14 +162,14 @@ namespace MiniMapGame.EditorTools
             if (gridShader != null)
             {
                 mapManager.groundMaterial = new Material(gridShader);
-                mapManager.groundMaterial.SetColor("_BaseColor", new Color(0.035f, 0.047f, 0.07f));
-                mapManager.groundMaterial.SetColor("_GridColor", new Color(0.06f, 0.08f, 0.12f));
+                mapManager.groundMaterial.SetColor("_BaseColor", new Color(0.28f, 0.33f, 0.24f));
+                mapManager.groundMaterial.SetColor("_GridColor", new Color(0.22f, 0.26f, 0.20f));
                 mapManager.groundMaterial.SetFloat("_GridSize", 20f);
-                mapManager.groundMaterial.SetFloat("_GridOpacity", 0.15f);
+                mapManager.groundMaterial.SetFloat("_GridOpacity", 0.12f);
             }
             else
             {
-                mapManager.groundMaterial = CreateLitMaterial("Ground", new Color(0.035f, 0.047f, 0.07f));
+                mapManager.groundMaterial = CreateLitMaterial("Ground", new Color(0.28f, 0.33f, 0.24f));
             }
 
             // 4. Camera
@@ -185,8 +185,8 @@ namespace MiniMapGame.EditorTools
             cam.orthographic = false;
             cam.fieldOfView = 60f;
             var camCtrl = EnsureComponent<CameraController>(cam.gameObject);
-            camCtrl.initialDistance = 120f;
-            camCtrl.distanceMinMax = new Vector2(10f, 300f);
+            camCtrl.initialDistance = 30f;
+            camCtrl.distanceMinMax = new Vector2(8f, 300f);
 
             // Camera anti-aliasing (SMAA Low)
             var urpCamData = cam.GetUniversalAdditionalCameraData();
@@ -213,6 +213,18 @@ namespace MiniMapGame.EditorTools
             playerRb.isKinematic = true;
 
             playerGo.transform.position = new Vector3(430f, 0f, 290f);
+
+            // Player visual: Capsule mesh child (placeholder until art direction finalised)
+            var playerVisual = FindOrCreate("PlayerVisual", playerGo.transform);
+            var pvMeshFilter = EnsureComponent<MeshFilter>(playerVisual);
+            pvMeshFilter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Capsule.fbx");
+            var pvRenderer = EnsureComponent<MeshRenderer>(playerVisual);
+            var pvMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            pvMat.SetColor("_BaseColor", new Color(0.2f, 0.6f, 0.9f));
+            pvMat.name = "PlayerCapsule_Mat";
+            pvRenderer.sharedMaterial = pvMat;
+            playerVisual.transform.localPosition = new Vector3(0f, 1f, 0f);
+            playerVisual.transform.localScale = Vector3.one;
 
             // Wire camera to decoration spawner for LOD
             decorationSpawner.cameraController = camCtrl;

@@ -11,6 +11,15 @@ namespace MiniMapGame.EditorTools
     public static class MapThemeCreator
     {
         private const string ThemeFolder = "Assets/Resources/Themes";
+        private static readonly Color GroundBaseColor = new Color(0.28f, 0.33f, 0.24f, 1f);
+        private static readonly Color GroundMidColor = new Color(0.38f, 0.34f, 0.26f, 1f);
+        private static readonly Color GroundHighColor = new Color(0.48f, 0.44f, 0.38f, 1f);
+        private static readonly Color GroundSlopeColor = new Color(0.34f, 0.30f, 0.26f, 1f);
+        private static readonly Color GroundMoistureTint = new Color(0.18f, 0.28f, 0.32f, 1f);
+        private static readonly Color GroundRoadTint = new Color(0.38f, 0.36f, 0.33f, 1f);
+        private static readonly Color GroundBuildingTint = new Color(0.36f, 0.33f, 0.30f, 1f);
+        private static readonly Color GroundContourColor = new Color(0.18f, 0.22f, 0.16f, 1f);
+        private static readonly Color GroundGridColor = new Color(0.22f, 0.26f, 0.20f, 1f);
 
         [MenuItem("MiniMapGame/Create Default Themes")]
         public static void CreateDefaultThemes()
@@ -42,7 +51,7 @@ namespace MiniMapGame.EditorTools
 
             // Background
             t.backgroundColor = HexColor("06090d");
-            t.groundColor = HexColor("090c12");
+            t.groundColor = GroundBaseColor;
 
             // Roads (Tier 0/1/2)
             t.roadOuter0 = HexColor("2c3e58");
@@ -104,9 +113,10 @@ namespace MiniMapGame.EditorTools
             t.ambientParticleColor = new Color(0.5f, 0.7f, 1f, 0.15f);
 
             // Ground
-            t.gridLineColor = HexColor("0e1520");
+            t.gridLineColor = GroundGridColor;
             t.gridSize = 20f;
-            t.gridOpacity = 0.15f;
+            t.gridOpacity = 0.12f;
+            ApplyGroundPalette(t);
 
             EditorUtility.SetDirty(t);
             Debug.Log($"[MapThemeCreator] Updated {path}");
@@ -126,7 +136,7 @@ namespace MiniMapGame.EditorTools
 
             // Background
             t.backgroundColor = HexColor("e8e0cc");
-            t.groundColor = HexColor("dfd7be");
+            t.groundColor = GroundBaseColor;
 
             // Roads (Tier 0/1/2)
             t.roadOuter0 = HexColor("888060");
@@ -188,12 +198,24 @@ namespace MiniMapGame.EditorTools
             t.ambientParticleColor = new Color(0.7f, 0.6f, 0.4f, 0.12f);
 
             // Ground
-            t.gridLineColor = HexColor("c8c0a8");
+            t.gridLineColor = GroundGridColor;
             t.gridSize = 20f;
             t.gridOpacity = 0.12f;
+            ApplyGroundPalette(t);
 
             EditorUtility.SetDirty(t);
             Debug.Log($"[MapThemeCreator] Updated {path}");
+        }
+
+        private static void ApplyGroundPalette(MapTheme theme)
+        {
+            theme.groundMidColor = GroundMidColor;
+            theme.groundHighColor = GroundHighColor;
+            theme.groundSlopeColor = GroundSlopeColor;
+            theme.groundMoistureTint = GroundMoistureTint;
+            theme.groundRoadTint = GroundRoadTint;
+            theme.groundBuildingTint = GroundBuildingTint;
+            theme.groundContourColor = GroundContourColor;
         }
 
         private static Color HexColor(string hex)

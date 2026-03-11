@@ -219,7 +219,7 @@
     "id": "SP-025",
     "title": "水系生成強化",
     "status": "partial",
-    "pct": 28,
+    "pct": 57,
     "cat": "core",
     "file": "docs/specs/water-generation-enhancements.md",
     "summary": "W-1:メタ地理川流路, W-2:入り江・岬, W-3:砂州, W-4:浜辺帯, W-5:蛇行自動調整, W-6:河口デルタ, W-7:水辺配置システム"
@@ -282,19 +282,19 @@
     "id": "SP-032",
     "title": "地表合成レンダリングパイプライン",
     "status": "partial",
-    "pct": 12,
+    "pct": 80,
     "cat": "system",
     "file": "docs/specs/ground-surface-compositing.md",
-    "summary": "Ground carrier mesh + CPU semantic masks + GridGround.shader 合成で、道路/水/建物の独立メッシュを維持したまま航空地図風の地表表現へ更新する設計"
+    "summary": "Ground carrier mesh + CPU semantic masks (2xRGBA8) + GridGround.shader 13段階合成。MVP Slice 1-4実装済み。残: 色調整・手動検証・MacroNoiseTex・GridMode"
   },
   {
     "id": "SP-033",
     "title": "SP-032 MVP実装計画",
     "status": "partial",
-    "pct": 18,
+    "pct": 80,
     "cat": "system",
     "file": "docs/specs/ground-surface-mvp-implementation-plan.md",
-    "summary": "SP-032 を Gate-1 完了後すぐ着手できるよう、MVP 範囲・新規クラス・既存ファイル変更点・受け入れ条件を実装粒度まで分解した計画"
+    "summary": "Slice 1(Infrastructure), 2(CPU Baker), 3(Shader), 4(Theme)完了。Slice 5(Validation)が残: MapTheme SO更新・4preset手動検証・色パレット調整"
   },
   {
     "id": "SP-034",
