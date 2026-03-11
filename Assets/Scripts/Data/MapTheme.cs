@@ -78,5 +78,14 @@ namespace MiniMapGame.Data
         public Color gridLineColor;
         public float gridSize = 20f;
         public float gridOpacity = 0.15f;
+
+        [Header("Ground Surface Compositing")]
+        public Color groundMidColor = new Color(0.08f, 0.06f, 0.04f, 1f);
+        public Color groundHighColor = new Color(0.10f, 0.09f, 0.08f, 1f);
+        public Color groundSlopeColor = new Color(0.06f, 0.05f, 0.04f, 1f);
+        public Color groundMoistureTint = new Color(0.02f, 0.04f, 0.06f, 1f);
+        public Color groundRoadTint = new Color(0.06f, 0.055f, 0.05f, 1f);
+        public Color groundBuildingTint = new Color(0.055f, 0.05f, 0.045f, 1f);
+        public Color groundContourColor = new Color(0.02f, 0.025f, 0.035f, 1f);
     }
 }
