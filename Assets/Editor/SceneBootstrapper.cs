@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.AI;
+
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
@@ -199,18 +199,25 @@ namespace MiniMapGame.EditorTools
             // 5. Player
             var playerGo = FindOrCreate("Player");
             playerGo.tag = "Player";
-            var existingAgent = playerGo.GetComponent<NavMeshAgent>();
+            // Remove legacy NavMeshAgent if present
+            var existingAgent = playerGo.GetComponent<UnityEngine.AI.NavMeshAgent>();
             if (existingAgent != null)
                 Object.DestroyImmediate(existingAgent);
             var playerMovement = EnsureComponent<PlayerMovement>(playerGo);
             camCtrl.playerTarget = playerGo.transform;
 
-            // Ensure player has collider + kinematic rigidbody for trigger detection
-            var playerCol = EnsureComponent<CapsuleCollider>(playerGo);
-            playerCol.height = 2f;
-            playerCol.center = new Vector3(0, 1f, 0);
-            var playerRb = EnsureComponent<Rigidbody>(playerGo);
-            playerRb.isKinematic = true;
+            // CharacterController handles collision + movement; also acts as a collider
+            var cc = EnsureComponent<CharacterController>(playerGo);
+            cc.height = 2f;
+            cc.radius = 0.3f;
+            cc.center = new Vector3(0, 1f, 0);
+            cc.slopeLimit = 60f;
+            cc.stepOffset = 0.8f;
+            // Remove redundant CapsuleCollider/Rigidbody if present (CC has its own collider)
+            var oldCol = playerGo.GetComponent<CapsuleCollider>();
+            if (oldCol != null) Object.DestroyImmediate(oldCol);
+            var oldRb = playerGo.GetComponent<Rigidbody>();
+            if (oldRb != null) Object.DestroyImmediate(oldRb);
 
             playerGo.transform.position = new Vector3(430f, 0f, 290f);
 
@@ -236,10 +243,10 @@ namespace MiniMapGame.EditorTools
             var canvas = SetupCanvas();
             SetupInteractionUI(playerMovement, canvas);
 
-            // 8. GameLoop system
-            var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
-            var gameLoopUI = SetupGameLoopUI(canvas);
-            SetupGameLoopController(mapManager, eventBus, gameLoopUI);
+            // 8. GameLoop system (FROZEN — see DECISION LOG 2026-03-08)
+            // var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
+            // var gameLoopUI = SetupGameLoopUI(canvas);
+            // SetupGameLoopController(mapManager, eventBus, gameLoopUI);
 
             // 9. MiniMap
             SetupMiniMap(canvas, mapManager, playerGo.transform);
@@ -258,8 +265,8 @@ namespace MiniMapGame.EditorTools
             SetupThemeManager(mapManager, mapRenderer, buildingSpawner, waterRenderer, viz, cam);
             SetupVerificationChecklistUI(canvas, mapManager);
 
-            // 13. Player HUD
-            SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
+            // 13. Player HUD (FROZEN — depends on GameLoop)
+            // SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
 
             // 14. Interior System
             SetupInteriorSystem(mapManager, camCtrl, playerGo.transform);

@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
-using Unity.AI.Navigation;
 using MiniMapGame.Runtime;
 using MiniMapGame.Player;
 using MiniMapGame.MiniGame;
@@ -38,11 +36,11 @@ namespace MiniMapGame.Interior
 
         private BuildingInteraction _currentBuilding;
         private Vector3 _savedPlayerPosition;
-        private NavMeshAgent _playerAgent;
+        private PlayerMovement _playerMovement;
 
         void Start()
         {
-            _playerAgent = playerTransform != null ? playerTransform.GetComponent<NavMeshAgent>() : null;
+            _playerMovement = playerTransform != null ? playerTransform.GetComponent<PlayerMovement>() : null;
         }
 
         void Update()
@@ -100,8 +98,6 @@ namespace MiniMapGame.Interior
                 buildingPos + new Vector3(0, interiorCameraHeight, 0),
                 maxDist + interiorOrthoMargin);
 
-            // Re-bake NavMesh for interior floor
-            RebakeNavMesh();
         }
 
         public void ExitBuilding()
@@ -132,9 +128,6 @@ namespace MiniMapGame.Interior
 
             // Restore camera
             cameraController.ResetToFollowMode();
-
-            // Re-bake NavMesh for exterior
-            RebakeNavMesh();
 
             _currentBuilding = null;
         }
@@ -190,8 +183,8 @@ namespace MiniMapGame.Interior
 
         private void TeleportPlayer(Vector3 position)
         {
-            if (_playerAgent != null)
-                _playerAgent.Warp(position);
+            if (_playerMovement != null)
+                _playerMovement.Teleport(position);
             else if (playerTransform != null)
                 playerTransform.position = position;
         }
@@ -208,13 +201,6 @@ namespace MiniMapGame.Interior
 
             if (mapManager.groundPlane != null)
                 mapManager.groundPlane.SetActive(visible);
-        }
-
-        private void RebakeNavMesh()
-        {
-            var surface = Object.FindAnyObjectByType<NavMeshSurface>();
-            if (surface != null)
-                surface.BuildNavMesh();
         }
 
         private float CalculateInteriorExtent(InteriorMapData data)

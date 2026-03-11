@@ -11,15 +11,28 @@ namespace MiniMapGame.EditorTools
     public static class MapThemeCreator
     {
         private const string ThemeFolder = "Assets/Resources/Themes";
-        private static readonly Color GroundBaseColor = new Color(0.28f, 0.33f, 0.24f, 1f);
-        private static readonly Color GroundMidColor = new Color(0.38f, 0.34f, 0.26f, 1f);
-        private static readonly Color GroundHighColor = new Color(0.48f, 0.44f, 0.38f, 1f);
-        private static readonly Color GroundSlopeColor = new Color(0.34f, 0.30f, 0.26f, 1f);
-        private static readonly Color GroundMoistureTint = new Color(0.18f, 0.28f, 0.32f, 1f);
-        private static readonly Color GroundRoadTint = new Color(0.38f, 0.36f, 0.33f, 1f);
-        private static readonly Color GroundBuildingTint = new Color(0.36f, 0.33f, 0.30f, 1f);
-        private static readonly Color GroundContourColor = new Color(0.18f, 0.22f, 0.16f, 1f);
-        private static readonly Color GroundGridColor = new Color(0.22f, 0.26f, 0.20f, 1f);
+
+        // Dark theme ground palette: cool, muted earth tones
+        private static readonly Color DarkGroundBaseColor = new Color(0.28f, 0.33f, 0.24f, 1f);
+        private static readonly Color DarkGroundMidColor = new Color(0.38f, 0.34f, 0.26f, 1f);
+        private static readonly Color DarkGroundHighColor = new Color(0.48f, 0.44f, 0.38f, 1f);
+        private static readonly Color DarkGroundSlopeColor = new Color(0.34f, 0.30f, 0.26f, 1f);
+        private static readonly Color DarkGroundMoistureTint = new Color(0.18f, 0.28f, 0.32f, 1f);
+        private static readonly Color DarkGroundRoadTint = new Color(0.38f, 0.36f, 0.33f, 1f);
+        private static readonly Color DarkGroundBuildingTint = new Color(0.36f, 0.33f, 0.30f, 1f);
+        private static readonly Color DarkGroundContourColor = new Color(0.18f, 0.22f, 0.16f, 1f);
+        private static readonly Color DarkGroundGridColor = new Color(0.22f, 0.26f, 0.20f, 1f);
+
+        // Parchment theme ground palette: warm, light beige-green tones
+        private static readonly Color ParchGroundBaseColor = new Color(0.62f, 0.64f, 0.48f, 1f);
+        private static readonly Color ParchGroundMidColor = new Color(0.68f, 0.66f, 0.52f, 1f);
+        private static readonly Color ParchGroundHighColor = new Color(0.74f, 0.70f, 0.58f, 1f);
+        private static readonly Color ParchGroundSlopeColor = new Color(0.60f, 0.56f, 0.46f, 1f);
+        private static readonly Color ParchGroundMoistureTint = new Color(0.48f, 0.58f, 0.55f, 1f);
+        private static readonly Color ParchGroundRoadTint = new Color(0.70f, 0.66f, 0.54f, 1f);
+        private static readonly Color ParchGroundBuildingTint = new Color(0.68f, 0.64f, 0.54f, 1f);
+        private static readonly Color ParchGroundContourColor = new Color(0.50f, 0.48f, 0.38f, 1f);
+        private static readonly Color ParchGroundGridColor = new Color(0.56f, 0.54f, 0.42f, 1f);
 
         [MenuItem("MiniMapGame/Create Default Themes")]
         public static void CreateDefaultThemes()
@@ -51,7 +64,7 @@ namespace MiniMapGame.EditorTools
 
             // Background
             t.backgroundColor = HexColor("06090d");
-            t.groundColor = GroundBaseColor;
+            t.groundColor = DarkGroundBaseColor;
 
             // Roads (Tier 0/1/2)
             t.roadOuter0 = HexColor("2c3e58");
@@ -113,10 +126,10 @@ namespace MiniMapGame.EditorTools
             t.ambientParticleColor = new Color(0.5f, 0.7f, 1f, 0.15f);
 
             // Ground
-            t.gridLineColor = GroundGridColor;
+            t.gridLineColor = DarkGroundGridColor;
             t.gridSize = 20f;
             t.gridOpacity = 0.12f;
-            ApplyGroundPalette(t);
+            ApplyDarkGroundPalette(t);
 
             EditorUtility.SetDirty(t);
             Debug.Log($"[MapThemeCreator] Updated {path}");
@@ -136,7 +149,7 @@ namespace MiniMapGame.EditorTools
 
             // Background
             t.backgroundColor = HexColor("e8e0cc");
-            t.groundColor = GroundBaseColor;
+            t.groundColor = ParchGroundBaseColor;
 
             // Roads (Tier 0/1/2)
             t.roadOuter0 = HexColor("888060");
@@ -198,24 +211,35 @@ namespace MiniMapGame.EditorTools
             t.ambientParticleColor = new Color(0.7f, 0.6f, 0.4f, 0.12f);
 
             // Ground
-            t.gridLineColor = GroundGridColor;
+            t.gridLineColor = ParchGroundGridColor;
             t.gridSize = 20f;
-            t.gridOpacity = 0.12f;
-            ApplyGroundPalette(t);
+            t.gridOpacity = 0.10f;
+            ApplyParchmentGroundPalette(t);
 
             EditorUtility.SetDirty(t);
             Debug.Log($"[MapThemeCreator] Updated {path}");
         }
 
-        private static void ApplyGroundPalette(MapTheme theme)
+        private static void ApplyDarkGroundPalette(MapTheme theme)
         {
-            theme.groundMidColor = GroundMidColor;
-            theme.groundHighColor = GroundHighColor;
-            theme.groundSlopeColor = GroundSlopeColor;
-            theme.groundMoistureTint = GroundMoistureTint;
-            theme.groundRoadTint = GroundRoadTint;
-            theme.groundBuildingTint = GroundBuildingTint;
-            theme.groundContourColor = GroundContourColor;
+            theme.groundMidColor = DarkGroundMidColor;
+            theme.groundHighColor = DarkGroundHighColor;
+            theme.groundSlopeColor = DarkGroundSlopeColor;
+            theme.groundMoistureTint = DarkGroundMoistureTint;
+            theme.groundRoadTint = DarkGroundRoadTint;
+            theme.groundBuildingTint = DarkGroundBuildingTint;
+            theme.groundContourColor = DarkGroundContourColor;
+        }
+
+        private static void ApplyParchmentGroundPalette(MapTheme theme)
+        {
+            theme.groundMidColor = ParchGroundMidColor;
+            theme.groundHighColor = ParchGroundHighColor;
+            theme.groundSlopeColor = ParchGroundSlopeColor;
+            theme.groundMoistureTint = ParchGroundMoistureTint;
+            theme.groundRoadTint = ParchGroundRoadTint;
+            theme.groundBuildingTint = ParchGroundBuildingTint;
+            theme.groundContourColor = ParchGroundContourColor;
         }
 
         private static Color HexColor(string hex)

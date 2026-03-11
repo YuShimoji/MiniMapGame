@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.AI;
+using UnityEngine.EventSystems;
 using TMPro;
 using MiniMapGame.Data;
 using MiniMapGame.Runtime;
@@ -8,13 +8,14 @@ namespace MiniMapGame.Player
 {
     public class PlayerMovement : MonoBehaviour
     {
-        private NavMeshAgent _agent;
+        private CharacterController _controller;
         private Camera _mainCamera;
         private MapManager _mapManager;
 
         [Header("Movement")]
         public float moveSpeed = 12f;
         public float rotationSmoothTime = 0.08f;
+        public float gravity = -20f;
 
         [Header("Interaction UI")]
         public TextMeshProUGUI interactionMessageText;
@@ -25,6 +26,7 @@ namespace MiniMapGame.Player
         private Collider _currentInteractionCollider;
         private BuildingInteraction _currentBuilding;
         private float _rotationVelocity;
+        private float _verticalVelocity;
 
         void Start()
         {
@@ -44,7 +46,7 @@ namespace MiniMapGame.Player
             if (_mapManager != null)
                 _mapManager.OnMapGenerated += HandleMapGenerated;
 
-            TryEnsureAgent();
+            EnsureController();
         }
 
         void OnDestroy()
@@ -55,18 +57,18 @@ namespace MiniMapGame.Player
 
         void Update()
         {
-            if (_mainCamera == null) return;
+            if (_mainCamera == null || _controller == null) return;
 
-            // Retry agent creation until NavMesh is available
-            if (_agent == null || !_agent.isOnNavMesh)
-            {
-                TryEnsureAgent();
-                if (_agent == null || !_agent.isOnNavMesh) return;
-            }
+            // Skip movement input while typing in a UI input field
+            if (EventSystem.current != null &&
+                EventSystem.current.currentSelectedGameObject != null)
+                return;
 
             // WASD / arrow key input
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
+
+            Vector3 move = Vector3.zero;
 
             if (h * h + v * v > 0.01f)
             {
@@ -79,8 +81,7 @@ namespace MiniMapGame.Player
                 camRight.Normalize();
 
                 Vector3 moveDir = (camFwd * v + camRight * h).normalized;
-
-                _agent.Move(moveDir * moveSpeed * Time.deltaTime);
+                move = moveDir * moveSpeed;
 
                 // Smooth rotation toward movement direction
                 float targetAngle = Mathf.Atan2(moveDir.x, moveDir.z) * Mathf.Rad2Deg;
@@ -89,6 +90,15 @@ namespace MiniMapGame.Player
                     ref _rotationVelocity, rotationSmoothTime);
                 transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
             }
+
+            // Gravity
+            if (_controller.isGrounded && _verticalVelocity < 0f)
+                _verticalVelocity = -2f; // Small downward force to stay grounded
+            else
+                _verticalVelocity += gravity * Time.deltaTime;
+
+            move.y = _verticalVelocity;
+            _controller.Move(move * Time.deltaTime);
 
             // Building interaction
             if (_currentBuilding != null && Input.GetKeyDown(interactKey))
@@ -99,35 +109,52 @@ namespace MiniMapGame.Player
 
         private void HandleMapGenerated(MapData _)
         {
-            TryEnsureAgent();
+            // Re-position player to map center after generation
+            if (_mapManager != null && _mapManager.CurrentMap != null)
+            {
+                var center = _mapManager.CurrentMap.center;
+                var preset = _mapManager.activePreset;
+                float y = _mapManager.CurrentElevationMap != null
+                    ? _mapManager.CurrentElevationMap.Sample(center) + 2f
+                    : 2f;
+                float worldZ = preset != null ? preset.worldHeight - center.y : center.y;
+
+                _controller.enabled = false;
+                transform.position = new Vector3(center.x, y, worldZ);
+                _controller.enabled = true;
+            }
         }
 
-        private void TryEnsureAgent()
+        private void EnsureController()
         {
-            if (_agent == null)
-                _agent = GetComponent<NavMeshAgent>();
-
-            if (_agent == null)
+            _controller = GetComponent<CharacterController>();
+            if (_controller == null)
             {
-                if (!NavMesh.SamplePosition(transform.position, out var hit, 20f, NavMesh.AllAreas))
-                    return;
-
-                _agent = gameObject.AddComponent<NavMeshAgent>();
-                _agent.Warp(hit.position);
+                _controller = gameObject.AddComponent<CharacterController>();
+                _controller.height = 2f;
+                _controller.radius = 0.3f;
+                _controller.center = new Vector3(0f, 1f, 0f);
+                _controller.slopeLimit = 60f;
+                _controller.stepOffset = 0.8f;
             }
-            else if (!_agent.isOnNavMesh)
+        }
+
+        /// <summary>
+        /// Teleport the player to a specific position (used by InteriorController etc.)
+        /// </summary>
+        public void Teleport(Vector3 position)
+        {
+            if (_controller != null)
             {
-                // Agent exists but off-mesh — re-warp to nearest valid position
-                if (NavMesh.SamplePosition(transform.position, out var hit, 50f, NavMesh.AllAreas))
-                    _agent.Warp(hit.position);
-                else
-                    return;
+                _controller.enabled = false;
+                transform.position = position;
+                _controller.enabled = true;
             }
-
-            _agent.updateRotation = false;
-            _agent.updateUpAxis = false;
-            _agent.ResetPath();
-            _agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+            else
+            {
+                transform.position = position;
+            }
+            _verticalVelocity = 0f;
         }
 
         void OnTriggerEnter(Collider other)

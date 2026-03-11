@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace MiniMapGame.Interior
 {
@@ -27,19 +26,12 @@ namespace MiniMapGame.Interior
         private List<List<StairwellInfo>> _stairwellsByFloor = new();
         private InteriorMapData _currentData;
         private Vector3 _worldOrigin;
-        private NavMeshAgent _playerAgent;
         private bool _isActive;
 
         // Public state for UI
         public bool IsNearStairwell { get; private set; }
         public bool CanGoUp { get; private set; }
         public bool CanGoDown { get; private set; }
-
-        void Start()
-        {
-            if (playerTransform != null)
-                _playerAgent = playerTransform.GetComponent<NavMeshAgent>();
-        }
 
         /// <summary>
         /// Initialize with generated interior data. Call after InteriorRenderer.Render().
@@ -169,9 +161,10 @@ namespace MiniMapGame.Interior
 
             // Teleport player to target stairwell
             Vector3 targetPos = new Vector3(bestPos.x, playerPos.y, bestPos.z);
-            if (_playerAgent != null)
-                _playerAgent.Warp(targetPos);
-            else
+            var pm = playerTransform != null ? playerTransform.GetComponent<MiniMapGame.Player.PlayerMovement>() : null;
+            if (pm != null)
+                pm.Teleport(targetPos);
+            else if (playerTransform != null)
                 playerTransform.position = targetPos;
         }
 

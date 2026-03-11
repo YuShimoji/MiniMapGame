@@ -73,16 +73,14 @@ namespace MiniMapGame.Runtime
         {
             if (mapManager == null) return;
 
+            // Always apply to template asset (so future instances inherit colors)
             ApplyGroundToMaterial(mapManager.groundMaterial, theme);
 
+            // Apply to runtime instance on the ground plane
             if (mapManager.groundPlane == null) return;
-
             var mr = mapManager.groundPlane.GetComponent<MeshRenderer>();
-            if (mr == null) return;
-
-            var runtimeMat = mr.sharedMaterial;
-            if (runtimeMat != null && runtimeMat != mapManager.groundMaterial)
-                ApplyGroundToMaterial(runtimeMat, theme);
+            if (mr != null && mr.sharedMaterial != null)
+                ApplyGroundToMaterial(mr.sharedMaterial, theme);
         }
 
         private static void ApplyGroundToMaterial(Material mat, MapTheme theme)

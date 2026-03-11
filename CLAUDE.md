@@ -6,9 +6,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（SP-032地表合成MVP Slice 1-4実装済み + 色パイプライン修正済み + 手動検証待ち）
-直近の状態: SP-032 Ground Surface Compositing MVP完了（GroundSemanticMaskBaker, GridGround.shader 13段階合成, ThemeManager lifecycle修正）。色パイプライン3ルート修正済み（SceneBootstrapper/MapThemeCreator/ThemeManager）。WASD三人称操作実装済み。水系W-2/W-3実装済み。
-次の作業: Bootstrap Test Scene再実行 → Play → 地表表示確認（4プリセット×2テーマ手動検証）→ SP-032 Slice 5完了 → Gate-1検証。
+現フェーズ: α（Gate-1前5件バグ修正完了 → 手動検証待ち）
+直近の状態: Gate-1手動検証で5件の問題を発見し全修正済み。(1)NavMesh完全削除→CharacterController化(5ファイル)、(2)地表紺色→ThemeManager.ApplyGround簡素化+MapManager.sharedMaterial修正、(3)HP/GameLoop表示→SceneBootstrapperでコメントアウト、(4)seed入力→F1パネル開時にActivateInputField+閉時にEventSystemクリア、(5)UI縮小→MapControlUIの独自レスポンシブスケーリング削除。Parchment地表パレットも分離済み。
+次の作業: Unity再テスト(Bootstrap Test Scene→Play)→5件修正確認→Gate-1検証(road-p4-gate-runbook.md)実施。
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -33,6 +33,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-11 | W-4(浜辺遷移帯)をSP-032完了後に後送り | 先行実装 / SP-032後 | GridGround.shaderへの頂点カラー追加がSP-032の地表合成パイプライン刷新と競合するため |
 | 2026-03-11 | 操作モデルをクリック移動→WASD三人称に変更 | WASD / クリック維持 / 両対応 | クリック移動は追跡者逃走設計の名残。探索ゲームにはWASD/スティックが自然 |
 | 2026-03-11 | アートディレクション仕様はSP-032(地表)以外が未定義→後日SP新規策定 | 先に仕様 / プレイヤブル先行 | プレイヤブル先行を選択。画風仕様は別途策定 |
+| 2026-03-11 | NavMesh完全削除→CharacterController化 | NavMesh維持/軽量化 / CharacterController / Rigidbody | WASD移動にNavMesh不要。228秒のフリーズ原因を根本除去 |
+| 2026-03-11 | GameLoop UI/Controller/PlayerHUDをSceneBootstrapperで無効化 | 削除 / コメントアウト / 非表示 | DECISION LOG 2026-03-08「GameLoop凍結」の反映。コード残存・セットアップ停止 |
+| 2026-03-11 | MapControlUIの独自レスポンシブスケーリング削除 | 修正 / 削除 / CanvasScaler無効化 | CanvasScaler(ScaleWithScreenSize)と二重適用が原因。CanvasScalerに委ねる |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
@@ -123,7 +126,7 @@ Assets/
 15. DecorationPlacer.Place → decorations
 16. DecorationSpawner.Spawn → decoration GOs + LOD
 17. EnsureGroundPlane → elevation-following ground mesh (material instance + mask bind + preset defaults)
-18. BakeNavMesh
+18. OnMapGenerated event → ThemeManager再適用 + PlayerMovement位置リセット
 
 ## Key Decisions
 - カメラは Perspective に統一。Interior時のみOrthographic
