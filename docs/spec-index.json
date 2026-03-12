@@ -244,12 +244,12 @@
   },
   {
     "id": "SP-028",
-    "title": "P4道路手動検証ゲート",
-    "status": "todo",
+    "title": "P4道路手動検証ゲート (SP-032統合)",
+    "status": "merged",
     "pct": 0,
     "cat": "infra",
     "file": "docs/verification/road-p4-gate-results.md",
-    "summary": "Gate-1(必須): 4プリセット×2テーマを手動確認し、FAILゼロを確認して次タスクへ進行する"
+    "summary": "Gate-1はSP-032 Slice 5の統合検証に吸収。4preset x 2themeの手動検証時に道路項目も併せて確認する。blocker 5件は修正済み(099bf56)"
   },
   {
     "id": "SP-029",

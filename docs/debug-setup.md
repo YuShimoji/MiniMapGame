@@ -223,6 +223,18 @@ Slice 5 の手動検証項目。各プリセットで最低2-3シードを試す
 - [ ] Grid preset で地形が平坦でも shading が破綻しない
 - [ ] 4プリセット x 2テーマで大破綻がない
 
+### 道路検証 (Gate-1 統合 — 旧 SP-028)
+
+> Gate-1 は SP-032 統合検証に吸収 (2026-03-12 決定)。
+> blocker 5件は修正済み (commit 099bf56)。以下を SP-032 と同時に確認する。
+
+- [ ] 道路が欠損なく不透明に表示される (Render)
+- [ ] tier ごとの標示 (中央線・破線・エッジ線) が破綻しない (Markings)
+- [ ] degree>=3 交差点の円盤拡張に穴・重なり・Z-fight がない (Intersection)
+- [ ] 建物が道路メッシュへ明確にめり込まない (Setback)
+- [ ] Coastal/Grid→Modern、Rural/Mountain→Rural が自動バインドされている (AutoBind)
+- [ ] Dark/Parchment 切替で道路の marking/curb 色が追従する (Theme Sync)
+
 ### Per-Preset 期待値 (SP-032)
 
 | プリセット | hillshade | contour | moisture | road/building |

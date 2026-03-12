@@ -2,13 +2,18 @@
 
 ## Summary
 
-- Date: 2026-03-09
+- Date: 2026-03-09 (作成) / 2026-03-12 (SP-032統合決定)
 - Executor: Codex (preflight) / User (Unity manual run)
 - Unity:
-- Result: `PENDING`
-- Blocker for next tasks (B/D/E/W-2): `YES`
+- Result: `MERGED` — SP-032 統合検証に吸収
+- Blocker for next tasks (B/D/E/W-2): `NO` (SP-032検証が代替ゲートとなる)
 - Minimum seed set: `12011`
 - Recommended seed set: `12011`, `28473`, `53190`
+
+> **2026-03-12 決定**: Gate-1 (P4道路検証) は SP-032 Slice 5 の統合検証に吸収。
+> 4preset x 2theme の手動検証時に道路項目 (Render/Markings/Intersection/Setback/AutoBind/Theme Sync) も
+> 併せて確認する。Gate-1 blocker 5件は全修正済み (commit 099bf56)。
+> 統合検証の結果は `docs/debug-setup.md` の SP-032 チェックリストに記録する。
 
 See also: `docs/verification/road-p4-gate-runbook.md`
 

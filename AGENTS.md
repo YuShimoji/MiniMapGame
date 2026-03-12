@@ -36,6 +36,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-11 | NavMesh完全削除→CharacterController化 | NavMesh維持/軽量化 / CharacterController / Rigidbody | WASD移動にNavMesh不要。228秒のフリーズ原因を根本除去 |
 | 2026-03-11 | GameLoop UI/Controller/PlayerHUDをSceneBootstrapperで無効化 | 削除 / コメントアウト / 非表示 | DECISION LOG 2026-03-08「GameLoop凍結」の反映。コード残存・セットアップ停止 |
 | 2026-03-11 | MapControlUIの独自レスポンシブスケーリング削除 | 修正 / 削除 / CanvasScaler無効化 | CanvasScaler(ScaleWithScreenSize)と二重適用が原因。CanvasScalerに委ねる |
+| 2026-03-12 | Gate-1(P4道路検証)をSP-032統合検証に吸収 | SP-032統合 / Gate-1合格扱い / 個別実施 | blocker5件修正済み。SP-032 Slice 5で4preset x 2theme一括検証し道路+地表を同時カバー |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
