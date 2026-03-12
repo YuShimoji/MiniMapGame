@@ -606,16 +606,27 @@ namespace MiniMapGame.Runtime
 }
 ```
 
-**生成フロー**:
-1. `SeededRng rng = new(seed)`
-2. center計算: `(worldWidth * (0.30 + rng * 0.22), worldHeight * (0.32 + rng * 0.30))`
-3. `IMapGenerator.Generate(rng, center, preset)` → nodes, edges
-4. `BuildingPlacer.Place(nodes, edges, rng, preset)` → buildings
-5. `TerrainGenerator.Generate(rng, center, preset)` → terrain
-6. `MapAnalyzer.Analyze(nodes, edges)` → analysis
-7. `MapData` に集約
-8. `OnMapGenerated` イベント発火
-9. `MapRenderer.Render(mapData)`, `BuildingSpawner.Spawn(mapData)` 呼び出し
+**生成フロー** (18ステップ):
+
+1. `SeededRng rng = new(seed)` → center計算
+2. `IMapGenerator.Generate(rng, center, preset)` → nodes, edges
+3. `WaterGenerator.DetermineCoastSide` → coastSide
+4. `TerrainGenerator.Generate(rng, center, preset, coastSide, nodes)` → terrain (hills only)
+5. `ElevationMap` 生成 (from terrain hills)
+6. `WaterGenerator.Generate` → terrain.waterBodies (勾配降下川流路 + プリセット別蛇行)
+7. `WaterTerrainInteraction.ApplyWaterCarving` → ElevationMapへcarving適用
+8. `ElevationMap.ApplyToNodes` → 最終地形形状を反映
+9. `BuildingPlacer.Place` → buildings
+10. `MapAnalyzer.Analyze` → analysis
+11. `BridgeTunnelDetector.Detect` → edge.layer (waterBodies参照)
+11b. `GroundSemanticMaskBaker.Bake` → HeightSlopeTex + SemanticTex (SP-032)
+12. `MapRenderer.Render` → road meshes (RoadProfile駆動, Road.shader)
+13. `BuildingSpawner.Spawn` → building GOs (4 shapes x floor-based height)
+14. `WaterRenderer.Render` → water meshes (typed waterBodies, depth UV2, roughness vertex color)
+15. `DecorationPlacer.Place` → decorations
+16. `DecorationSpawner.Spawn` → decoration GOs + LOD
+17. `EnsureGroundPlane` → elevation-following ground mesh (material instance + mask bind + preset defaults)
+18. `OnMapGenerated` event → ThemeManager再適用 + PlayerMovement位置リセット
 
 ### 10.2 RoadProfile (ScriptableObject)
 
@@ -898,8 +909,8 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
   - CarvingData: 水系による地形削り込み
 - 道路: ベジェ制御点を高度追従
 - 建物: Y座標を ElevationMap.Sample で設定、高さ ±7.5% ランダム変動、Smoothness 0.3-0.6 バリエーション
-- 地面メッシュ: 40×40 グリッド、各頂点が高度追従
-- GridGround.shader: 等高線 (2ワールドユニット間隔)、二段階グリッド (細+5倍粗)、斜面着色 (0.75倍)
+- 地面メッシュ: 96×96 グリッド、各頂点が高度追従 (SP-032で40→96に引き上げ)
+- GridGround.shader: SP-032で13ステップ合成パイプラインに刷新 (詳細は下記「地表合成パイプライン」セクション参照)
 - 橋/トンネル: BridgeTunnelDetector (edge.layer = -1/0/1)
 
 ### 水面レンダリング (完了)
@@ -956,7 +967,7 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
   - ElevationMap.ComputeFalloff が SlopeProfile で分岐
   - MapPreset.steepnessBias でプロファイル確率制御
 - **Q1 等高線**: GridGround.shader に topographic contour lines (2ワールドユニット間隔)
-- **Q2 地面解像度**: GroundGridRes 20→40 (滑らかな地形表現)
+- **Q2 地面解像度**: GroundGridRes 20→40→96 (SP-032で更に引き上げ)
 - **Q3 二段階グリッド**: 細グリッド + 5倍の粗グリッド
 - **Q4 建物高さバリエーション**: ±7.5% ランダム (IDハッシュ基準)
 - **Q5 斜面着色強化**: 0.6→0.75
@@ -964,6 +975,37 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - **デバッグ可視化**: AnalysisVisualizer Terrain モード (Tab 3段階切替)
   - クラスタ中心+方向矢印、丘楕円輪郭、装飾位置ドット
   - MapControlUI にクラスタ・装飾統計情報追加
+
+### SP-032: 地表合成レンダリングパイプライン (Slice 1-4 実装済み)
+
+Ground carrier mesh + CPU semantic masks + compositing shader で地表を航空地図風に表現。
+道路・水面・建物の独立メッシュはそのまま維持し、地表側に hillshade/contour/moisture/influence 等の補助表現を合成する。
+
+- **GroundSemanticMaskBaker**: CPU前処理で2枚のRGBA8テクスチャを生成
+  - `_GroundHeightSlopeTex`: R=elevation, G=slope, B=curvature, A=contour jitter
+  - `_GroundSemanticTex`: R=moisture/shore, G=road influence, B=building influence, A=intersection boost
+- **GridGround.shader**: 13ステップ合成パイプライン
+  1. Mask sampling (mesh UV)
+  2. Elevation gradient (Base→Mid→High 3色ブレンド)
+  3. Slope tinting (slopeNorm > 0.3 で混合)
+  4. Hillshade (4-tap法線再構成 + 2D光源)
+  5. Curvature enhancement (谷暗/尾根明)
+  6. Contour lines (interval + jitter)
+  7. Moisture tint (水辺湿潤)
+  8. Road influence tint (道路沿い)
+  9. Building influence tint (建物基部)
+  10. Intersection boost (交差点微増光)
+  11. Near/far + Grid overlay (dual-scale, distance fade)
+  12. Lighting + Fog (Lambert + ambient + URP fog)
+- **GroundSurfacePresetDefaults**: GeneratorType別の強度自動選択
+  - Mountain: hillshade 0.7, contour 0.35 (地形強調)
+  - Grid: hillshade 0.25, road 0.4, building 0.35 (都市強調)
+  - Rural: moisture 0.5 (水辺強調)
+- **MapTheme連携**: 7色フィールド (groundMidColor/HighColor/SlopeColor/MoistureTint/RoadTint/BuildingTint/ContourColor)
+  - Theme切替時はmask再生成なし、色のみ差し替え
+- **マテリアルライフサイクル**: template asset + runtime instance分離、Clear()で破棄
+- **地面メッシュ解像度**: groundGridResolution=96 (P5の40から引き上げ)
+- **残タスク** (Slice 5): 色パレット最終調整、4preset x 2theme手動検証
 
 ---
 
@@ -1032,7 +1074,6 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 
 ### 未実装・次期候補
 - **パフォーマンス最適化**: メッシュ結合、GPU instancing、オブジェクトプール
-- **地表合成レンダリング**: `SP-032` 参照。Ground carrier mesh + CPU semantic masks + GridGround.shader 合成で、道路/水/建物の鮮明な独立メッシュを維持したまま航空地図風の地表表現へ更新
 - **プレイヤー体験**: エンカウント演出、アイテム収集エフェクト、脱出カウントダウン
 - **マップ多様性**: 新ジェネレータ追加 (Island, Maze等)
 - **建物内装**: インテリア装飾のバリエーション強化

@@ -6,9 +6,9 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（地形・道路・水系の品質向上完了、手動検証待ち）
-直近の状態: P4道路レンダリングシステム刷新を実装完了。RoadProfile SO + Road.shader(UV駆動車線標示・路面ノイズ) + 1ストリップ統合 + 交差点自動拡張 + プリセット自動バインド(Coastal/Grid→Modern, Rural/Mountain→Rural) + BuildingPlacer連携。仕様ドキュメント(SPEC.md §10.2-10.4, §7, §18 P4, §20 / spec-index.json SP-023,SP-024 / AGENTS.md)全同期済み。水系W-1/W-5も前セッションで完了済み。
-次の作業: Unity Editorで道路描画の手動検証(Bootstrap実行→4プリセット×テーマ切替, 必須Gate-1。記録: docs/verification/road-p4-gate-results.md) → 道路将来拡張(B:交差点形状改善/D:探索連動劣化/E:SPEC道路幅テーブル修正)または水系W-2(入り江・岬)実装
+現フェーズ: α（Gate-1前5件バグ修正完了 → 手動検証待ち）
+直近の状態: Gate-1手動検証で5件の問題を発見し全修正済み。(1)NavMesh完全削除→CharacterController化(5ファイル)、(2)地表紺色→ThemeManager.ApplyGround簡素化+MapManager.sharedMaterial修正、(3)HP/GameLoop表示→SceneBootstrapperでコメントアウト、(4)seed入力→F1パネル開時にActivateInputField+閉時にEventSystemクリア、(5)UI縮小→MapControlUIの独自レスポンシブスケーリング削除。Parchment地表パレットも分離済み。
+次の作業: Unity再テスト(Bootstrap Test Scene→Play)→5件修正確認→Gate-1検証(road-p4-gate-runbook.md)実施。
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -26,6 +26,16 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-09 | P4: 道路をRoadProfile SO + Road.shader駆動に刷新 | マテリアル手動設定 / SO+シェーダー統合 | デザイナー調整可能性・draw call削減・プリセット別表現が必要 |
 | 2026-03-09 | プリセット→プロファイル: Coastal/Grid→Modern, Rural/Mountain→Rural | 個別指定 / GeneratorType自動マッピング | Bootstrap時自動化、手動設定は上書きしない設計 |
 | 2026-03-09 | E仕様: 道路幅テーブル表記を `max,min` に統一 | `min,max` 維持 / `max,min` 統一 | 実装配列が降順値(例:12→8)のため、読み誤りを防止 |
+| 2026-03-09 | B実装方針: 実装コスト優先はモック、見た目優先を最終段階で採用 | コスト優先を本実装 / モック化 / 見た目優先先行 | 手戻り抑制しつつ最終品質を見た目重視で確保するため |
+| 2026-03-10 | SP-032地表表現は「carrier mesh + CPU semantic masks + compositing shader」で進める | Unity Terrain移行 / 地面メッシュ維持 + mask合成 | 道路・水・建物のエッジを保ったまま、疑似オルソフォト風の可読性を上げるため |
+| 2026-03-10 | SP-032のMVPは単一Ground mesh + 2枚maskで開始し、chunkingはIdeal段階へ後送り | 先にchunking / 先に単一meshMVP | Gate-1完了後に最小リスクで導入し、後段で高解像度化へ繋げるため |
+| 2026-03-11 | SO displayNameを英語化（CJKフォント不採用） | A:英語化 / B:CJKフォント追加 / C:バイリンガル | LiberationSans SDFがCJK非対応。フォント追加はアセットサイズ増大。UIテキストは英語で十分 |
+| 2026-03-11 | W-4(浜辺遷移帯)をSP-032完了後に後送り | 先行実装 / SP-032後 | GridGround.shaderへの頂点カラー追加がSP-032の地表合成パイプライン刷新と競合するため |
+| 2026-03-11 | 操作モデルをクリック移動→WASD三人称に変更 | WASD / クリック維持 / 両対応 | クリック移動は追跡者逃走設計の名残。探索ゲームにはWASD/スティックが自然 |
+| 2026-03-11 | アートディレクション仕様はSP-032(地表)以外が未定義→後日SP新規策定 | 先に仕様 / プレイヤブル先行 | プレイヤブル先行を選択。画風仕様は別途策定 |
+| 2026-03-11 | NavMesh完全削除→CharacterController化 | NavMesh維持/軽量化 / CharacterController / Rigidbody | WASD移動にNavMesh不要。228秒のフリーズ原因を根本除去 |
+| 2026-03-11 | GameLoop UI/Controller/PlayerHUDをSceneBootstrapperで無効化 | 削除 / コメントアウト / 非表示 | DECISION LOG 2026-03-08「GameLoop凍結」の反映。コード残存・セットアップ停止 |
+| 2026-03-11 | MapControlUIの独自レスポンシブスケーリング削除 | 修正 / 削除 / CanvasScaler無効化 | CanvasScaler(ScaleWithScreenSize)と二重適用が原因。CanvasScalerに委ねる |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
@@ -63,30 +73,42 @@ Assets/
                     MapPreset(SO), MapTheme(SO), RoadProfile(SO), WaterProfile(SO),
                     MapDecoration, DecorationType, WaterBodyType, WaterBodyData,
                     HillData, HillCluster, ClusterType, SlopeProfile,
-                    NodeType, GeneratorType
+                    NodeType, GeneratorType, BuildingCategory, ShopSubtype,
+                    InteriorBuildingContext
     Core/           SeededRng, SpatialHash, MapGenUtils, MapAnalyzer,
-                    TerrainGenerator, BuildingPlacer, DecorationPlacer,
-                    BridgeTunnelDetector, ElevationMap, WaterGenerator,
-                    WaterTerrainInteraction, ISpatialBounds
+                    TerrainGenerator, BuildingPlacer, BuildingClassifier,
+                    DecorationPlacer, BridgeTunnelDetector, ElevationMap,
+                    WaterGenerator, WaterTerrainInteraction, ISpatialBounds,
+                    RoadCurveSampler
     MapGen/         IMapGenerator, OrganicGenerator, GridGenerator,
                     MountainGenerator, RuralGenerator
     Runtime/        MapManager, MapRenderer, BuildingSpawner, BuildingInteraction,
                     AnalysisVisualizer, ThemeManager, WaterRenderer,
                     DecorationSpawner, PostProcessingManager,
-                    AmbientParticleController
+                    AmbientParticleController,
+                    GroundSemanticMaskBaker, GroundSemanticMaskSet,
+                    GroundSurfacePresetDefaults
     Interior/       InteriorMapGenerator, InteriorMapData,
-                    InteriorRenderer, InteriorController
+                    InteriorRenderer, InteriorController,
+                    InteriorVisibilityController, InteriorDebugSpawner,
+                    InteriorPreset, InteriorRoomType, FurnitureType,
+                    FloorNavigator, FloorPlanFactory, FloorPlanUtils,
+                    IFloorPlanGenerator,
+                    FloorPlanGenerators/ (Commercial, Industrial,
+                      Residential, Special)
     GameLoop/       GameLoopController, GameState, PlayerStats,
                     EncounterZone, ExtractionPoint, ValueObjectBehaviour,
                     MapEventBus, GameLoopEvents, SaveManager, SaveData, GameLoopUI,
                     IEncounterTrigger, IValueObject, IExtractDecision, IMapEventBus
     Player/         PlayerMovement, CameraController
     UI/             MapControlUI, PlayerHUD, MiniMapController,
-                    WorldPositionTrackerUI, LabelController
+                    WorldPositionTrackerUI, LabelController,
+                    VerificationChecklistUI
     MiniGame/       MiniGameManager, MiniGameTypes, IMiniGame, RoomTrigger,
                     TimingCombatGame, MemoryMatchGame, TrapDodgeGame
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
-                    RoadProfileCreator
+                    RoadProfileCreator, InteriorDebugPreview,
+                    InteriorPresetCreator
   Shaders/          GridGround.shader, Water.shader, Road.shader
   Resources/
     Presets/        Preset_Coastal.asset 等
@@ -106,13 +128,14 @@ Assets/
 9. BuildingPlacer.Place → buildings
 10. MapAnalyzer.Analyze → analysis
 11. BridgeTunnelDetector.Detect → edge.layer (waterBodies参照)
+11b. GroundSemanticMaskBaker.Bake → HeightSlopeTex + SemanticTex (SP-032)
 12. MapRenderer.Render → road meshes (RoadProfile駆動, Road.shader)
 13. BuildingSpawner.Spawn → building GOs (4 shapes × floor-based height)
 14. WaterRenderer.Render → water meshes (typed waterBodies, depth UV2, roughness vertex color)
 15. DecorationPlacer.Place → decorations
 16. DecorationSpawner.Spawn → decoration GOs + LOD
-17. EnsureGroundPlane → elevation-following ground mesh
-18. BakeNavMesh
+17. EnsureGroundPlane → elevation-following ground mesh (material instance + mask bind + preset defaults)
+18. OnMapGenerated event → ThemeManager再適用 + PlayerMovement位置リセット
 
 ## Key Decisions
 - カメラは Perspective に統一。Interior時のみOrthographic
@@ -125,18 +148,10 @@ Assets/
 - 装飾: DecorationPlacer/Spawner (StreetLight/Tree/Bench/Bollard) + LOD 3段階
 - 海岸: 4方向ランダム, 丘陵は海岸・道路ノード回避
 - セーブ/ロード: JSON → `Application.persistentDataPath/save.json`
+- 地表: SP-032 mask-driven compositing (CPU bake 2xRGBA8 → GridGround.shader 13段階合成, ThemeManager lifecycle管理)
 
 ## ALERT FILTER
 - CRITICAL: ビルドエラー、データ不整合、セキュリティ
 - WARNING: 既存コード矛盾、未使用依存
 - INFO: スタイル提案、最適化候補
 - IGNORE: TMP Examples, Tutorial scaffolding
-
-## Gate Policy (No Exception)
-- Gate-1（P4道路手動検証）を完了するまで、B/D/E/W-2へ進まない
-- 4プリセット×2テーマを最低1シード（推奨3シード）で確認し、結果を `docs/verification/road-p4-gate-results.md` に記録する
-- FAIL項目が1つでもある場合は次タスクへ進行せず、修正タスク化して再検証する
-
-## Spec Workflow
-- 仕様の確定は一問一答で進める（同時に複数論点を確定しない）
-- 未確定事項は `docs/specs/` に「保留」として残し、仮実装前に必ず確認する

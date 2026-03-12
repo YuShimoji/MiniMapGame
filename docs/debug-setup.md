@@ -184,18 +184,53 @@
 
 ---
 
-## Planned Validation: SP-032 地表合成レンダリング（実装後）
+## SP-032: 地表合成レンダリング検証（Slice 1-4 実装済み、検証待ち）
 
-この節は **未実装** の `SP-032` 向け。Ground semantic mask + compositing shader 導入後に有効化する。
+Ground carrier mesh + CPU semantic masks (2xRGBA8) + GridGround.shader 13ステップ合成。
+Slice 5 の手動検証項目。各プリセットで最低2-3シードを試す。
+
+### 基本動作
 
 - [ ] 同一seedで semantic mask 結果が一致する
 - [ ] Theme切替時に mask は再生成されず、色だけ変化する
-- [ ] hillshade が地形の起伏読解を助け、主照明依存で破綻しない
-- [ ] contour が平地でうるさすぎず、斜面で読める
-- [ ] 道路縁 / 水際 / 建物基部の補助表現がにじみ過多にならない
-- [ ] Ground / Road / Water の Z-fighting が発生しない
-- [ ] 4プリセット × 2テーマで大破綻がない
 - [ ] Generate再実行時の GC / フレーム落ちが許容範囲
+- [ ] Console に `[GroundSemanticMaskBaker]` ログが出る（bake時間）
+- [ ] `MapManager.Clear()` 後に texture / material instance が残らない
+
+### Hillshade / Contour
+
+- [ ] hillshade が地形の起伏読解を助ける（Mountain で顕著に確認）
+- [ ] hillshade が主照明条件に依存しすぎず常に読図性を維持する
+- [ ] contour が平地でうるさすぎず、斜面で読める
+- [ ] Grid(平坦)プリセットで contour がほぼ見えない（正常）
+
+### Semantic Influence
+
+- [ ] 水辺 tint が水上ではなく岸側に出る
+- [ ] 道路 influence が道路本体を汚しすぎない
+- [ ] building halo が広がりすぎない
+- [ ] 交差点 boost が degree>=3 ノード周辺でわずかに明るい
+
+### Elevation Gradient
+
+- [ ] 標高グラデーション（低→中→高）が視認できる
+- [ ] 急斜面ティントが斜面部分に適切に適用される
+
+### Z-fighting / Regression
+
+- [ ] Ground / Road / Water の Z-fighting が発生しない
+- [ ] 道路描画・建物配置・水面表示に副作用がない
+- [ ] Grid preset で地形が平坦でも shading が破綻しない
+- [ ] 4プリセット x 2テーマで大破綻がない
+
+### Per-Preset 期待値 (SP-032)
+
+| プリセット | hillshade | contour | moisture | road/building |
+| ---------- | --------- | ------- | -------- | ------------- |
+| Coastal | 中 (0.55) | 中 (0.25) | 高 (0.45) | 中 |
+| Rural | 中 (0.5) | 低 (0.2) | 最高 (0.5) | 低 |
+| Grid | 低 (0.25) | 最低 (0.1) | 低 (0.2) | 最高 (0.4/0.35) |
+| Mountain | 最高 (0.7) | 最高 (0.35) | 高 (0.4) | 低 |
 
 ---
 

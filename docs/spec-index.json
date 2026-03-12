@@ -282,19 +282,19 @@
     "id": "SP-032",
     "title": "地表合成レンダリングパイプライン",
     "status": "partial",
-    "pct": 80,
+    "pct": 85,
     "cat": "system",
     "file": "docs/specs/ground-surface-compositing.md",
-    "summary": "Ground carrier mesh + CPU semantic masks (2xRGBA8) + GridGround.shader 13段階合成。MVP Slice 1-4実装済み。残: 色調整・手動検証・MacroNoiseTex・GridMode"
+    "summary": "Ground carrier mesh + CPU semantic masks (2xRGBA8) + GridGround.shader 13段階合成。MVP Slice 1-4実装済み、仕様同期済み。Slice 5残: 色パレット最終調整・4preset x 2theme手動検証。Ideal段階残: MacroNoiseTex・GridMode"
   },
   {
     "id": "SP-033",
     "title": "SP-032 MVP実装計画",
     "status": "partial",
-    "pct": 80,
+    "pct": 85,
     "cat": "system",
     "file": "docs/specs/ground-surface-mvp-implementation-plan.md",
-    "summary": "Slice 1(Infrastructure), 2(CPU Baker), 3(Shader), 4(Theme)完了。Slice 5(Validation)が残: MapTheme SO更新・4preset手動検証・色パレット調整"
+    "summary": "Slice 1-4完了(Infrastructure/CPU Baker/Shader/Theme)、SPEC.md・debug-setup.md同期済み。Slice 5残: 色パレット調整・4preset x 2theme手動検証"
   },
   {
     "id": "SP-034",

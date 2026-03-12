@@ -2,7 +2,7 @@
 
 **Status**: partial
 **Category**: system
-**実装率**: 80% (MVP Slice 1-4 実装済み、手動検証・色調整中)
+**実装率**: 85% (MVP Slice 1-4 実装済み、仕様同期済み。Slice 5残: 色パレット調整・手動検証)
 
 ## 概要
 
@@ -136,7 +136,7 @@ Seed / Preset
 ## 派生 mask 一覧（理想形）
 
 | ID | 名称 | 用途 | 主ソース |
-|----|------|------|---------|
+| -- | ---- | ---- | ------- |
 | M01 | ElevationNorm | 高度帯ブレンド | `ElevationMap.Sample` |
 | M02 | SlopeNorm | 斜面強度 | `ElevationMap.SampleSlope` |
 | M03 | CurvatureSigned | 谷/尾根の補助判定 | `ElevationMap` 2次差分 |

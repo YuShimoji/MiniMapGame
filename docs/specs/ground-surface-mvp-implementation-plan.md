@@ -2,7 +2,7 @@
 
 **Status**: partial
 **Category**: system
-**実装率**: 80% (Slice 1-4 実装済み、Slice 5 検証・色調整中)
+**実装率**: 85% (Slice 1-4 実装済み、仕様同期済み。Slice 5残: 色パレット調整・手動検証)
 
 ## 目的
 

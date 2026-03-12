@@ -73,11 +73,13 @@ Assets/
                     MapPreset(SO), MapTheme(SO), RoadProfile(SO), WaterProfile(SO),
                     MapDecoration, DecorationType, WaterBodyType, WaterBodyData,
                     HillData, HillCluster, ClusterType, SlopeProfile,
-                    NodeType, GeneratorType
+                    NodeType, GeneratorType, BuildingCategory, ShopSubtype,
+                    InteriorBuildingContext
     Core/           SeededRng, SpatialHash, MapGenUtils, MapAnalyzer,
-                    TerrainGenerator, BuildingPlacer, DecorationPlacer,
-                    BridgeTunnelDetector, ElevationMap, WaterGenerator,
-                    WaterTerrainInteraction, ISpatialBounds, RoadCurveSampler
+                    TerrainGenerator, BuildingPlacer, BuildingClassifier,
+                    DecorationPlacer, BridgeTunnelDetector, ElevationMap,
+                    WaterGenerator, WaterTerrainInteraction, ISpatialBounds,
+                    RoadCurveSampler
     MapGen/         IMapGenerator, OrganicGenerator, GridGenerator,
                     MountainGenerator, RuralGenerator
     Runtime/        MapManager, MapRenderer, BuildingSpawner, BuildingInteraction,
@@ -87,7 +89,13 @@ Assets/
                     GroundSemanticMaskBaker, GroundSemanticMaskSet,
                     GroundSurfacePresetDefaults
     Interior/       InteriorMapGenerator, InteriorMapData,
-                    InteriorRenderer, InteriorController
+                    InteriorRenderer, InteriorController,
+                    InteriorVisibilityController, InteriorDebugSpawner,
+                    InteriorPreset, InteriorRoomType, FurnitureType,
+                    FloorNavigator, FloorPlanFactory, FloorPlanUtils,
+                    IFloorPlanGenerator,
+                    FloorPlanGenerators/ (Commercial, Industrial,
+                      Residential, Special)
     GameLoop/       GameLoopController, GameState, PlayerStats,
                     EncounterZone, ExtractionPoint, ValueObjectBehaviour,
                     MapEventBus, GameLoopEvents, SaveManager, SaveData, GameLoopUI,
@@ -99,7 +107,8 @@ Assets/
     MiniGame/       MiniGameManager, MiniGameTypes, IMiniGame, RoomTrigger,
                     TimingCombatGame, MemoryMatchGame, TrapDodgeGame
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
-                    RoadProfileCreator, InteriorDebugPreview
+                    RoadProfileCreator, InteriorDebugPreview,
+                    InteriorPresetCreator
   Shaders/          GridGround.shader, Water.shader, Road.shader
   Resources/
     Presets/        Preset_Coastal.asset 等
