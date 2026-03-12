@@ -6,9 +6,13 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Gate-1前5件バグ修正完了 → 手動検証待ち）
-直近の状態: Gate-1手動検証で5件の問題を発見し全修正済み。(1)NavMesh完全削除→CharacterController化(5ファイル)、(2)地表紺色→ThemeManager.ApplyGround簡素化+MapManager.sharedMaterial修正、(3)HP/GameLoop表示→SceneBootstrapperでコメントアウト、(4)seed入力→F1パネル開時にActivateInputField+閉時にEventSystemクリア、(5)UI縮小→MapControlUIの独自レスポンシブスケーリング削除。Parchment地表パレットも分離済み。
-次の作業: Unity再テスト(Bootstrap Test Scene→Play)→5件修正確認→Gate-1検証(road-p4-gate-runbook.md)実施。
+現フェーズ: α（SP-032 Slice 5 色パレット調整 → 統合手動検証待ち）
+直近の状態:
+  - Gate-1(P4道路検証)をSP-032統合検証に正式吸収。blocker5件修正済み(099bf56)
+  - AGENTS.mdをCLAUDE.mdに完全同期。nulアーティファクト除去
+  - SP-032色パレット構成を調査完了: 3層(強度/色/シェーダー合成)の全容把握
+  - 開発方向を「視覚品質仕上げ優先」に決定
+次の作業: Unity Bootstrap→Play→4preset x 2theme目視確認(seed 12011)→debug-setup.mdチェックリストで道路+地表を一括検証→報告→色調整
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
