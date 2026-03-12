@@ -64,6 +64,11 @@ namespace MiniMapGame.Player
                 EventSystem.current.currentSelectedGameObject != null)
                 return;
 
+            // Skip movement when mouse is over UI (prevents input conflicts with buttons/sliders)
+            if (EventSystem.current != null &&
+                EventSystem.current.IsPointerOverGameObject())
+                return;
+
             // WASD / arrow key input
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");

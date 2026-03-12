@@ -9,10 +9,12 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: α（SP-032 Slice 5 色パレット調整 → 統合手動検証待ち）
 直近の状態:
   - Gate-1(P4道路検証)をSP-032統合検証に正式吸収。blocker5件修正済み(099bf56)
-  - AGENTS.mdをCLAUDE.mdに完全同期。nulアーティファクト除去
-  - SP-032色パレット構成を調査完了: 3層(強度/色/シェーダー合成)の全容把握
-  - 開発方向を「視覚品質仕上げ優先」に決定
-次の作業: Unity Bootstrap→Play→4preset x 2theme目視確認(seed 12011)→debug-setup.mdチェックリストで道路+地表を一括検証→報告→色調整
+  - UIフォーカス不具合: StandaloneInputModule→InputSystemUIInputModule置換 + IsPointerOverGameObjectガード追加済み。ただし未解決（ボタン・入力フィールドにフォーカスが当たらない）
+  - 地面の色(紺色): コード/シェーダー/テーマに紺色の値なし。Dark theme ambient(0.04,0.06,0.10)×groundColor(0.28,0.33,0.24)の正常動作の可能性が高いが、UIが使えないためテーマ切替で未確認
+  - F1コントロールパネルは初回から表示状態（切替は可能）
+  - プレイヤーCapsuleのWASD移動は正常動作
+ブロッカー: UIフォーカス不具合が未解決のため、SP-032 Slice 5の手動検証（シード変更・プリセット切替・テーマ切替）に進めない
+次の作業: UIフォーカス問題のデバッグ続行 → 解決後にSP-032 Slice 5手動検証
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |

@@ -2,6 +2,7 @@ using UnityEngine;
 
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEditor;
@@ -479,11 +480,15 @@ namespace MiniMapGame.EditorTools
             EnsureComponent<GraphicRaycaster>(canvasGo);
 
             // EventSystem is required for all UI interaction (buttons, inputs, sliders)
-            if (Object.FindAnyObjectByType<EventSystem>() == null)
+            var existingES = Object.FindAnyObjectByType<EventSystem>();
             {
-                var esGo = FindOrCreate("EventSystem");
+                var esGo = existingES != null ? existingES.gameObject : FindOrCreate("EventSystem");
                 EnsureComponent<EventSystem>(esGo);
-                EnsureComponent<StandaloneInputModule>(esGo);
+                // Remove legacy StandaloneInputModule if present (incompatible with new Input System)
+                var legacyModule = esGo.GetComponent<StandaloneInputModule>();
+                if (legacyModule != null) Object.DestroyImmediate(legacyModule);
+                // InputSystemUIInputModule is required when using the new Input System package.
+                EnsureComponent<InputSystemUIInputModule>(esGo);
             }
 
             return canvas;
