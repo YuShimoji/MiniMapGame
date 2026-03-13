@@ -7,7 +7,7 @@ namespace MiniMapGame.Interior
     /// <summary>
     /// Renders InteriorMapData as 3D primitives.
     /// Supports multi-floor rendering with per-floor visibility toggle.
-    /// New data path: InteriorFloorData with InteriorRoom/InteriorDoor/InteriorCorridor.
+    /// New data path: InteriorFloorData with InteriorRoom/InteriorDoor/InteriorCorridor/InteriorFurniture.
     /// Legacy data path: RoomNode/CorridorEdge (single floor, backward compatible).
     /// </summary>
     public class InteriorRenderer : MonoBehaviour
@@ -28,9 +28,11 @@ namespace MiniMapGame.Interior
         private readonly Dictionary<Color, Material> _floorMaterialCache = new();
         private Material _cachedWallMaterial;
         private Mesh _sharedQuadMesh;
+        private Mesh _sharedCubeMesh;
 
         private int _currentFloorIndex;
         private InteriorPreset _activePreset;
+        private Vector3 _currentWorldOrigin;
 
         // Default room type → color mapping
         private static readonly Dictionary<InteriorRoomType, Color> DefaultRoomColors = new()
@@ -110,6 +112,7 @@ namespace MiniMapGame.Interior
             _currentBuildingId = buildingId;
             _currentSeed = seed;
             _activePreset = preset;
+            _currentWorldOrigin = worldOrigin;
             _currentFloorIndex = 0;
 
             for (int fi = 0; fi < data.floors.Count; fi++)
@@ -129,20 +132,26 @@ namespace MiniMapGame.Interior
                 {
                     var room = floor.rooms[ri];
                     CreateNewRoomFloor(room, worldOrigin, yOffset, group.root.transform, preset);
-                    CreateNewRoomWalls(room, floor.doors, worldOrigin, yOffset, group.root.transform, preset);
+                    CreateNewRoomWalls(room, ri, floor.doors, worldOrigin, yOffset, group.root.transform, preset);
                 }
 
                 // Doors (rendered as floor gaps in walls — visual indicators)
-                foreach (var door in floor.doors)
+                for (int di = 0; di < floor.doors.Count; di++)
                 {
-                    if (!door.isHidden)
-                        CreateDoorIndicator(door, worldOrigin, yOffset, group.root.transform, preset);
+                    var door = floor.doors[di];
+                    CreateDoorIndicator(door, di, fi, worldOrigin, yOffset, group.root.transform, preset);
                 }
 
                 // Corridors
                 foreach (var corridor in floor.corridors)
                 {
                     CreateNewCorridorFloor(corridor, floor, worldOrigin, yOffset, group.root.transform, preset);
+                }
+
+                // Furniture and discovery props
+                foreach (var furniture in floor.furniture)
+                {
+                    CreateFurniture(furniture, fi, worldOrigin, yOffset, group.root.transform, preset);
                 }
 
                 _floorGroups.Add(group);
@@ -163,6 +172,7 @@ namespace MiniMapGame.Interior
             _currentBuildingId = buildingId;
             _currentSeed = seed;
             _activePreset = null;
+            _currentWorldOrigin = worldOrigin;
 
             // Legacy path: use rooms/corridors properties (triggers Obsolete warning suppressed here)
             var rooms = data.rooms;
@@ -205,6 +215,7 @@ namespace MiniMapGame.Interior
 
             _activePreset = null;
             _currentFloorIndex = 0;
+            _currentWorldOrigin = Vector3.zero;
         }
 
         /// <summary>
@@ -282,7 +293,7 @@ namespace MiniMapGame.Interior
             go.transform.localScale = new Vector3(room.size.x, room.size.y, 1f);
         }
 
-        private void CreateNewRoomWalls(InteriorRoom room, List<InteriorDoor> doors,
+        private void CreateNewRoomWalls(InteriorRoom room, int roomIndex, List<InteriorDoor> doors,
             Vector3 origin, float yOffset, Transform parent, InteriorPreset preset)
         {
             float hw = room.size.x * 0.5f;
@@ -293,7 +304,7 @@ namespace MiniMapGame.Interior
             var doorGaps = new List<DoorGap>();
             foreach (var door in doors)
             {
-                if (door.roomA == room.id || door.roomB == room.id)
+                if (door.roomA == roomIndex || door.roomB == roomIndex)
                 {
                     doorGaps.Add(new DoorGap
                     {
@@ -318,7 +329,7 @@ namespace MiniMapGame.Interior
             {
                 var wallStart = corners[w];
                 var wallEnd = corners[(w + 1) % 4];
-                var segments = SplitWallByDoors(wallStart, wallEnd, doorGaps, room);
+                var segments = SplitWallByDoors(wallStart, wallEnd, doorGaps);
 
                 foreach (var seg in segments)
                 {
@@ -347,8 +358,8 @@ namespace MiniMapGame.Interior
             lr.SetPosition(1, end);
         }
 
-        private void CreateDoorIndicator(InteriorDoor door, Vector3 origin, float yOffset,
-            Transform parent, InteriorPreset preset)
+        private void CreateDoorIndicator(InteriorDoor door, int doorIndex, int floorIndex,
+            Vector3 origin, float yOffset, Transform parent, InteriorPreset preset)
         {
             // Small colored indicator at door position
             var go = new GameObject($"Door_{door.roomA}_{door.roomB}");
@@ -363,6 +374,35 @@ namespace MiniMapGame.Interior
             go.transform.position = new Vector3(origin.x + door.position.x, yOffset + 0.01f, origin.z + door.position.y);
             go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             go.transform.localScale = new Vector3(door.width, door.width * 0.3f, 1f);
+
+            // Interaction collider (trigger)
+            var triggerCol = go.AddComponent<BoxCollider>();
+            triggerCol.isTrigger = true;
+            triggerCol.size = new Vector3(1f, 1f, 5f); // Scaled by transform; Z extends upward
+
+            // DoorInteractable component
+            var interactable = go.AddComponent<DoorInteractable>();
+            interactable.doorIndex = doorIndex;
+            interactable.roomA = door.roomA;
+            interactable.roomB = door.roomB;
+            interactable.isLocked = door.isLocked;
+            interactable.isHidden = door.isHidden;
+            interactable.floorIndex = floorIndex;
+
+            // Movement-blocking collider for locked doors (non-trigger)
+            if (door.isLocked)
+            {
+                var blockCol = go.AddComponent<BoxCollider>();
+                blockCol.isTrigger = false;
+                blockCol.size = new Vector3(1f, 1f, 5f);
+                interactable.blockingCollider = blockCol;
+            }
+
+            // Hidden doors start inactive
+            if (door.isHidden)
+            {
+                go.SetActive(false);
+            }
         }
 
         private void CreateNewCorridorFloor(InteriorCorridor corridor, InteriorFloorData floor,
@@ -393,6 +433,39 @@ namespace MiniMapGame.Interior
                 var posB = new Vector3(origin.x + roomB.position.x, yOffset - 0.001f, origin.z + roomB.position.y);
 
                 CreateCorridorSegment(posA, posB, corridor.width, color, parent);
+            }
+        }
+
+        private void CreateFurniture(InteriorFurniture furniture, int floorIndex,
+            Vector3 origin, float yOffset, Transform parent, InteriorPreset preset)
+        {
+            var go = new GameObject($"Furniture_{furniture.type}_{furniture.roomId}");
+            go.transform.SetParent(parent);
+
+            Vector3 size = GetFurnitureSize(furniture.type, furniture.scale);
+            go.AddComponent<MeshFilter>().sharedMesh = GetSharedCubeMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial =
+                GetCachedFloorMaterial(GetFurnitureColor(furniture.type, preset));
+
+            go.transform.position = new Vector3(
+                origin.x + furniture.position.x,
+                yOffset + size.y * 0.5f + 0.03f,
+                origin.z + furniture.position.y);
+            go.transform.rotation = Quaternion.Euler(0f, furniture.angle, 0f);
+            go.transform.localScale = size;
+
+            // Attach DiscoveryInteractable for collectible furniture types
+            if (DiscoveryInteractable.IsDiscoveryType(furniture.type))
+            {
+                var triggerCol = go.AddComponent<BoxCollider>();
+                triggerCol.isTrigger = true;
+                triggerCol.size = Vector3.one; // Already scaled by transform
+
+                var discovery = go.AddComponent<DiscoveryInteractable>();
+                discovery.discoveryId = $"{_currentBuildingId}_{floorIndex}_{furniture.roomId}_{furniture.type}";
+                discovery.furnitureType = furniture.type;
+                discovery.value = DiscoveryInteractable.GetDefaultValue(furniture.type);
+                discovery.floorIndex = floorIndex;
             }
         }
 
@@ -535,7 +608,7 @@ namespace MiniMapGame.Interior
         }
 
         private List<WallSegment> SplitWallByDoors(Vector3 wallStart, Vector3 wallEnd,
-            List<DoorGap> doorGaps, InteriorRoom room)
+            List<DoorGap> doorGaps)
         {
             var segments = new List<WallSegment>();
             var wallDir = (wallEnd - wallStart).normalized;
@@ -546,7 +619,10 @@ namespace MiniMapGame.Interior
             foreach (var gap in doorGaps)
             {
                 if (gap.isHidden) continue; // Hidden doors don't create visual gaps
-                var doorWorld = new Vector3(gap.position.x, wallStart.y, gap.position.y);
+                var doorWorld = new Vector3(
+                    _currentWorldOrigin.x + gap.position.x,
+                    wallStart.y,
+                    _currentWorldOrigin.z + gap.position.y);
 
                 // Calculate perpendicular distance from door to wall line
                 var toGap = doorWorld - wallStart;
@@ -602,6 +678,72 @@ namespace MiniMapGame.Interior
             return origin + new Vector3(interiorPos.x, floorY, interiorPos.y);
         }
 
+        private Color GetFurnitureColor(FurnitureType type, InteriorPreset preset)
+        {
+            Color baseColor = type switch
+            {
+                FurnitureType.Table or FurnitureType.Chair or FurnitureType.Bed or FurnitureType.Sofa
+                    or FurnitureType.Cabinet or FurnitureType.Shelf or FurnitureType.Desk
+                    or FurnitureType.Bookshelf or FurnitureType.ShopCounter
+                    => new Color(0.53f, 0.39f, 0.27f),
+                FurnitureType.Fridge or FurnitureType.Stove or FurnitureType.Sink
+                    or FurnitureType.Register or FurnitureType.DisplayCase or FurnitureType.FileCabinet
+                    or FurnitureType.Computer or FurnitureType.Machine
+                    => new Color(0.63f, 0.67f, 0.72f),
+                FurnitureType.Crate or FurnitureType.Pallet or FurnitureType.Container
+                    => new Color(0.44f, 0.33f, 0.24f),
+                FurnitureType.Barrel or FurnitureType.Workbench
+                    => new Color(0.47f, 0.42f, 0.33f),
+                FurnitureType.Lamp or FurnitureType.Document or FurnitureType.Photo or FurnitureType.Note
+                    => new Color(0.85f, 0.8f, 0.62f),
+                FurnitureType.Mannequin
+                    => new Color(0.76f, 0.72f, 0.68f),
+                FurnitureType.Rubble or FurnitureType.Debris or FurnitureType.Cobweb or FurnitureType.Vine
+                    => new Color(0.34f, 0.31f, 0.28f),
+                _ => new Color(0.6f, 0.62f, 0.65f)
+            };
+
+            if (preset == null)
+            {
+                return baseColor;
+            }
+
+            float decayTint = Mathf.Clamp01(preset.decayLevel * 0.45f);
+            return Color.Lerp(baseColor, preset.wallColor, decayTint);
+        }
+
+        private Vector3 GetFurnitureSize(FurnitureType type, float scale)
+        {
+            Vector3 baseSize = type switch
+            {
+                FurnitureType.Bed => new Vector3(1.4f, 0.45f, 2.2f),
+                FurnitureType.Sofa => new Vector3(1.8f, 0.55f, 0.9f),
+                FurnitureType.Table => new Vector3(1.2f, 0.5f, 1.2f),
+                FurnitureType.Chair => new Vector3(0.6f, 0.65f, 0.6f),
+                FurnitureType.Shelf or FurnitureType.Bookshelf => new Vector3(0.45f, 1.35f, 1.5f),
+                FurnitureType.Cabinet or FurnitureType.FileCabinet => new Vector3(0.7f, 1.05f, 0.65f),
+                FurnitureType.Fridge => new Vector3(0.85f, 1.5f, 0.85f),
+                FurnitureType.Stove or FurnitureType.Sink => new Vector3(0.9f, 0.95f, 0.65f),
+                FurnitureType.ShopCounter => new Vector3(2.1f, 1f, 0.8f),
+                FurnitureType.Register => new Vector3(0.55f, 0.35f, 0.45f),
+                FurnitureType.DisplayCase => new Vector3(1.4f, 0.9f, 0.7f),
+                FurnitureType.Mannequin => new Vector3(0.45f, 1.7f, 0.45f),
+                FurnitureType.Crate or FurnitureType.Container => new Vector3(0.8f, 0.65f, 0.8f),
+                FurnitureType.Barrel => new Vector3(0.72f, 0.9f, 0.72f),
+                FurnitureType.Machine => new Vector3(1.25f, 1.15f, 1.1f),
+                FurnitureType.Workbench or FurnitureType.Desk => new Vector3(1.4f, 0.9f, 0.7f),
+                FurnitureType.Pallet => new Vector3(1.2f, 0.2f, 1.2f),
+                FurnitureType.Computer => new Vector3(0.45f, 0.3f, 0.35f),
+                FurnitureType.Rubble or FurnitureType.Debris => new Vector3(0.9f, 0.35f, 0.9f),
+                FurnitureType.Cobweb or FurnitureType.Vine => new Vector3(0.7f, 0.05f, 0.7f),
+                FurnitureType.Document or FurnitureType.Photo or FurnitureType.Note => new Vector3(0.45f, 0.05f, 0.35f),
+                FurnitureType.Lamp => new Vector3(0.35f, 1.1f, 0.35f),
+                _ => new Vector3(0.8f, 0.8f, 0.8f)
+            };
+
+            return baseSize * Mathf.Max(0.45f, scale);
+        }
+
         private Material GetCachedFloorMaterial(Color color)
         {
             if (_floorMaterialCache.TryGetValue(color, out var cached))
@@ -631,6 +773,15 @@ namespace MiniMapGame.Interior
             _sharedQuadMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
             Destroy(tmp);
             return _sharedQuadMesh;
+        }
+
+        private Mesh GetSharedCubeMesh()
+        {
+            if (_sharedCubeMesh != null) return _sharedCubeMesh;
+            var tmp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            _sharedCubeMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
+            Destroy(tmp);
+            return _sharedCubeMesh;
         }
 
         // ===== Internal types =====

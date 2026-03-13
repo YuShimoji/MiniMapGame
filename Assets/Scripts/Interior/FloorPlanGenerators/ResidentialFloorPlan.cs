@@ -167,46 +167,49 @@ namespace MiniMapGame.Interior
         {
             if (rooms.Count == 0) return;
 
-            // Sort by area
-            var sorted = rooms.OrderByDescending(r => r.size.x * r.size.y).ToList();
+            // Preserve room list order so room.id and room index remain aligned for doors/corridors.
+            var sortedIds = rooms
+                .OrderByDescending(r => r.size.x * r.size.y)
+                .Select(r => r.id)
+                .ToList();
 
             if (floorIndex == 0)
             {
                 // Ground floor: LivingRoom (largest), Kitchen, Bathroom, DiningRoom/Storage
-                sorted[0] = SetType(sorted[0], InteriorRoomType.LivingRoom);
-                if (sorted.Count > 1) sorted[1] = SetType(sorted[1], InteriorRoomType.Kitchen);
-                if (sorted.Count > 2) sorted[2] = SetType(sorted[2], InteriorRoomType.Bathroom);
-                for (int i = 3; i < sorted.Count; i++)
+                SetRoomType(rooms, sortedIds[0], InteriorRoomType.LivingRoom);
+                if (sortedIds.Count > 1) SetRoomType(rooms, sortedIds[1], InteriorRoomType.Kitchen);
+                if (sortedIds.Count > 2) SetRoomType(rooms, sortedIds[2], InteriorRoomType.Bathroom);
+                for (int i = 3; i < sortedIds.Count; i++)
                 {
-                    sorted[i] = SetType(sorted[i], rng.Next() < 0.5f ? InteriorRoomType.DiningRoom : InteriorRoomType.Storage);
+                    SetRoomType(
+                        rooms,
+                        sortedIds[i],
+                        rng.Next() < 0.5f ? InteriorRoomType.DiningRoom : InteriorRoomType.Storage);
                 }
             }
             else if (floorIndex > 0)
             {
                 // Upper floors: Bedrooms, Bathroom, Storage
-                sorted[0] = SetType(sorted[0], InteriorRoomType.Bedroom);
-                if (sorted.Count > 1) sorted[1] = SetType(sorted[1], InteriorRoomType.Bathroom);
-                for (int i = 2; i < sorted.Count; i++)
+                SetRoomType(rooms, sortedIds[0], InteriorRoomType.Bedroom);
+                if (sortedIds.Count > 1) SetRoomType(rooms, sortedIds[1], InteriorRoomType.Bathroom);
+                for (int i = 2; i < sortedIds.Count; i++)
                 {
-                    sorted[i] = SetType(sorted[i], rng.Next() < 0.6f ? InteriorRoomType.Bedroom : InteriorRoomType.Storage);
+                    SetRoomType(
+                        rooms,
+                        sortedIds[i],
+                        rng.Next() < 0.6f ? InteriorRoomType.Bedroom : InteriorRoomType.Storage);
                 }
             }
             else
             {
                 // Basement: Storage, Utility, Basement
-                for (int i = 0; i < sorted.Count; i++)
+                for (int i = 0; i < sortedIds.Count; i++)
                 {
                     float roll = rng.Next();
-                    if (roll < 0.5f) sorted[i] = SetType(sorted[i], InteriorRoomType.Storage);
-                    else if (roll < 0.8f) sorted[i] = SetType(sorted[i], InteriorRoomType.Utility);
-                    else sorted[i] = SetType(sorted[i], InteriorRoomType.Basement);
+                    if (roll < 0.5f) SetRoomType(rooms, sortedIds[i], InteriorRoomType.Storage);
+                    else if (roll < 0.8f) SetRoomType(rooms, sortedIds[i], InteriorRoomType.Utility);
+                    else SetRoomType(rooms, sortedIds[i], InteriorRoomType.Basement);
                 }
-            }
-
-            // Copy back
-            for (int i = 0; i < rooms.Count; i++)
-            {
-                rooms[i] = sorted[i];
             }
         }
 
@@ -270,10 +273,14 @@ namespace MiniMapGame.Interior
             };
         }
 
-        private InteriorRoom SetType(InteriorRoom room, InteriorRoomType type)
+        private void SetRoomType(List<InteriorRoom> rooms, int roomId, InteriorRoomType type)
         {
+            int index = rooms.FindIndex(r => r.id == roomId);
+            if (index < 0) return;
+
+            var room = rooms[index];
             room.type = type;
-            return room;
+            rooms[index] = room;
         }
 
         private float CalculateActualDeadSpace(List<InteriorRoom> rooms, Vector2 floorBounds)

@@ -84,10 +84,10 @@ namespace MiniMapGame.EditorTools
 
             // Terrain
             t.coastColor = HexColor("0a1520");
-            t.riverColor = HexColor("142030");
-            t.shallowWaterColor = new Color(0.10f, 0.22f, 0.32f, 0.45f);
-            t.deepWaterColor = new Color(0.02f, 0.06f, 0.16f, 0.92f);
-            t.foamColor = new Color(0.5f, 0.6f, 0.7f, 0.5f);
+            t.riverColor = new Color(0.12f, 0.27f, 0.40f, 1f);
+            t.shallowWaterColor = new Color(0.22f, 0.46f, 0.58f, 0.50f);
+            t.deepWaterColor = new Color(0.04f, 0.11f, 0.24f, 0.94f);
+            t.foamColor = new Color(0.76f, 0.84f, 0.90f, 0.60f);
 
             // Nodes
             t.nodeColor = HexColor("4a6a8a");
@@ -169,10 +169,10 @@ namespace MiniMapGame.EditorTools
 
             // Terrain
             t.coastColor = HexColor("b8c8d0");
-            t.riverColor = HexColor("90b0c8");
-            t.shallowWaterColor = new Color(0.45f, 0.58f, 0.65f, 0.40f);
-            t.deepWaterColor = new Color(0.25f, 0.40f, 0.55f, 0.85f);
-            t.foamColor = new Color(0.90f, 0.92f, 0.88f, 0.55f);
+            t.riverColor = new Color(0.34f, 0.52f, 0.66f, 1f);
+            t.shallowWaterColor = new Color(0.40f, 0.58f, 0.70f, 0.44f);
+            t.deepWaterColor = new Color(0.18f, 0.32f, 0.48f, 0.88f);
+            t.foamColor = new Color(0.94f, 0.95f, 0.90f, 0.50f);
 
             // Nodes
             t.nodeColor = HexColor("706040");

@@ -13,6 +13,8 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
   - 地面の色(紺色): コード/シェーダー/テーマに紺色の値なし。Dark theme ambient(0.04,0.06,0.10)×groundColor(0.28,0.33,0.24)の正常動作の可能性が高いが、テーマ切替で未確認
   - F1コントロールパネルは初回から表示状態（切替は可能）
   - プレイヤーCapsuleのWASD移動は正常動作
+  - Task B水辺ビジュアル改善: Dark/Parchment水色を再調整、Grid/Mountainでriver有効化、Grid運河用bridgeを既定ON、depthグラデーション検証項目をdocsへ追加
+  - Task B FB反映: coast岸側depthを中心より浅く補正、MapThemeCreatorを新paletteへ同期、Preset_Grid.displayNameはsave互換のためNYC Gridへ戻し
 次の作業: Unity再Bootstrap(メニュー: MiniMapGame > Bootstrap Test Scene) → シーン保存 → Play → UIフォーカス確認 → SP-032 Slice 5手動検証
 
 ## DECISION LOG
@@ -42,6 +44,8 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-11 | GameLoop UI/Controller/PlayerHUDをSceneBootstrapperで無効化 | 削除 / コメントアウト / 非表示 | DECISION LOG 2026-03-08「GameLoop凍結」の反映。コード残存・セットアップ停止 |
 | 2026-03-11 | MapControlUIの独自レスポンシブスケーリング削除 | 修正 / 削除 / CanvasScaler無効化 | CanvasScaler(ScaleWithScreenSize)と二重適用が原因。CanvasScalerに委ねる |
 | 2026-03-12 | Gate-1(P4道路検証)をSP-032統合検証に吸収 | SP-032統合 / Gate-1合格扱い / 個別実施 | blocker5件修正済み。SP-032 Slice 5で4preset x 2theme一括検証し道路+地表を同時カバー |
+| 2026-03-13 | 水辺ビジュアル基準: 全既定プリセットで水辺を見せる。Gridはriver+bridge既定ON、Dark/Parchment水色は深浅差を読みやすく調整 | river追加なし / riverのみ / river+bridge+palette調整 | 全presetで水辺体験を担保しつつ、Gridの道路-水面交差破綻を避け、SP-032の読図性を上げるため |
+| 2026-03-13 | Task B FB修正: coast深浅の実装整合・ThemeCreator同期・Grid表示名互換維持 | docsのみ修正 / 実装修正 / save migration追加 | docs期待値との不整合と再生成巻き戻しを解消しつつ、displayName保存方式で既存saveを壊さないため |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)

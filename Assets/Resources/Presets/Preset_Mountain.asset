@@ -16,21 +16,22 @@ MonoBehaviour:
   generatorType: 2
   arterialRange: {x: 2, y: 3}
   hasRingRoad: 0
-  curveAmount: 0.88
-  buildingDensity: 0.18
+  curveAmount: 0.94
+  buildingDensity: 0.08
   hasCoast: 0
-  hasRiver: 0
-  hillDensity: 0.95
-  description: Treacherous mountain trail. Many dead-ends and forks.
+  hasRiver: 1
+  hillDensity: 1
+  description: High-relief mountain trail cut by a narrow stream and sharp
+    switchbacks.
   worldWidth: 860
   worldHeight: 580
   borderPadding: 50
   roadProfile: {fileID: 11400000, guid: ad4fd2ada3ad04a469573d8ae38376a1, type: 2}
   waterProfile: {fileID: 0}
-  decorationDensity: 0.2
+  decorationDensity: 0.16
   defaultInteriorPreset: {fileID: 0}
-  maxElevation: 40
-  elevationScale: 1.5
-  steepnessBias: 0.5
+  maxElevation: 48
+  elevationScale: 1.8
+  steepnessBias: 0.88
   enableBridges: 1
   enableTunnels: 0

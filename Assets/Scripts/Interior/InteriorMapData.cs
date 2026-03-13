@@ -14,6 +14,7 @@ namespace MiniMapGame.Interior
         public List<InteriorFloorData> floors = new();
         public int totalRoomCount;
         public int totalDiscoveryCount;
+        public int totalFurnitureCount;
 
         // Legacy compatibility: flat room/corridor access for single-floor use
         [Obsolete("Use floors[0].rooms instead")]
@@ -99,6 +100,7 @@ namespace MiniMapGame.Interior
         public List<InteriorRoom> rooms = new();
         public List<InteriorDoor> doors = new();
         public List<InteriorCorridor> corridors = new();
+        public List<InteriorFurniture> furniture = new();
         public Vector2 floorBounds;         // Usable area dimensions
         public float deadSpaceRatio;        // Actual dead space ratio achieved
     }

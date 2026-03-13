@@ -15,7 +15,7 @@
     "pct": 100,
     "cat": "data",
     "file": "SPEC.md#2-プリセット定義",
-    "summary": "4プリセット（Coastal/Rural/Grid/Mountain）のMapPreset SO定義"
+    "summary": "7プリセット（Coastal/Rural/Grid/Mountain/Island/Downtown/Valley）のMapPreset SO定義と generator-specific field 制約"
   },
   {
     "id": "SP-003",
@@ -132,7 +132,7 @@
     "pct": 100,
     "cat": "system",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "WaterProfile SO駆動。typed waterBodies + depth UV2 + roughness vertex color + Water.shader(shallow/deep/foam)"
+    "summary": "WaterProfile SO駆動。typed waterBodies + depth UV2 + roughness vertex color + Water.shader(shallow/deep/foam)。Dark/Parchment の水色は SP-032 向けに調整済み。coast fan は中心が深く岸側が浅く見える depth 分布に補正済み"
   },
   {
     "id": "SP-016",
@@ -222,16 +222,16 @@
     "pct": 57,
     "cat": "core",
     "file": "docs/specs/water-generation-enhancements.md",
-    "summary": "W-1:メタ地理川流路, W-2:入り江・岬, W-3:砂州, W-4:浜辺帯, W-5:蛇行自動調整, W-6:河口デルタ, W-7:水辺配置システム"
+    "summary": "W-1:メタ地理川流路, W-2:入り江・岬, W-3:砂州, W-4:浜辺帯, W-5:蛇行自動調整, W-6:河口デルタ, W-7:水辺配置システム。既定 Grid/Mountain も river 展開。Task B FBでcoast深浅整合・ThemeCreator同期・Grid displayName(save互換)を反映"
   },
   {
     "id": "SP-026",
     "title": "Interior System v2",
     "status": "partial",
-    "pct": 85,
+    "pct": 94,
     "cat": "core",
     "file": "docs/specs/interior-system-v2.md",
-    "summary": "建物内部v2: Phase1-3完了。カテゴリ別間取り生成+マルチフロアレンダリング+カメラLOD+デバッグプレビュー+統合パイプライン。残: レガシー削除/家具配置/RoomTrigger更新"
+    "summary": "建物内部v2: Phase1-3完了 + 家具配置MVP実装。カテゴリ別間取り生成、マルチフロア描画、door gap world補正、current-floor維持LOD、家具RNGサブシード分離。残: レガシー削除/RoomTrigger更新/style拡張"
   },
   {
     "id": "SP-027",
@@ -240,7 +240,7 @@
     "pct": 100,
     "cat": "infra",
     "file": "docs/debug-setup.md",
-    "summary": "Bootstrap手順、ランタイム操作(F1/Tab)、Analysis/Terrainデバッグオーバーレイ、H1/H2/H3/Q1-Q6検証チェックリスト"
+    "summary": "Bootstrap手順、ランタイム操作(F1/Tab)、Analysis/Terrainデバッグオーバーレイ、SP-032 + 水辺 depth グラデーション検証チェックリスト"
   },
   {
     "id": "SP-028",
@@ -285,7 +285,7 @@
     "pct": 85,
     "cat": "system",
     "file": "docs/specs/ground-surface-compositing.md",
-    "summary": "Ground carrier mesh + CPU semantic masks (2xRGBA8) + GridGround.shader 13段階合成。MVP Slice 1-4実装済み、仕様同期済み。Slice 5残: 色パレット最終調整・4preset x 2theme手動検証。Ideal段階残: MacroNoiseTex・GridMode"
+    "summary": "Ground carrier mesh + CPU semantic masks (2xRGBA8) + GridGround.shader 13段階合成。MVP Slice 1-4実装済み、仕様同期済み。Slice 5残: ground + water palette の手動検証・4preset x 2theme統合確認。Ideal段階残: MacroNoiseTex・GridMode"
   },
   {
     "id": "SP-033",
@@ -294,7 +294,7 @@
     "pct": 85,
     "cat": "system",
     "file": "docs/specs/ground-surface-mvp-implementation-plan.md",
-    "summary": "Slice 1-4完了(Infrastructure/CPU Baker/Shader/Theme)、SPEC.md・debug-setup.md同期済み。Slice 5残: 色パレット調整・4preset x 2theme手動検証"
+    "summary": "Slice 1-4完了(Infrastructure/CPU Baker/Shader/Theme)、SPEC.md・debug-setup.md同期済み。Slice 5残: ground + water 色パレット確認・4preset x 2theme手動検証"
   },
   {
     "id": "SP-034",
@@ -304,5 +304,23 @@
     "cat": "infra",
     "file": "docs/verification/road-p4-gate-runbook.md",
     "summary": "P4道路手動検証 Gate-1 を最短で実施するための手順、推奨 seed、記録ルール、NG 切り分けを整理"
+  },
+  {
+    "id": "SP-035",
+    "title": "プリセット拡充・バランス調整",
+    "status": "done",
+    "pct": 100,
+    "cat": "data",
+    "file": "docs/specs/preset-expansion-balance.md",
+    "summary": "既存4プリセットの俯瞰シルエットを再調整し、Island/Downtown/Valley を asset-only で追加。Island は現行 WaterGenerator 制約上、全周 coastline ではなく shoreline-dominant compact map として定義"
+  },
+  {
+    "id": "SP-060",
+    "title": "Interior Interaction System",
+    "status": "wip",
+    "pct": 80,
+    "cat": "core",
+    "file": "docs/specs/interior-interaction.md",
+    "summary": "建物内Discovery収集+ドア操作。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。SP-026上に構築"
   }
 ]

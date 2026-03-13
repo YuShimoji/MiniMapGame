@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
-  m_Name: Preset_Coastal
+  m_Name: Preset_Downtown
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
-  displayName: Coastal
-  generatorType: 0
-  arterialRange: {x: 7, y: 8}
-  hasRingRoad: 1
-  curveAmount: 0.62
-  buildingDensity: 0.68
-  hasCoast: 1
-  hasRiver: 1
-  hillDensity: 0.38
-  description: Organic harbor town with a readable waterfront, ring road, and low
-    coastal hills.
-  worldWidth: 860
-  worldHeight: 580
-  borderPadding: 50
+  displayName: Downtown
+  generatorType: 1
+  arterialRange: {x: 6, y: 8}
+  hasRingRoad: 0
+  curveAmount: 0.01
+  buildingDensity: 0.98
+  hasCoast: 0
+  hasRiver: 0
+  hillDensity: 0.01
+  description: Compressed downtown core with rigid blocks, dense building walls,
+    and near-flat grade.
+  worldWidth: 720
+  worldHeight: 520
+  borderPadding: 40
   roadProfile: {fileID: 11400000, guid: 5c920e2c3fb78b2458c2b1a4cbcebf55, type: 2}
   waterProfile: {fileID: 0}
-  decorationDensity: 0.62
+  decorationDensity: 0.28
   defaultInteriorPreset: {fileID: 0}
-  maxElevation: 12
-  elevationScale: 0.9
-  steepnessBias: 0.45
-  enableBridges: 1
+  maxElevation: 1.2
+  elevationScale: 0.06
+  steepnessBias: 0.1
+  enableBridges: 0
   enableTunnels: 0

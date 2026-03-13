@@ -16,21 +16,22 @@ MonoBehaviour:
   generatorType: 1
   arterialRange: {x: 5, y: 7}
   hasRingRoad: 0
-  curveAmount: 0.06
-  buildingDensity: 0.95
+  curveAmount: 0.02
+  buildingDensity: 0.82
   hasCoast: 0
-  hasRiver: 0
-  hillDensity: 0
-  description: Orderly block structure. Dense urban district.
+  hasRiver: 1
+  hillDensity: 0.02
+  description: Orderly canal grid with mid-density blocks and only slight grade
+    changes.
   worldWidth: 860
   worldHeight: 580
   borderPadding: 50
   roadProfile: {fileID: 11400000, guid: 5c920e2c3fb78b2458c2b1a4cbcebf55, type: 2}
   waterProfile: {fileID: 0}
-  decorationDensity: 0.7
+  decorationDensity: 0.42
   defaultInteriorPreset: {fileID: 0}
-  maxElevation: 0
-  elevationScale: 0
-  steepnessBias: 0.5
-  enableBridges: 0
+  maxElevation: 1.5
+  elevationScale: 0.1
+  steepnessBias: 0.15
+  enableBridges: 1
   enableTunnels: 0

@@ -27,10 +27,10 @@ MonoBehaviour:
   buildingFillLandmark: {r: 0.101960786, g: 0.15686275, b: 0.2509804, a: 1}
   buildingStroke: {r: 0.17254902, g: 0.24313726, b: 0.34509805, a: 1}
   coastColor: {r: 0.039215688, g: 0.08235294, b: 0.1254902, a: 1}
-  riverColor: {r: 0.078431375, g: 0.1254902, b: 0.1882353, a: 1}
-  shallowWaterColor: {r: 0.1, g: 0.22, b: 0.32, a: 0.45}
-  deepWaterColor: {r: 0.02, g: 0.06, b: 0.16, a: 0.92}
-  foamColor: {r: 0.5, g: 0.6, b: 0.7, a: 0.5}
+  riverColor: {r: 0.12, g: 0.27, b: 0.4, a: 1}
+  shallowWaterColor: {r: 0.22, g: 0.46, b: 0.58, a: 0.5}
+  deepWaterColor: {r: 0.04, g: 0.11, b: 0.24, a: 0.94}
+  foamColor: {r: 0.76, g: 0.84, b: 0.9, a: 0.6}
   nodeColor: {r: 0.2901961, g: 0.41568628, b: 0.5411765, a: 1}
   plazaNodeColor: {r: 0.3529412, g: 0.5019608, b: 0.65882355, a: 1}
   textColor: {r: 0.7529412, g: 0.84705883, b: 0.9411765, a: 1}

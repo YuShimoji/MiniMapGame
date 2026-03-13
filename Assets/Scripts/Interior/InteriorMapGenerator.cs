@@ -30,16 +30,22 @@ namespace MiniMapGame.Interior
             for (int f = -preset.basementFloors; f < 0; f++)
             {
                 var floorData = generator.Generate(rng, context, preset, f);
+                var furnitureRng = new SeededRng(DeriveFurnitureSeed(seed, floorData.floorIndex, context.category));
+                floorData.furniture = InteriorFurniturePlanner.Generate(furnitureRng, context, preset, floorData);
                 data.floors.Add(floorData);
                 data.totalRoomCount += floorData.rooms.Count;
+                data.totalFurnitureCount += floorData.furniture.Count;
             }
 
             // Generate above-ground floors
             for (int f = 0; f < floorCount; f++)
             {
                 var floorData = generator.Generate(rng, context, preset, f);
+                var furnitureRng = new SeededRng(DeriveFurnitureSeed(seed, floorData.floorIndex, context.category));
+                floorData.furniture = InteriorFurniturePlanner.Generate(furnitureRng, context, preset, floorData);
                 data.floors.Add(floorData);
                 data.totalRoomCount += floorData.rooms.Count;
+                data.totalFurnitureCount += floorData.furniture.Count;
             }
 
             // Count discovery slots
@@ -48,6 +54,19 @@ namespace MiniMapGame.Interior
                     data.totalDiscoveryCount += room.discoverySlotCount;
 
             return data;
+        }
+
+        private static int DeriveFurnitureSeed(int baseSeed, int floorIndex, BuildingCategory category)
+        {
+            unchecked
+            {
+                int hash = baseSeed;
+                hash = (hash * 397) ^ floorIndex;
+                hash = (hash * 397) ^ (int)category;
+                hash ^= 0x5bd1e995;
+                if (hash == 0) hash = 1;
+                return hash;
+            }
         }
 
         // ===== Legacy API (backward compatibility) =====

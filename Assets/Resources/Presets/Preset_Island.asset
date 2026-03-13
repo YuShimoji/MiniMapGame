@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
-  m_Name: Preset_Coastal
+  m_Name: Preset_Island
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
-  displayName: Coastal
+  displayName: Island
   generatorType: 0
-  arterialRange: {x: 7, y: 8}
+  arterialRange: {x: 4, y: 6}
   hasRingRoad: 1
-  curveAmount: 0.62
-  buildingDensity: 0.68
+  curveAmount: 0.67
+  buildingDensity: 0.52
   hasCoast: 1
-  hasRiver: 1
-  hillDensity: 0.38
-  description: Organic harbor town with a readable waterfront, ring road, and low
-    coastal hills.
-  worldWidth: 860
-  worldHeight: 580
-  borderPadding: 50
-  roadProfile: {fileID: 11400000, guid: 5c920e2c3fb78b2458c2b1a4cbcebf55, type: 2}
+  hasRiver: 0
+  hillDensity: 0.22
+  description: Compact island-like port with a dominant shoreline and a tight circular
+    core.
+  worldWidth: 620
+  worldHeight: 620
+  borderPadding: 40
+  roadProfile: {fileID: 11400000, guid: 24a8f56ccada6ab4e9220f0ee15b40f5, type: 2}
   waterProfile: {fileID: 0}
-  decorationDensity: 0.62
+  decorationDensity: 0.58
   defaultInteriorPreset: {fileID: 0}
-  maxElevation: 12
-  elevationScale: 0.9
-  steepnessBias: 0.45
-  enableBridges: 1
+  maxElevation: 8
+  elevationScale: 0.7
+  steepnessBias: 0.35
+  enableBridges: 0
   enableTunnels: 0

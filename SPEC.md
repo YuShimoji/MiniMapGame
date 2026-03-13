@@ -1,7 +1,7 @@
 # MiniMapGame — Technical Specification
 
-> Version: 3.0.0
-> Date: 2026-03-08
+> Version: 3.1.0
+> Date: 2026-03-13
 > Reference: map-generator-v3.jsx (React/Canvas prototype, 793 lines)
 
 ---
@@ -28,14 +28,32 @@
 
 ## 2. プリセット定義
 
-リファレンス実装から移植する4プリセット:
+ランタイム基準となる 7 プリセットを `Assets/Resources/Presets/` に配置する。
+`MapControlUI` / `SceneBootstrapper` の既定ボタンは現状 4 種
+(`Coastal` / `Rural` / `Grid` / `Mountain`) のままだが、
+追加 3 種 (`Island` / `Downtown` / `Valley`) は asset-ready 状態で、
+Inspector 手動割当または将来の UI 拡張で利用する。
 
-| ID | 名前 | Generator | 幹線数 | 環状道路 | 曲率 | 建物密度 | 海岸 | 河川 | 丘陵 |
-|----|------|-----------|--------|----------|------|----------|------|------|------|
-| `coastal` | 港湾都市 | Organic | 6-8 | ✓ | 0.50 | 0.80 | ✓ | ✓ | 0.30 |
-| `rural` | 田舎町 | Rural | 3-4 | ✗ | 0.70 | 0.25 | ✗ | ✓ | 0.75 |
-| `grid` | NYCグリッド | Grid | 5-7 | ✗ | 0.06 | 0.95 | ✗ | ✗ | 0.00 |
-| `mountain` | 山道 | Mountain | 2-3 | ✗ | 0.88 | 0.18 | ✗ | ✗ | 0.95 |
+| ID | 名前 | Generator | 幹線数 | 環状道路 | 曲率 | 建物密度 | 海岸 | 河川 | 丘陵 | ワールド |
+|----|------|-----------|--------|----------|------|----------|------|------|------|----------|
+| `coastal` | Coastal | Organic | 7-8 | ✓ | 0.62 | 0.68 | ✓ | ✓ | 0.38 | 860x580 |
+| `rural` | Rural | Rural | 4-5 | ✗ | 0.58 | 0.20 | ✗ | ✓ | 0.55 | 860x580 |
+| `grid` | Grid | Grid | 5-7* | ✗ | 0.02 | 0.82 | ✗ | ✓ | 0.02 | 860x580 |
+| `mountain` | Mountain | Mountain | 2-3* | ✗ | 0.94 | 0.08 | ✗ | ✓ | 1.00 | 860x580 |
+| `island` | Island | Organic | 4-6 | ✓ | 0.67 | 0.52 | ✓ | ✗ | 0.22 | 620x620 |
+| `downtown` | Downtown | Grid | 6-8* | ✗ | 0.01 | 0.98 | ✗ | ✗ | 0.01 | 720x520 |
+| `valley` | Valley | Mountain | 2-3* | ✗ | 0.74 | 0.07 | ✗ | ✓ | 1.00 | 640x720 |
+
+\* `arterialRange` は `GridGenerator` / `MountainGenerator` では参照されず、
+設計意図の保持と将来 UI 表示用の値として asset に残している。
+
+### Generator-specific preset notes
+
+- `hasRingRoad` が実際に効くのは `OrganicGenerator` のみ。
+- `arterialRange` が実際に効くのは `OrganicGenerator` と `RuralGenerator`。
+- `Island` は asset-only の「島風 preset」。現行 `WaterGenerator` は
+  1 辺 coastline 前提のため、真の全周 coastline ではなく
+  shoreline-dominant compact map として定義する。
 
 ### MapPreset (ScriptableObject)
 
@@ -45,9 +63,9 @@ namespace MiniMapGame.Data
     [CreateAssetMenu(fileName = "NewMapPreset", menuName = "MiniMapGame/MapPreset")]
     public class MapPreset : ScriptableObject
     {
-        public string displayName;          // "港湾都市"
+        public string displayName;
         public GeneratorType generatorType; // enum: Organic, Grid, Mountain, Rural
-        public Vector2Int arterialRange;    // min-max arterial count (e.g. 6,8)
+        public Vector2Int arterialRange;
         public bool hasRingRoad;
         [Range(0f, 1f)] public float curveAmount;
         [Range(0f, 1f)] public float buildingDensity;
@@ -56,10 +74,28 @@ namespace MiniMapGame.Data
         [Range(0f, 1f)] public float hillDensity;
         [TextArea] public string description;
 
-        // World-space scaling (JSX pixel coords → Unity world units)
-        public float worldWidth  = 860f;   // CW equivalent
-        public float worldHeight = 580f;   // CH equivalent
-        public float borderPadding = 50f;  // cpt() margin
+        public float worldWidth = 860f;
+        public float worldHeight = 580f;
+        public float borderPadding = 50f;
+
+        [Header("Roads")]
+        public RoadProfile roadProfile;
+
+        [Header("Water")]
+        public WaterProfile waterProfile;
+
+        [Header("Decoration")]
+        [Range(0f, 1f)] public float decorationDensity = 0.5f;
+
+        [Header("Interior")]
+        public MiniMapGame.Interior.InteriorPreset defaultInteriorPreset;
+
+        [Header("Elevation")]
+        public float maxElevation = 15f;
+        public float elevationScale = 1f;
+        [Range(0f, 1f)] public float steepnessBias = 0.5f;
+        public bool enableBridges = true;
+        public bool enableTunnels = false;
     }
 }
 ```
@@ -1042,25 +1078,18 @@ Ground carrier mesh + CPU semantic masks + compositing shader で地表を航空
 
 ## 20. MapPreset 全フィールド (現行)
 
-| フィールド | 型 | 説明 | Coastal | Rural | Grid | Mountain |
-|-----------|------|------|---------|-------|------|----------|
-| displayName | string | 表示名 | 港湾都市 | 田舎町 | NYCグリッド | 山道 |
-| generatorType | enum | 生成器 | Organic | Rural | Grid | Mountain |
-| arterialRange | V2Int | 幹線数 | 6,8 | 3,4 | 5,7 | 2,3 |
-| hasRingRoad | bool | 環状 | ✓ | ✗ | ✗ | ✗ |
-| curveAmount | float | 曲率 | 0.50 | 0.70 | 0.06 | 0.88 |
-| buildingDensity | float | 建物密度 | 0.80 | 0.25 | 0.95 | 0.18 |
-| hasCoast | bool | 海岸 | ✓ | ✗ | ✗ | ✗ |
-| hasRiver | bool | 河川 | ✓ | ✓ | ✗ | ✗ |
-| hillDensity | float | 丘陵 | 0.30 | 0.75 | 0.00 | 0.95 |
-| waterProfile | WaterProfile | 水面プロファイル | null* | null* | null* | null* |
-| decorationDensity | float | 装飾 | 0.6 | 0.3 | 0.7 | 0.2 |
-| maxElevation | float | 最大高度 | 10 | 12 | 0 | 40 |
-| elevationScale | float | 高度倍率 | 0.8 | 1.0 | 0.0 | 1.5 |
-| enableBridges | bool | 橋有効 | ✓ | ✓ | ✗ | ✓ |
-| steepnessBias | float | 急峻プロファイル確率 | 0.5 | 0.5 | 0.5 | 0.5 |
-| roadProfile | RoadProfile | 道路プロファイル | null* | null* | null* | null* |
-| worldWidth/Height | float | ワールドサイズ | 860×580 | 860×580 | 860×580 | 860×580 |
+| Preset | Generator | world | arterialRange | ring | curve | bldg | coast | river | hill | maxElev | elevScale | steep | bridges | decor | roadProfile |
+|--------|-----------|-------|---------------|------|-------|------|-------|-------|------|---------|-----------|-------|---------|-------|-------------|
+| Coastal | Organic | 860x580 | 7,8 | ✓ | 0.62 | 0.68 | ✓ | ✓ | 0.38 | 12.0 | 0.90 | 0.45 | ✓ | 0.62 | Modern |
+| Rural | Rural | 860x580 | 4,5 | ✗ | 0.58 | 0.20 | ✗ | ✓ | 0.55 | 10.0 | 0.85 | 0.28 | ✓ | 0.48 | Rural |
+| NYC Grid | Grid | 860x580 | 5,7 | ✗ | 0.02 | 0.82 | ✗ | ✓ | 0.02 | 1.5 | 0.10 | 0.15 | ✓ | 0.42 | Modern |
+| Mountain | Mountain | 860x580 | 2,3 | ✗ | 0.94 | 0.08 | ✗ | ✓ | 1.00 | 48.0 | 1.80 | 0.88 | ✓ | 0.16 | Rural |
+| Island | Organic | 620x620 | 4,6 | ✓ | 0.67 | 0.52 | ✓ | ✗ | 0.22 | 8.0 | 0.70 | 0.35 | ✗ | 0.58 | Historic |
+| Downtown | Grid | 720x520 | 6,8 | ✗ | 0.01 | 0.98 | ✗ | ✗ | 0.01 | 1.2 | 0.06 | 0.10 | ✗ | 0.28 | Modern |
+| Valley | Mountain | 640x720 | 2,3 | ✗ | 0.74 | 0.07 | ✗ | ✓ | 1.00 | 34.0 | 1.35 | 0.94 | ✓ | 0.22 | Rural |
+
+- waterProfile は現行 7 preset とも `null` (WaterRenderer default / Theme 駆動)。
+- borderPadding: Coastal/Rural/Grid/Mountain=50, Island/Downtown=40, Valley=50。
 
 ---
 

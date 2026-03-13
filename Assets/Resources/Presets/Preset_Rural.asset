@@ -14,23 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
   displayName: Rural
   generatorType: 3
-  arterialRange: {x: 3, y: 4}
+  arterialRange: {x: 4, y: 5}
   hasRingRoad: 0
-  curveAmount: 0.7
-  buildingDensity: 0.25
+  curveAmount: 0.58
+  buildingDensity: 0.2
   hasCoast: 0
   hasRiver: 1
-  hillDensity: 0.75
-  description: Sparse settlement. Wide farmland with a river.
+  hillDensity: 0.55
+  description: Open farmland with light road loops, a river corridor, and gentle
+    rolling hills.
   worldWidth: 860
   worldHeight: 580
   borderPadding: 50
   roadProfile: {fileID: 11400000, guid: ad4fd2ada3ad04a469573d8ae38376a1, type: 2}
   waterProfile: {fileID: 0}
-  decorationDensity: 0.3
+  decorationDensity: 0.48
   defaultInteriorPreset: {fileID: 0}
-  maxElevation: 12
-  elevationScale: 1
-  steepnessBias: 0.5
+  maxElevation: 10
+  elevationScale: 0.85
+  steepnessBias: 0.28
   enableBridges: 1
   enableTunnels: 0

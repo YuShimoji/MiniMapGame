@@ -61,8 +61,9 @@ namespace MiniMapGame.Interior
             if (targetLevel != _currentLevel)
             {
                 _currentLevel = targetLevel;
-                ApplyVisibility(targetLevel);
             }
+
+            ApplyVisibility(targetLevel);
         }
 
         private void ApplyVisibility(VisibilityLevel level)
@@ -70,7 +71,7 @@ namespace MiniMapGame.Interior
             switch (level)
             {
                 case VisibilityLevel.Full:
-                    SetAllChildrenActive(true);
+                    SetFullVisibility();
                     break;
                 case VisibilityLevel.Minimal:
                     SetVisibilityByNamePattern(true, "Wall", "Door");
@@ -82,12 +83,44 @@ namespace MiniMapGame.Interior
             }
         }
 
-        private void SetAllChildrenActive(bool active)
+        private void SetFullVisibility()
         {
-            // Set all floor groups and loose objects
+            int floorRootIndex = 0;
             for (int i = 0; i < transform.childCount; i++)
             {
-                transform.GetChild(i).gameObject.SetActive(active);
+                var child = transform.GetChild(i);
+                if (child.name.StartsWith("Floor_"))
+                {
+                    bool isCurrentFloor = floorRootIndex == _renderer.CurrentFloorIndex;
+                    child.gameObject.SetActive(isCurrentFloor);
+                    if (isCurrentFloor)
+                    {
+                        SetActiveRecursive(child, true);
+                    }
+                    floorRootIndex++;
+                }
+                else
+                {
+                    child.gameObject.SetActive(true);
+                }
+            }
+        }
+
+        private void SetAllChildrenActive(bool active)
+        {
+            int floorRootIndex = 0;
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (child.name.StartsWith("Floor_"))
+                {
+                    child.gameObject.SetActive(active && floorRootIndex == _renderer.CurrentFloorIndex);
+                    floorRootIndex++;
+                }
+                else
+                {
+                    child.gameObject.SetActive(active);
+                }
             }
         }
 
@@ -99,10 +132,23 @@ namespace MiniMapGame.Interior
 
         private void SetVisibilityRecursive(Transform parent, bool active, string[] patterns)
         {
+            int floorRootIndex = 0;
             for (int i = 0; i < parent.childCount; i++)
             {
                 var child = parent.GetChild(i);
                 string name = child.name;
+
+                if (parent == transform && name.StartsWith("Floor_"))
+                {
+                    bool isCurrentFloor = floorRootIndex == _renderer.CurrentFloorIndex;
+                    floorRootIndex++;
+                    child.gameObject.SetActive(isCurrentFloor);
+                    if (isCurrentFloor)
+                    {
+                        SetVisibilityRecursive(child, active, patterns);
+                    }
+                    continue;
+                }
 
                 bool matches = false;
                 foreach (var pattern in patterns)
@@ -119,12 +165,22 @@ namespace MiniMapGame.Interior
                     child.gameObject.SetActive(active);
                 }
 
-                // Recurse into floor groups
-                if (child.childCount > 0 && name.StartsWith("Floor_"))
+                if (child.childCount > 0)
                 {
-                    // Keep floor group active so children can be toggled
-                    child.gameObject.SetActive(true);
                     SetVisibilityRecursive(child, active, patterns);
+                }
+            }
+        }
+
+        private static void SetActiveRecursive(Transform parent, bool active)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                var child = parent.GetChild(i);
+                child.gameObject.SetActive(active);
+                if (child.childCount > 0)
+                {
+                    SetActiveRecursive(child, active);
                 }
             }
         }

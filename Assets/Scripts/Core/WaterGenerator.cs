@@ -80,11 +80,15 @@ namespace MiniMapGame.Core
                 case 3: GenerateCoastTop(coast, rng, w, h, reach, roughness, config); break;
             }
 
-            // Add depth data for each coast point
+            // Add depth data for each coast point.
+            // Perimeter must stay shallower than center (depthBase),
+            // because coast fan rendering uses center vertex as "deep water".
             for (int i = 0; i < coast.pathPoints.Count; i++)
             {
                 float depthNoise = Mathf.Sin(i * 0.3f + rng.Next() * 6.28f) * 0.5f + 0.5f;
-                float depth = config.depthBase + depthNoise * config.depthVariation * config.depthBase;
+                float shoreDepthMin = config.depthBase * 0.18f;
+                float shoreDepthMax = config.depthBase * Mathf.Lerp(0.30f, 0.55f, config.depthVariation);
+                float depth = Mathf.Lerp(shoreDepthMin, shoreDepthMax, depthNoise);
                 coast.depths.Add(depth);
                 coast.widths.Add(0f);
             }

@@ -60,8 +60,8 @@ namespace MiniMapGame.EditorTools
             // Ensure prefabs, presets, and profiles exist
             CreateBuildingPrefabs();
             CreateGameLoopPrefabs();
-            MapPresetCreator.CreateDefaultPresets();
             RoadProfileCreator.CreateDefaultProfiles();
+            MapPresetCreator.CreateDefaultPresets();
             AutoBindRoadProfiles();
             CreateMapEventBusAsset();
 
@@ -130,6 +130,27 @@ namespace MiniMapGame.EditorTools
             var landmarkPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/LandmarkBuilding.prefab");
             buildingSpawner.normalBuildingPrefab = normalPrefab;
             buildingSpawner.landmarkBuildingPrefab = landmarkPrefab;
+
+            // BuildingFade material (roof dissolve near player)
+            if (buildingSpawner.buildingFadeMaterial == null)
+            {
+                var fadeShader = Shader.Find("MiniMapGame/BuildingFade");
+                if (fadeShader != null)
+                {
+                    EnsureFolder("Assets/Resources/Materials");
+                    string fadePath = "Assets/Resources/Materials/BuildingFade_Mat.mat";
+                    var fadeMat = AssetDatabase.LoadAssetAtPath<Material>(fadePath);
+                    if (fadeMat == null)
+                    {
+                        fadeMat = new Material(fadeShader);
+                        fadeMat.SetColor("_BaseColor", new Color(0.22f, 0.28f, 0.38f, 1f));
+                        fadeMat.SetFloat("_FadeStartDist", 20f);
+                        fadeMat.SetFloat("_FadeEndDist", 8f);
+                        AssetDatabase.CreateAsset(fadeMat, fadePath);
+                    }
+                    buildingSpawner.buildingFadeMaterial = fadeMat;
+                }
+            }
 
             // 3b. WaterRenderer
             var waterRendererGo = FindOrCreate("WaterRenderer", mapManagerGo.transform);
@@ -310,38 +331,31 @@ namespace MiniMapGame.EditorTools
 
         private static void AutoBindRoadProfiles()
         {
-            // Mapping: GeneratorType → RoadProfile asset name
-            var profileMap = new System.Collections.Generic.Dictionary<GeneratorType, string>
+            // Explicit mapping keeps preset-specific art direction even in recovery flows.
+            var presetProfileMap = new System.Collections.Generic.Dictionary<string, string>
             {
-                { GeneratorType.Organic, "RoadProfile_Modern" },
-                { GeneratorType.Grid, "RoadProfile_Modern" },
-                { GeneratorType.Rural, "RoadProfile_Rural" },
-                { GeneratorType.Mountain, "RoadProfile_Rural" }
+                { "Assets/Resources/Presets/Preset_Coastal.asset", "RoadProfile_Modern" },
+                { "Assets/Resources/Presets/Preset_Rural.asset", "RoadProfile_Rural" },
+                { "Assets/Resources/Presets/Preset_Grid.asset", "RoadProfile_Modern" },
+                { "Assets/Resources/Presets/Preset_Mountain.asset", "RoadProfile_Rural" },
+                { "Assets/Resources/Presets/Preset_Island.asset", "RoadProfile_Historic" },
+                { "Assets/Resources/Presets/Preset_Downtown.asset", "RoadProfile_Modern" },
+                { "Assets/Resources/Presets/Preset_Valley.asset", "RoadProfile_Rural" }
             };
 
-            string[] presetPaths =
+            foreach (var entry in presetProfileMap)
             {
-                "Assets/Resources/Presets/Preset_Coastal.asset",
-                "Assets/Resources/Presets/Preset_Rural.asset",
-                "Assets/Resources/Presets/Preset_Grid.asset",
-                "Assets/Resources/Presets/Preset_Mountain.asset"
-            };
-
-            foreach (var path in presetPaths)
-            {
-                var preset = AssetDatabase.LoadAssetAtPath<MapPreset>(path);
+                var preset = AssetDatabase.LoadAssetAtPath<MapPreset>(entry.Key);
                 if (preset == null || preset.roadProfile != null) continue;
 
-                if (profileMap.TryGetValue(preset.generatorType, out var profileName))
+                var profile = AssetDatabase.LoadAssetAtPath<RoadProfile>(
+                    $"Assets/Resources/RoadProfiles/{entry.Value}.asset");
+
+                if (profile != null)
                 {
-                    var profile = AssetDatabase.LoadAssetAtPath<RoadProfile>(
-                        $"Assets/Resources/RoadProfiles/{profileName}.asset");
-                    if (profile != null)
-                    {
-                        preset.roadProfile = profile;
-                        EditorUtility.SetDirty(preset);
-                        Debug.Log($"[SceneBootstrapper] Bound {profileName} to {preset.displayName}");
-                    }
+                    preset.roadProfile = profile;
+                    EditorUtility.SetDirty(preset);
+                    Debug.Log($"[SceneBootstrapper] Bound {entry.Value} to {preset.displayName}");
                 }
             }
         }
@@ -1172,8 +1186,19 @@ namespace MiniMapGame.EditorTools
             controller.cameraController = cameraController;
             controller.playerTransform = playerTransform;
 
+            // InteriorInteractionManager
+            var interactionGo = FindOrCreate("InteriorInteractionManager");
+            var interactionMgr = EnsureComponent<InteriorInteractionManager>(interactionGo);
+            interactionMgr.interiorController = controller;
+            interactionMgr.interiorRenderer = renderer;
+            interactionMgr.playerTransform = playerTransform;
+            var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
+            interactionMgr.eventBus = eventBus;
+            controller.interactionManager = interactionMgr;
+
             EditorUtility.SetDirty(renderer);
             EditorUtility.SetDirty(controller);
+            EditorUtility.SetDirty(interactionMgr);
         }
 
         // ── MiniGame System ──

@@ -15,6 +15,20 @@ Phase 1-3 で構築済みのインフラ（WaterProfile, WaterBodyData, WaterTer
 
 ---
 
+## SPEC CAPTURE 2026-03-13: 水辺ビジュアル基準
+
+- 既定の 4 プリセットはすべて最低 1 つの水体を持つ。
+- `Coastal` は coast + river、`Rural` は river、`Grid` は canal 読みの river、`Mountain` は stream 読みの river を既定とする。
+- `Grid` は river 有効化に合わせて `enableBridges = true` を既定にし、道路が水面に沈んで見える破綻を避ける。
+- `Grid` / `Mountain` は専用 `WaterProfile` を持たず、`WaterProfile.CreateDefaultFallback()` + `W-5` の generator type 別 tuning で canal / stream のキャラクターを出す。
+- Dark / Parchment の水色は SP-032 の地表読図性を優先して再調整する。Dark は地面からの分離を優先、Parchment は紙地図らしさを残しつつ浅瀬と深場の差を読む。
+- depth グラデーションの視覚確認は Unity 手動検証で行う。`WaterRenderer` は `uv2.x` に正規化 depth を書き込み、coast polygon は「中心が深い / 岸が浅い」、river ribbon は各サンプル depth をそのまま渡す前提とする。
+- FB反映: coast perimeter depth は `depthBase * 0.18..0.55` に制限し、fan center(`depthBase`)より浅くなるように実装側を補正。
+- FB反映: `MiniMapGame > Create Default Themes` 実行時に新しい水色が再生成されるよう `MapThemeCreator` の定数も asset 値へ同期。
+- FB反映: `Preset_Grid.displayName` は save 互換のため `NYC Grid` を維持（`SaveManager` が displayName で復元するため）。
+
+---
+
 ## W-1: メタ地理ベースの川流路決定 **[DONE]**
 
 ### 旧実装

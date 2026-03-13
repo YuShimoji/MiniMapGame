@@ -37,6 +37,7 @@ namespace MiniMapGame.Interior
         [Header("Debug Info (read-only)")]
         [SerializeField] private int _totalRooms;
         [SerializeField] private int _totalDiscoveries;
+        [SerializeField] private int _totalFurniture;
         [SerializeField] private string _currentFloorLabel;
 
         private InteriorMapData _lastData;
@@ -99,6 +100,7 @@ namespace MiniMapGame.Interior
 
             _totalRooms = data.totalRoomCount;
             _totalDiscoveries = data.totalDiscoveryCount;
+            _totalFurniture = data.totalFurnitureCount;
 
             interiorRenderer.Render(data, transform.position, preset, context.buildingId, seed);
 
@@ -106,7 +108,7 @@ namespace MiniMapGame.Interior
                 floorNavigator.Initialize(data, transform.position);
 
             Debug.Log($"[InteriorDebugSpawner] Generated: {data.floors.Count} floors, " +
-                      $"{_totalRooms} rooms, {_totalDiscoveries} discoveries (seed={seed})");
+                      $"{_totalRooms} rooms, {_totalDiscoveries} discoveries, {_totalFurniture} furniture props (seed={seed})");
         }
     }
 }

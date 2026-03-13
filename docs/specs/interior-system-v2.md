@@ -8,6 +8,7 @@
 ## ステータス
 - Phase 1 (データ層+生成ロジック): **完了**
 - Phase 2 (レンダリング+フロアナビ+可視性制御): **完了**
+- Phase 2.5 (家具配置MVP + 発見プロップ可視化): **完了**
 - Phase 3 (統合パイプライン): **完了**（レガシークリーンアップは未実施）
 
 ---
@@ -58,11 +59,12 @@
 ### 1.4 InteriorMapData拡張
 
 新構造:
-- `InteriorMapData` → `List<InteriorFloorData> floors` + `InteriorBuildingContext context`
-- `InteriorFloorData` → `floorIndex` + `List<InteriorRoom> rooms` + `List<InteriorDoor> doors` + `List<InteriorCorridor> corridors`
+- `InteriorMapData` → `List<InteriorFloorData> floors` + `InteriorBuildingContext context` + 集計値 (`totalRoomCount`, `totalDiscoveryCount`, `totalFurnitureCount`)
+- `InteriorFloorData` → `floorIndex` + `List<InteriorRoom> rooms` + `List<InteriorDoor> doors` + `List<InteriorCorridor> corridors` + `List<InteriorFurniture> furniture`
 - `InteriorRoom` struct: id, type, position, size, rotation, discoverySlotCount, isSecret
 - `InteriorDoor` struct: roomA, roomB, position, width, isHidden, isLocked
 - `InteriorCorridor` struct: roomA, roomB, width, waypoints
+- `InteriorFurniture` struct: roomId, type, position, angle, scale
 
 後方互換: レガシー型 (RoomNode, CorridorEdge, RoomType) を `[Obsolete]` で残存。旧 `Generate(int seed)` パスも動作。
 
@@ -104,6 +106,7 @@
 - `currentFloorIndex` でアクティブフロアのみ表示、他は非表示
 - 部屋色: InteriorPresetの `floorColor/wallColor` + `roomColorOverrides` 適用
 - ドア: 壁のLineRendererに開口部（gap）を設ける
+- 家具/発見プロップ: `InteriorFurniture` を低背キューブで描画し、カテゴリ別色とサイズを持たせる
 - InteriorRoomType別デフォルト色マッピング追加
 
 ### 2.2 FloorNavigator（階数移動）
@@ -146,6 +149,22 @@
 - ランタイム確認用: `InteriorDebugSpawner` MonoBehaviour
   - Inspectorでパラメータ設定、Play時に指定位置にインテリアを即生成
   - プレイヤー不要、カメラのみで確認可能
+  - 生成統計に家具総数 (`totalFurnitureCount`) を表示
+
+### 2.5 家具配置MVP
+
+**課題**: `FurnitureType` は定義済みだったが、生成データにも描画にも未接続で、カテゴリ差と探索手掛かりが室内で見えにくかった。
+
+設計:
+- `InteriorFurniturePlanner.Generate(rng, context, preset, floorData)` を `InteriorMapGenerator` の後段で実行
+- 家具配置は `InteriorFloorData.furniture` に保存し、MonoBehaviour依存のランタイム配置器は作らない
+- 部屋タイプごとにテンプレート化した家具レイアウトを使用:
+  - Residential: Sofa/Bed/Kitchen fixtures
+  - Commercial/Public: Shelf/DisplayCase/Desk/Register
+  - Industrial: Machine/Workbench/Crate/Pallet
+  - Special/Decay: Container/Document + Rubble/Debris/Cobweb/Vine
+- `discoverySlotCount` は `Document / Photo / Note / Container` の視覚プロップへ変換し、1部屋あたり最大2件まで可視化
+- `decayLevel` と環境文脈 (`nearHill`, `InteriorStyle.Natural`) は崩落・蔦プロップの追加バイアスに使う
 
 ---
 
@@ -187,11 +206,17 @@ InteriorRenderer.Render(data)
 - `InteriorDebugSpawner.cs` — ランタイムプレビュー (F5=再生成, PageUp/Down=フロア切替)
 - `InteriorDebugPreview.cs` — Editorウィンドウ (SceneView Gizmo描画, パラメータ調整)
 - `InteriorPresetCreator.cs` — 6プリセットアセット生成エディタ
+- `InteriorFurniturePlanner.cs` — 部屋タイプ/ShopSubtype/decayに基づく決定論的家具レイアウト
 
 **Phase 3 更新ファイル:**
 - `InteriorController.cs` — v2 context-aware生成 + FloorNavigator/VisibilityController統合
 - `BuildingInteraction.cs` — `InteriorBuildingContext context` フィールド追加
 - `BuildingSpawner.cs` — `BuildingClassifier.Classify()` 呼び出し追加
+- `InteriorMapGenerator.cs` — floor生成後に家具データを注入
+- `InteriorMapData.cs` — `furniture` / `totalFurnitureCount` を追加
+- `InteriorRenderer.cs` — 家具描画 + door gapのroom index整合修正 + door座標のworld補正
+- `InteriorVisibilityController.cs` — current floorを維持したままLOD適用 + Minimal→Full復帰時の子要素再有効化
+- `ResidentialFloorPlan.cs` — room順序を保持し、door/corridor index整合を維持
 
 ---
 
@@ -208,9 +233,18 @@ InteriorRenderer.Render(data)
 | ランドマーク最上階 | Vault配置 | 探索の到達報酬 |
 | ランドマークsecretRoom倍率 | 1.5x | 探索密度の高い重要建物 |
 
+## SPEC CAPTURE (2026-03-13)
+
+- 家具生成の責務は各 `IFloorPlanGenerator` ではなく `InteriorMapGenerator` 後段に置く。間取り戦略は room/door/corridor までに限定し、家具は共通の純データ後処理で扱う。
+- 家具データは `InteriorFloorData.furniture` に保持し、Renderer はそのデータをそのまま描画する。ランタイム専用Spawnerは追加しない。
+- 発見スロットの可視化は既存 `FurnitureType` の `Document / Photo / Note / Container` を再利用し、MVPでは1部屋あたり最大2件に制限する。
+- `InteriorVisibilityController` の LOD は current floor を絶対条件として扱い、LOD切替で他フロアを再有効化しない。
+- ドア開口判定は wall座標系（world）で評価する。`InteriorDoor.position`（interior-local）を使う場合は `worldOrigin` を加算してから壁線分へ投影する。
+- 家具生成のRNGは間取り生成RNGと分離し、`baseSeed + floorIndex + category` 由来のサブシードでフロアごとに独立させる。家具テンプレート調整で後続フロア間取りが変化しないことを優先する。
+
 ## 未決事項
 
 - [ ] InteriorStyleの各値 (Modern/Natural/Urban/Suburban/Rural/Mixed/Bizarre) が生成にどう影響するか → Phase 2でPresetパラメータへの自動バイアスとして実装予定
-- [ ] 家具配置の詳細仕様 (FurnitureType → 部屋タイプ別配置ルール)
+- [ ] 家具配置の拡張仕様 (style別バイアス、asset差し替え、衝突回避付きpacking)
 - [ ] ミニゲームシステムとの接続: 新InteriorRoomTypeベースのトリガー条件
 - [ ] 双方向テレイン影響 (interior ↔ exterior): Phase 3以降で設計

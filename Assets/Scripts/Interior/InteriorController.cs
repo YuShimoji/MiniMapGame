@@ -25,6 +25,9 @@ namespace MiniMapGame.Interior
         [Header("Visibility")]
         public InteriorVisibilityController visibilityController;
 
+        [Header("Interaction")]
+        public InteriorInteractionManager interactionManager;
+
         [Header("MiniGame")]
         public MiniGameManager miniGameManager;
 
@@ -91,11 +94,14 @@ namespace MiniMapGame.Interior
             Vector3 entranceWorld = FindEntrancePosition(data, buildingPos);
             TeleportPlayer(entranceWorld);
 
+            // Initialize interaction system
+            if (interactionManager != null)
+                interactionManager.Initialize(building.buildingId);
+
             // Switch camera to building view (perspective, no ortho switch)
             float maxDist = CalculateInteriorExtent(data);
             float viewDist = maxDist + interiorOrthoMargin;
             cameraController.SetBuildingViewMode(buildingPos, viewDist);
-
         }
 
         public void ExitBuilding()
@@ -114,6 +120,10 @@ namespace MiniMapGame.Interior
             // Restore visibility controller
             if (visibilityController != null)
                 visibilityController.forceFullVisibility = false;
+
+            // Cleanup interaction system before clearing interior
+            if (interactionManager != null)
+                interactionManager.Cleanup();
 
             // Clear interior
             interiorRenderer.Clear();

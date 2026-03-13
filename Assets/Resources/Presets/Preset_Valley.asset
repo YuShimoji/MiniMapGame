@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16058457e18cf8a46b9fe77052ced5a8, type: 3}
-  m_Name: Preset_Coastal
+  m_Name: Preset_Valley
   m_EditorClassIdentifier: Assembly-CSharp::MiniMapGame.Data.MapPreset
-  displayName: Coastal
-  generatorType: 0
-  arterialRange: {x: 7, y: 8}
-  hasRingRoad: 1
-  curveAmount: 0.62
-  buildingDensity: 0.68
-  hasCoast: 1
+  displayName: Valley
+  generatorType: 2
+  arterialRange: {x: 2, y: 3}
+  hasRingRoad: 0
+  curveAmount: 0.74
+  buildingDensity: 0.07
+  hasCoast: 0
   hasRiver: 1
-  hillDensity: 0.38
-  description: Organic harbor town with a readable waterfront, ring road, and low
-    coastal hills.
-  worldWidth: 860
-  worldHeight: 580
+  hillDensity: 1
+  description: River-cut mountain corridor with repeated chokepoints, sparse
+    structures, and steep walls.
+  worldWidth: 640
+  worldHeight: 720
   borderPadding: 50
-  roadProfile: {fileID: 11400000, guid: 5c920e2c3fb78b2458c2b1a4cbcebf55, type: 2}
+  roadProfile: {fileID: 11400000, guid: ad4fd2ada3ad04a469573d8ae38376a1, type: 2}
   waterProfile: {fileID: 0}
-  decorationDensity: 0.62
+  decorationDensity: 0.22
   defaultInteriorPreset: {fileID: 0}
-  maxElevation: 12
-  elevationScale: 0.9
-  steepnessBias: 0.45
+  maxElevation: 34
+  elevationScale: 1.35
+  steepnessBias: 0.94
   enableBridges: 1
   enableTunnels: 0
