@@ -25,12 +25,21 @@ namespace MiniMapGame.Player
 
         [Header("Zoom (Distance)")]
         public float initialDistance = 15f;
+        [Tooltip("Logarithmic zoom sensitivity (proportional to current distance)")]
         public float zoomSpeed = 10f;
-        public Vector2 distanceMinMax = new Vector2(5, 50);
+        public Vector2 distanceMinMax = new Vector2(3, 300);
         public float zoomSmoothTime = 0.2f;
 
         [Header("Pan")]
         public float panSpeed = 1f;
+
+        [Header("Camera Presets")]
+        [Tooltip("F2: Bird's-eye top-down view for map overview")]
+        public KeyCode topDownKey = KeyCode.F2;
+        [Tooltip("F3: Reset to default follow view")]
+        public KeyCode resetViewKey = KeyCode.F3;
+        public float topDownDistance = 200f;
+        public float topDownPitch = 85f;
 
         private Camera _camera;
         private CameraState _state;
@@ -81,6 +90,7 @@ namespace MiniMapGame.Player
         {
             if (_state == CameraState.Interior) return;
 
+            HandleCameraPresets();
             UpdateState();
             UpdateFocusPoint();
             UpdateCameraOrbitAndDistance();
@@ -140,10 +150,12 @@ namespace MiniMapGame.Player
 
         private void UpdateCameraOrbitAndDistance()
         {
+            // Logarithmic zoom: speed proportional to current distance
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (scroll != 0)
             {
-                _targetDistance -= scroll * zoomSpeed;
+                float zoomFactor = 1f - scroll * zoomSpeed * 0.15f;
+                _targetDistance *= zoomFactor;
                 _targetDistance = Mathf.Clamp(_targetDistance, distanceMinMax.x, distanceMinMax.y);
             }
             _currentDistance = Mathf.SmoothDamp(_currentDistance, _targetDistance, ref _distanceVelocity, zoomSmoothTime);
@@ -155,7 +167,16 @@ namespace MiniMapGame.Player
                 _currentOrbitAngles.x = Mathf.Clamp(_currentOrbitAngles.x, pitchMinMax.x, pitchMinMax.y);
                 _targetOrbitAngles = _currentOrbitAngles;
             }
-            // Following: keep current orbit angles (no rotation tracking of player heading)
+            else
+            {
+                // Smooth orbit interpolation for preset transitions
+                _currentOrbitAngles.x = Mathf.SmoothDamp(
+                    _currentOrbitAngles.x, _targetOrbitAngles.x,
+                    ref _orbitVelocity.x, followRotationSmoothTime);
+                _currentOrbitAngles.y = Mathf.SmoothDamp(
+                    _currentOrbitAngles.y, _targetOrbitAngles.y,
+                    ref _orbitVelocity.y, followRotationSmoothTime);
+            }
         }
 
         void ApplyCameraTransform()
@@ -165,6 +186,22 @@ namespace MiniMapGame.Player
             Quaternion rotation = Quaternion.Euler(_currentOrbitAngles.x, _currentOrbitAngles.y, 0);
             transform.position = _focusPoint - (rotation * Vector3.forward * _currentDistance);
             transform.rotation = rotation;
+        }
+
+        private void HandleCameraPresets()
+        {
+            if (Input.GetKeyDown(topDownKey))
+            {
+                _targetDistance = topDownDistance;
+                _targetOrbitAngles.x = topDownPitch;
+                _state = CameraState.Following;
+            }
+            else if (Input.GetKeyDown(resetViewKey))
+            {
+                _targetDistance = initialDistance;
+                _targetOrbitAngles.x = 50f;
+                _state = CameraState.Following;
+            }
         }
 
         public void SetInteriorMode(Vector3 position, float orthoSize)

@@ -8,9 +8,96 @@ namespace MiniMapGame.Runtime
     /// <summary>
     /// CPU bakes two packed RGBA8 textures from map data for ground compositing.
     /// Deterministic: same seed + preset produces identical masks.
+    /// Uses grid-based spatial indexing (fat insertion / thin query) for
+    /// O(~1) per-texel proximity queries instead of brute-force O(n).
     /// </summary>
     public static class GroundSemanticMaskBaker
     {
+        // ─── Spatial Grid (fat insertion / thin query) ────────────────
+
+        /// <summary>
+        /// Uniform grid where each element is inserted into ALL cells it can
+        /// influence. Query returns the single cell the probe point falls in.
+        /// </summary>
+        private struct SpatialGrid<T>
+        {
+            public readonly List<T>[] cells;
+            public readonly int cols, rows;
+            public readonly float cellSize;
+
+            public SpatialGrid(float worldW, float worldH, float cellSize)
+            {
+                this.cellSize = cellSize;
+                cols = Mathf.Max(1, Mathf.CeilToInt(worldW / cellSize));
+                rows = Mathf.Max(1, Mathf.CeilToInt(worldH / cellSize));
+                cells = new List<T>[cols * rows];
+            }
+
+            /// <summary>Insert item into all cells within radius of pos.</summary>
+            public void Insert(Vector2 pos, float radius, T item)
+            {
+                int minCx = Mathf.Max(0, (int)((pos.x - radius) / cellSize));
+                int maxCx = Mathf.Min(cols - 1, (int)((pos.x + radius) / cellSize));
+                int minCy = Mathf.Max(0, (int)((pos.y - radius) / cellSize));
+                int maxCy = Mathf.Min(rows - 1, (int)((pos.y + radius) / cellSize));
+
+                for (int cy = minCy; cy <= maxCy; cy++)
+                {
+                    int rowBase = cy * cols;
+                    for (int cx = minCx; cx <= maxCx; cx++)
+                    {
+                        int idx = rowBase + cx;
+                        cells[idx] ??= new List<T>();
+                        cells[idx].Add(item);
+                    }
+                }
+            }
+
+            /// <summary>Insert item into all cells overlapping the given AABB.</summary>
+            public void InsertAABB(float minX, float minY, float maxX, float maxY, T item)
+            {
+                int minCx = Mathf.Max(0, (int)(minX / cellSize));
+                int maxCx = Mathf.Min(cols - 1, (int)(maxX / cellSize));
+                int minCy = Mathf.Max(0, (int)(minY / cellSize));
+                int maxCy = Mathf.Min(rows - 1, (int)(maxY / cellSize));
+
+                for (int cy = minCy; cy <= maxCy; cy++)
+                {
+                    int rowBase = cy * cols;
+                    for (int cx = minCx; cx <= maxCx; cx++)
+                    {
+                        int idx = rowBase + cx;
+                        cells[idx] ??= new List<T>();
+                        cells[idx].Add(item);
+                    }
+                }
+            }
+
+            /// <summary>Get list of items in the cell containing pos (single cell lookup).</summary>
+            public List<T> Query(Vector2 pos)
+            {
+                int cx = Mathf.Clamp((int)(pos.x / cellSize), 0, cols - 1);
+                int cy = Mathf.Clamp((int)(pos.y / cellSize), 0, rows - 1);
+                return cells[cy * cols + cx];
+            }
+        }
+
+        // ─── Data structs ─────────────────────────────────────────────
+
+        private struct RoadSegment2D
+        {
+            public Vector2 a, b;
+            public float halfWidth;
+        }
+
+        private struct IntersectionData
+        {
+            public Vector2 position;
+            public float radius;
+        }
+
+        // ─── Main Bake ────────────────────────────────────────────────
+
         public static GroundSemanticMaskSet Bake(
             MapData map,
             ElevationMap elevationMap,
@@ -28,14 +115,12 @@ namespace MiniMapGame.Runtime
             var hsPixels = new Color32[res * res];
             var semPixels = new Color32[res * res];
 
-            // Pre-compute road polylines in map-space for distance queries
-            var roadSegments = PrecomputeRoadSegments(map, bezierSegments, roadProfile);
-
-            // Pre-compute intersection positions and radii
-            var intersections = PrecomputeIntersections(map, roadProfile, intersectionRadiusFactor);
-
-            // Pre-compute water proximity data
-            var waterPoints = PrecomputeWaterPoints(map);
+            // Build per-type spatial grids (fat insertion)
+            var waterGrid = BuildWaterGrid(map, worldW, worldH);
+            var roadGrid = BuildRoadGrid(map, bezierSegments, roadProfile, worldW, worldH);
+            var buildingGrid = BuildBuildingGrid(map.buildings, worldW, worldH);
+            var intersectionGrid = BuildIntersectionGrid(
+                map, roadProfile, intersectionRadiusFactor, worldW, worldH);
 
             for (int y = 0; y < res; y++)
             {
@@ -78,11 +163,11 @@ namespace MiniMapGame.Runtime
                         ToByte(curvature),
                         ToByte(jitter));
 
-                    // --- Semantic texture ---
-                    float moisture = ComputeMoisture(mapPos, waterPoints);
-                    float roadInf = ComputeRoadInfluence(mapPos, roadSegments);
-                    float buildingInf = ComputeBuildingInfluence(mapPos, map.buildings);
-                    float intersectionBoost = ComputeIntersectionBoost(mapPos, intersections);
+                    // --- Semantic texture (grid-accelerated) ---
+                    float moisture = ComputeMoisture(mapPos, waterGrid);
+                    float roadInf = ComputeRoadInfluence(mapPos, roadGrid);
+                    float buildingInf = ComputeBuildingInfluence(mapPos, buildingGrid);
+                    float intersectionBoost = ComputeIntersectionBoost(mapPos, intersectionGrid);
 
                     semPixels[idx] = new Color32(
                         ToByte(moisture),
@@ -113,18 +198,35 @@ namespace MiniMapGame.Runtime
             return new GroundSemanticMaskSet(hsTex, semTex, res);
         }
 
-        // ─── Road pre-computation ──────────────────────────────────────
+        // ─── Grid construction ────────────────────────────────────────
 
-        private struct RoadSegment2D
+        private static SpatialGrid<Vector2> BuildWaterGrid(
+            MapData map, float worldW, float worldH)
         {
-            public Vector2 a, b;
-            public float halfWidth;
+            const float maxDist = 40f;
+            var grid = new SpatialGrid<Vector2>(worldW, worldH, maxDist);
+
+            if (map.terrain?.waterBodies == null) return grid;
+
+            foreach (var wb in map.terrain.waterBodies)
+            {
+                if (wb.pathPoints == null) continue;
+                // Sample every other point to reduce density
+                for (int i = 0; i < wb.pathPoints.Count; i += 2)
+                {
+                    var pt = wb.pathPoints[i];
+                    grid.Insert(pt, maxDist, pt);
+                }
+            }
+            return grid;
         }
 
-        private static List<RoadSegment2D> PrecomputeRoadSegments(
-            MapData map, int bezierSegments, RoadProfile profile)
+        private static SpatialGrid<RoadSegment2D> BuildRoadGrid(
+            MapData map, int bezierSegments, RoadProfile profile,
+            float worldW, float worldH)
         {
-            var segments = new List<RoadSegment2D>(map.edges.Count * bezierSegments);
+            const float cellSize = 30f;
+            var grid = new SpatialGrid<RoadSegment2D>(worldW, worldH, cellSize);
             var points = new List<Vector2>(bezierSegments + 1);
 
             foreach (var edge in map.edges)
@@ -141,26 +243,49 @@ namespace MiniMapGame.Runtime
 
                 for (int i = 0; i < points.Count - 1; i++)
                 {
-                    segments.Add(new RoadSegment2D
+                    var seg = new RoadSegment2D
                     {
                         a = points[i],
                         b = points[i + 1],
                         halfWidth = influenceHalfW
-                    });
+                    };
+
+                    // AABB of segment + influence padding
+                    float minX = Mathf.Min(seg.a.x, seg.b.x) - influenceHalfW;
+                    float maxX = Mathf.Max(seg.a.x, seg.b.x) + influenceHalfW;
+                    float minY = Mathf.Min(seg.a.y, seg.b.y) - influenceHalfW;
+                    float maxY = Mathf.Max(seg.a.y, seg.b.y) + influenceHalfW;
+
+                    grid.InsertAABB(minX, minY, maxX, maxY, seg);
                 }
             }
-            return segments;
+            return grid;
         }
 
-        private struct IntersectionData
+        private static SpatialGrid<MapBuilding> BuildBuildingGrid(
+            List<MapBuilding> buildings, float worldW, float worldH)
         {
-            public Vector2 position;
-            public float radius;
+            const float haloRadius = 15f;
+            const float cellSize = 25f;
+            var grid = new SpatialGrid<MapBuilding>(worldW, worldH, cellSize);
+
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                var b = buildings[i];
+                float halfDiag = Mathf.Sqrt(b.width * b.width + b.height * b.height) * 0.5f;
+                float radius = halfDiag + haloRadius;
+                grid.Insert(b.position, radius, b);
+            }
+            return grid;
         }
 
-        private static List<IntersectionData> PrecomputeIntersections(
-            MapData map, RoadProfile profile, float radiusFactor)
+        private static SpatialGrid<IntersectionData> BuildIntersectionGrid(
+            MapData map, RoadProfile profile, float radiusFactor,
+            float worldW, float worldH)
         {
+            const float cellSize = 50f;
+            var grid = new SpatialGrid<IntersectionData>(worldW, worldH, cellSize);
+
             var nodeBestTier = new Dictionary<int, int>();
             var nodeDegree = new Dictionary<int, int>();
             foreach (var edge in map.edges)
@@ -175,7 +300,6 @@ namespace MiniMapGame.Runtime
                 }
             }
 
-            var result = new List<IntersectionData>();
             foreach (var kvp in nodeDegree)
             {
                 if (kvp.Value < 3) continue;
@@ -183,42 +307,29 @@ namespace MiniMapGame.Runtime
                 float totalW = profile != null && bestTier < profile.tiers.Length
                     ? profile.tiers[bestTier].TotalWidth
                     : 12f;
-                result.Add(new IntersectionData
+                var data = new IntersectionData
                 {
                     position = map.nodes[kvp.Key].position,
                     radius = totalW * radiusFactor * 2f
-                });
+                };
+                grid.Insert(data.position, data.radius, data);
             }
-            return result;
+            return grid;
         }
 
-        // ─── Water pre-computation ─────────────────────────────────────
+        // ─── Per-texel computations (grid-accelerated) ────────────────
 
-        private static List<Vector2> PrecomputeWaterPoints(MapData map)
-        {
-            var points = new List<Vector2>();
-            if (map.terrain?.waterBodies == null) return points;
-
-            foreach (var wb in map.terrain.waterBodies)
-            {
-                if (wb.pathPoints == null) continue;
-                // Sample every other point to reduce density
-                for (int i = 0; i < wb.pathPoints.Count; i += 2)
-                    points.Add(wb.pathPoints[i]);
-            }
-            return points;
-        }
-
-        // ─── Per-texel computations ────────────────────────────────────
-
-        private static float ComputeMoisture(Vector2 pos, List<Vector2> waterPoints)
+        private static float ComputeMoisture(Vector2 pos, SpatialGrid<Vector2> grid)
         {
             const float maxDist = 40f;
-            float minDistSq = maxDist * maxDist;
 
-            for (int i = 0; i < waterPoints.Count; i++)
+            var cell = grid.Query(pos);
+            if (cell == null) return 0f;
+
+            float minDistSq = maxDist * maxDist;
+            for (int i = 0; i < cell.Count; i++)
             {
-                float dSq = (pos - waterPoints[i]).sqrMagnitude;
+                float dSq = (pos - cell[i]).sqrMagnitude;
                 if (dSq < minDistSq) minDistSq = dSq;
             }
 
@@ -226,14 +337,17 @@ namespace MiniMapGame.Runtime
             return Mathf.Clamp01(1f - dist / maxDist);
         }
 
-        private static float ComputeRoadInfluence(Vector2 pos, List<RoadSegment2D> segments)
+        private static float ComputeRoadInfluence(Vector2 pos, SpatialGrid<RoadSegment2D> grid)
         {
+            var cell = grid.Query(pos);
+            if (cell == null) return 0f;
+
             float minDist = float.MaxValue;
             float closestHalfW = 15f;
 
-            for (int i = 0; i < segments.Count; i++)
+            for (int i = 0; i < cell.Count; i++)
             {
-                var seg = segments[i];
+                var seg = cell[i];
                 float dist = PointToSegmentDistance(pos, seg.a, seg.b);
                 if (dist < seg.halfWidth && dist < minDist)
                 {
@@ -246,14 +360,17 @@ namespace MiniMapGame.Runtime
             return Mathf.Clamp01(1f - minDist / closestHalfW);
         }
 
-        private static float ComputeBuildingInfluence(Vector2 pos, List<MapBuilding> buildings)
+        private static float ComputeBuildingInfluence(Vector2 pos, SpatialGrid<MapBuilding> grid)
         {
             const float haloRadius = 15f;
-            float maxInfluence = 0f;
 
-            for (int i = 0; i < buildings.Count; i++)
+            var cell = grid.Query(pos);
+            if (cell == null) return 0f;
+
+            float maxInfluence = 0f;
+            for (int i = 0; i < cell.Count; i++)
             {
-                var b = buildings[i];
+                var b = cell[i];
                 float halfDiag = Mathf.Sqrt(b.width * b.width + b.height * b.height) * 0.5f;
                 float dist = Vector2.Distance(pos, b.position);
 
@@ -276,15 +393,18 @@ namespace MiniMapGame.Runtime
             return maxInfluence;
         }
 
-        private static float ComputeIntersectionBoost(Vector2 pos, List<IntersectionData> intersections)
+        private static float ComputeIntersectionBoost(Vector2 pos, SpatialGrid<IntersectionData> grid)
         {
+            var cell = grid.Query(pos);
+            if (cell == null) return 0f;
+
             float maxBoost = 0f;
-            for (int i = 0; i < intersections.Count; i++)
+            for (int i = 0; i < cell.Count; i++)
             {
-                float dist = Vector2.Distance(pos, intersections[i].position);
-                if (dist < intersections[i].radius)
+                float dist = Vector2.Distance(pos, cell[i].position);
+                if (dist < cell[i].radius)
                 {
-                    float boost = 1f - dist / intersections[i].radius;
+                    float boost = 1f - dist / cell[i].radius;
                     if (boost > maxBoost) maxBoost = boost;
                 }
             }
