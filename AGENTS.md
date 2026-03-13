@@ -9,10 +9,10 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: α（SP-032 Slice 5 色パレット調整 → 統合手動検証待ち）
 直近の状態:
   - Gate-1(P4道路検証)をSP-032統合検証に正式吸収。blocker5件修正済み(099bf56)
-  - AGENTS.mdをCLAUDE.mdに完全同期。nulアーティファクト除去
+  - UIフォーカス不具合: 原因特定→SetupCanvas()のearly returnでEventSystemが作成されなかった。修正済み
   - SP-032色パレット構成を調査完了: 3層(強度/色/シェーダー合成)の全容把握
   - 開発方向を「視覚品質仕上げ優先」に決定
-次の作業: Unity Bootstrap→Play→4preset x 2theme目視確認(seed 12011)→debug-setup.mdチェックリストで道路+地表を一括検証→報告→色調整
+次の作業: Unity再Bootstrap(メニュー: MiniMapGame > Bootstrap Test Scene) → シーン保存 → Play → UIフォーカス確認 → SP-032 Slice 5手動検証
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |

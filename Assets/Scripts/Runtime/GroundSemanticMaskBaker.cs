@@ -229,31 +229,21 @@ namespace MiniMapGame.Runtime
         private static float ComputeRoadInfluence(Vector2 pos, List<RoadSegment2D> segments)
         {
             float minDist = float.MaxValue;
+            float closestHalfW = 15f;
 
             for (int i = 0; i < segments.Count; i++)
             {
                 var seg = segments[i];
                 float dist = PointToSegmentDistance(pos, seg.a, seg.b);
                 if (dist < seg.halfWidth && dist < minDist)
-                    minDist = dist;
-            }
-
-            if (minDist >= float.MaxValue) return 0f;
-
-            // Find the halfWidth of the closest segment for normalization
-            float normHalfW = 15f;
-            for (int i = 0; i < segments.Count; i++)
-            {
-                var seg = segments[i];
-                float dist = PointToSegmentDistance(pos, seg.a, seg.b);
-                if (Mathf.Approximately(dist, minDist))
                 {
-                    normHalfW = seg.halfWidth;
-                    break;
+                    minDist = dist;
+                    closestHalfW = seg.halfWidth;
                 }
             }
 
-            return Mathf.Clamp01(1f - minDist / normHalfW);
+            if (minDist >= float.MaxValue) return 0f;
+            return Mathf.Clamp01(1f - minDist / closestHalfW);
         }
 
         private static float ComputeBuildingInfluence(Vector2 pos, List<MapBuilding> buildings)

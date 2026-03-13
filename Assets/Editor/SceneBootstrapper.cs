@@ -466,6 +466,19 @@ namespace MiniMapGame.EditorTools
 
         private static Canvas SetupCanvas()
         {
+            // EventSystem is required for all UI interaction (buttons, inputs, sliders).
+            // Must run before the early return so it's always ensured regardless of Canvas state.
+            var existingES = Object.FindAnyObjectByType<EventSystem>();
+            {
+                var esGo = existingES != null ? existingES.gameObject : FindOrCreate("EventSystem");
+                EnsureComponent<EventSystem>(esGo);
+                // Remove legacy StandaloneInputModule if present (incompatible with new Input System)
+                var legacyModule = esGo.GetComponent<StandaloneInputModule>();
+                if (legacyModule != null) Object.DestroyImmediate(legacyModule);
+                // InputSystemUIInputModule is required when using the new Input System package.
+                EnsureComponent<InputSystemUIInputModule>(esGo);
+            }
+
             var canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas != null) return canvas;
 
@@ -478,18 +491,6 @@ namespace MiniMapGame.EditorTools
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 0.5f;
             EnsureComponent<GraphicRaycaster>(canvasGo);
-
-            // EventSystem is required for all UI interaction (buttons, inputs, sliders)
-            var existingES = Object.FindAnyObjectByType<EventSystem>();
-            {
-                var esGo = existingES != null ? existingES.gameObject : FindOrCreate("EventSystem");
-                EnsureComponent<EventSystem>(esGo);
-                // Remove legacy StandaloneInputModule if present (incompatible with new Input System)
-                var legacyModule = esGo.GetComponent<StandaloneInputModule>();
-                if (legacyModule != null) Object.DestroyImmediate(legacyModule);
-                // InputSystemUIInputModule is required when using the new Input System package.
-                EnsureComponent<InputSystemUIInputModule>(esGo);
-            }
 
             return canvas;
         }
