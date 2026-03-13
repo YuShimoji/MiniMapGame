@@ -123,6 +123,15 @@ namespace MiniMapGame.Interior
             }
         }
 
+        /// <summary>
+        /// Public API to change floor. Wraps SetActiveFloor and teleports player to stairwell.
+        /// Called by InteriorInteractionManager.ChangeFloor() for stair interactions.
+        /// </summary>
+        public void ChangeFloor(int targetFloorIndex)
+        {
+            MoveToFloor(targetFloorIndex);
+        }
+
         private void MoveToFloor(int targetFloorIndex)
         {
             if (targetFloorIndex < 0 || targetFloorIndex >= _stairwellsByFloor.Count) return;

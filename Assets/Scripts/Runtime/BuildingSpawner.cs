@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MiniMapGame.Core;
 using MiniMapGame.Data;
+using MiniMapGame.Interior;
 
 namespace MiniMapGame.Runtime
 {
@@ -232,6 +233,75 @@ namespace MiniMapGame.Runtime
                 if (interaction != null)
                     ApplyBuildingVariation(go, interaction.buildingId, interaction.isLandmark);
             }
+        }
+
+        // ===== Exploration markers =====
+
+        /// <summary>
+        /// Add or update a small sphere marker above an explored building.
+        /// Green = explored, Gold = complete.
+        /// </summary>
+        public void SetExplorationMarker(string buildingId, bool isComplete)
+        {
+            foreach (var go in _spawnedBuildings)
+            {
+                if (go == null) continue;
+                var interaction = go.GetComponent<BuildingInteraction>();
+                if (interaction == null || interaction.buildingId != buildingId) continue;
+                CreateOrUpdateMarker(go, isComplete);
+                break;
+            }
+        }
+
+        /// <summary>
+        /// Refresh all exploration markers from saved records. Called after map load.
+        /// </summary>
+        public void RefreshAllExplorationMarkers(ExplorationProgressManager progress)
+        {
+            if (progress == null) return;
+            foreach (var go in _spawnedBuildings)
+            {
+                if (go == null) continue;
+                var interaction = go.GetComponent<BuildingInteraction>();
+                if (interaction == null) continue;
+                var record = progress.GetRecord(interaction.buildingId);
+                if (record != null && record.hasEntered)
+                    CreateOrUpdateMarker(go, record.IsComplete);
+            }
+        }
+
+        private void CreateOrUpdateMarker(GameObject building, bool isComplete)
+        {
+            const string markerName = "ExploreMarker";
+            var existing = building.transform.Find(markerName);
+            if (existing != null) Destroy(existing.gameObject);
+
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            marker.name = markerName;
+            marker.transform.SetParent(building.transform, false);
+
+            // Place above building using renderer bounds
+            float topY = 0f;
+            var renderers = building.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+            {
+                float rTop = r.bounds.max.y - building.transform.position.y;
+                if (rTop > topY) topY = rTop;
+            }
+            marker.transform.localPosition = new Vector3(0f, topY + 0.4f, 0f);
+            marker.transform.localScale = Vector3.one * 0.25f;
+
+            var col = marker.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+
+            if (_propBlock == null) _propBlock = new MaterialPropertyBlock();
+            var mr = marker.GetComponent<Renderer>();
+            Color markerColor = isComplete
+                ? new Color(0.9f, 0.75f, 0.2f)
+                : new Color(0.2f, 0.7f, 0.3f, 0.85f);
+            _propBlock.SetColor("_BaseColor", markerColor);
+            _propBlock.SetColor("_EmissionColor", isComplete ? markerColor * 0.3f : Color.black);
+            mr.SetPropertyBlock(_propBlock);
         }
 
         public void Clear()

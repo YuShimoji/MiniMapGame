@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using MiniMapGame.Interior;
+
 namespace MiniMapGame.GameLoop
 {
     [System.Serializable]
@@ -7,5 +10,6 @@ namespace MiniMapGame.GameLoop
         public string presetName;
         public GameState gameState;
         public string timestamp;
+        public List<BuildingExplorationRecord> explorationRecords;
     }
 }

@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using MiniMapGame.Data;
+using MiniMapGame.Interior;
 using MiniMapGame.Runtime;
 
 namespace MiniMapGame.GameLoop
@@ -14,6 +17,7 @@ namespace MiniMapGame.GameLoop
         [Header("References")]
         public MapManager mapManager;
         public GameLoopController gameLoopController;
+        public ExplorationProgressManager explorationProgress;
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
 
@@ -40,7 +44,10 @@ namespace MiniMapGame.GameLoop
                 seed = mapManager.seed,
                 presetName = mapManager.activePreset != null ? mapManager.activePreset.displayName : "",
                 gameState = gameLoopController.State,
-                timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                explorationRecords = explorationProgress != null
+                    ? explorationProgress.GetAllRecords().Values.ToList()
+                    : null
             };
 
             string json = JsonUtility.ToJson(data, true);
@@ -105,12 +112,21 @@ namespace MiniMapGame.GameLoop
         {
             if (_pendingLoad == null) return;
 
-            var savedState = _pendingLoad.gameState;
+            var pendingData = _pendingLoad;
             _pendingLoad = null;
 
-            if (savedState == null || gameLoopController == null) return;
+            if (gameLoopController != null && pendingData.gameState != null)
+                gameLoopController.RestoreState(pendingData.gameState);
 
-            gameLoopController.RestoreState(savedState);
+            if (explorationProgress != null && pendingData.explorationRecords != null)
+            {
+                explorationProgress.RestoreRecords(pendingData.explorationRecords);
+
+                // Refresh map markers from restored exploration data
+                if (mapManager != null && mapManager.buildingSpawner != null)
+                    mapManager.buildingSpawner.RefreshAllExplorationMarkers(explorationProgress);
+            }
+
             Debug.Log($"[SaveManager] Loaded save from {SavePath}");
         }
     }

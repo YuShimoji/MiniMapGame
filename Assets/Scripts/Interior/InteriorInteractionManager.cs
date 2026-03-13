@@ -47,9 +47,11 @@ namespace MiniMapGame.Interior
             // Collect all interactables from rendered interior
             var discoveries = interiorRenderer.GetComponentsInChildren<DiscoveryInteractable>(true);
             var doors = interiorRenderer.GetComponentsInChildren<DoorInteractable>(true);
+            var stairs = interiorRenderer.GetComponentsInChildren<StairInteractable>(true);
 
             _interactables.AddRange(discoveries);
             _interactables.AddRange(doors);
+            _interactables.AddRange(stairs);
 
             // Register hidden doors for proximity reveal
             foreach (var door in doors)
@@ -193,6 +195,49 @@ namespace MiniMapGame.Interior
                     usedDiscoveries.Add(bestKey.discoveryId);
                 }
             }
+        }
+
+        /// <summary>
+        /// Change to a different floor. Called by StairInteractable.
+        /// Switches floor rendering and teleports player to stairwell position on target floor.
+        /// </summary>
+        public void ChangeFloor(int targetFloorIndex)
+        {
+            if (interiorRenderer == null || playerTransform == null) return;
+
+            // Switch active floor rendering
+            interiorRenderer.SetActiveFloor(targetFloorIndex);
+
+            // Find stairwell position on target floor to teleport player
+            // We'll search for a StairInteractable on the target floor
+            StairInteractable targetStair = null;
+            foreach (var interactable in _interactables)
+            {
+                if (interactable is StairInteractable stair && stair.FloorIndex == targetFloorIndex)
+                {
+                    targetStair = stair;
+                    break;
+                }
+            }
+
+            // Teleport player to stairwell on target floor
+            if (targetStair != null)
+            {
+                Vector3 targetPos = new Vector3(
+                    targetStair.WorldPosition.x,
+                    playerTransform.position.y,
+                    targetStair.WorldPosition.z);
+
+                var pm = playerTransform.GetComponent<MiniMapGame.Player.PlayerMovement>();
+                if (pm != null)
+                    pm.Teleport(targetPos);
+                else
+                    playerTransform.position = targetPos;
+            }
+
+            // Track floor visit for exploration progress
+            if (interiorController != null && interiorController.explorationProgress != null)
+                interiorController.explorationProgress.OnFloorVisited(_buildingId, targetFloorIndex);
         }
 
         // ===== Event publishing =====

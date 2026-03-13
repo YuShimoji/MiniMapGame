@@ -28,6 +28,9 @@ namespace MiniMapGame.Interior
         [Header("Interaction")]
         public InteriorInteractionManager interactionManager;
 
+        [Header("Exploration")]
+        public ExplorationProgressManager explorationProgress;
+
         [Header("MiniGame")]
         public MiniGameManager miniGameManager;
 
@@ -98,6 +101,10 @@ namespace MiniMapGame.Interior
             if (interactionManager != null)
                 interactionManager.Initialize(building.buildingId);
 
+            // Record exploration progress
+            if (explorationProgress != null)
+                explorationProgress.OnBuildingEntered(building.buildingId, data);
+
             // Switch camera to building view (perspective, no ortho switch)
             float maxDist = CalculateInteriorExtent(data);
             float viewDist = maxDist + interiorOrthoMargin;
@@ -124,6 +131,20 @@ namespace MiniMapGame.Interior
             // Cleanup interaction system before clearing interior
             if (interactionManager != null)
                 interactionManager.Cleanup();
+
+            // Record exploration exit and update map marker
+            if (explorationProgress != null)
+            {
+                string exitBuildingId = _currentBuilding != null ? _currentBuilding.buildingId : null;
+                explorationProgress.OnBuildingExited();
+
+                if (exitBuildingId != null && mapManager != null && mapManager.buildingSpawner != null)
+                {
+                    var record = explorationProgress.GetRecord(exitBuildingId);
+                    if (record != null)
+                        mapManager.buildingSpawner.SetExplorationMarker(exitBuildingId, record.IsComplete);
+                }
+            }
 
             // Clear interior
             interiorRenderer.Clear();

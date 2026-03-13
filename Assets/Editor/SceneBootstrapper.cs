@@ -1223,9 +1223,48 @@ namespace MiniMapGame.EditorTools
             interactionMgr.promptText = promptTmp;
             promptPanelGo.SetActive(false);
 
+            // ExplorationProgressManager
+            var explorationGo = FindOrCreate("ExplorationProgressManager");
+            var explorationMgr = EnsureComponent<ExplorationProgressManager>(explorationGo);
+            explorationMgr.eventBus = eventBus;
+            controller.explorationProgress = explorationMgr;
+
+            // ExplorationMenuUI (Tab key toggle)
+            var explorationMenuGo = FindOrCreate("ExplorationMenuUI");
+            var explorationMenu = EnsureComponent<ExplorationMenuUI>(explorationMenuGo);
+            explorationMenu.explorationProgress = explorationMgr;
+
+            var menuPanelGo = FindOrCreate("ExplorationMenuPanel", canvas.transform);
+            RemoveComponentIfPresent<TextMeshProUGUI>(menuPanelGo);
+            RemoveComponentIfPresent<Image>(menuPanelGo);
+            SetRectFromCenter(menuPanelGo, 0f, 0f, 600f, 420f);
+
+            var menuBgGo = FindOrCreate("Background", menuPanelGo.transform);
+            var menuBg = EnsureComponent<Image>(menuBgGo);
+            menuBg.color = new Color(0.03f, 0.05f, 0.08f, 0.92f);
+            var menuOutline = EnsureComponent<Outline>(menuBgGo);
+            menuOutline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.35f);
+            menuOutline.effectDistance = new Vector2(2f, -2f);
+            SetRect(menuBgGo, Vector2.zero, Vector2.one);
+
+            var menuTextGo = FindOrCreate("Text", menuPanelGo.transform);
+            var menuTmp = EnsureComponent<TextMeshProUGUI>(menuTextGo);
+            menuTmp.alignment = TextAlignmentOptions.TopLeft;
+            menuTmp.fontSize = 16f;
+            menuTmp.color = new Color(0.92f, 0.97f, 1f, 0.96f);
+            menuTmp.richText = true;
+            menuTmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRect(menuTextGo, new Vector2(0.04f, 0.04f), new Vector2(0.96f, 0.96f));
+
+            explorationMenu.menuPanel = menuPanelGo;
+            explorationMenu.menuText = menuTmp;
+            menuPanelGo.SetActive(false);
+
             EditorUtility.SetDirty(renderer);
             EditorUtility.SetDirty(controller);
             EditorUtility.SetDirty(interactionMgr);
+            EditorUtility.SetDirty(explorationMgr);
+            EditorUtility.SetDirty(explorationMenu);
         }
 
         // ── MiniGame System ──
@@ -1294,6 +1333,10 @@ namespace MiniMapGame.EditorTools
             var glc = Object.FindAnyObjectByType<GameLoopController>();
             if (glc != null)
                 sm.gameLoopController = glc;
+
+            var explorationMgr = Object.FindAnyObjectByType<ExplorationProgressManager>();
+            if (explorationMgr != null)
+                sm.explorationProgress = explorationMgr;
 
             // Wire into MapControlUI
             var controlUI = Object.FindAnyObjectByType<MapControlUI>();

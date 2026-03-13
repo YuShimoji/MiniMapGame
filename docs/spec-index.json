@@ -326,19 +326,19 @@
   {
     "id": "SP-061",
     "title": "Exploration Progress Tracking",
-    "status": "spec",
-    "pct": 0,
+    "status": "wip",
+    "pct": 85,
     "cat": "core",
     "file": "docs/specs/exploration-progress.md",
-    "summary": "建物探索の永続記録。マップ上マーカー、フロア踏破n/n、重要アイテムn/n、鍵/ドア状態表示。SaveManager連携"
+    "summary": "建物探索の永続記録。マップ上マーカー、フロア踏破n/n、重要アイテムn/n、鍵/ドア状態表示、Tab探索メニュー、SaveManager連携。残: 手動確認"
   },
   {
     "id": "SP-062",
     "title": "Floor Navigation Interaction",
-    "status": "spec",
-    "pct": 0,
+    "status": "wip",
+    "pct": 90,
     "cat": "core",
     "file": "docs/specs/floor-navigation-interaction.md",
-    "summary": "Stairwell部屋でのフロア移動インタラクション化。IInteriorInteractableパターン準拠。委譲適性高"
+    "summary": "StairInteractable実装。Stairwell部屋にUp/Downインタラクタブル自動生成、ChangeFloor経由でフロア切替+テレポート。残: 手動確認"
   }
 ]

@@ -131,7 +131,7 @@ namespace MiniMapGame.Interior
                 for (int ri = 0; ri < floor.rooms.Count; ri++)
                 {
                     var room = floor.rooms[ri];
-                    CreateNewRoomFloor(room, worldOrigin, yOffset, group.root.transform, preset);
+                    CreateNewRoomFloor(room, worldOrigin, yOffset, group.root.transform, preset, fi, data.floors.Count);
                     CreateNewRoomWalls(room, ri, floor.doors, worldOrigin, yOffset, group.root.transform, preset);
                 }
 
@@ -269,7 +269,7 @@ namespace MiniMapGame.Interior
         // ===== New data path rendering =====
 
         private void CreateNewRoomFloor(InteriorRoom room, Vector3 origin, float yOffset,
-            Transform parent, InteriorPreset preset)
+            Transform parent, InteriorPreset preset, int floorIndex, int totalFloors)
         {
             var go = new GameObject($"RoomFloor_{room.type}_{room.id}");
             go.transform.SetParent(parent);
@@ -291,6 +291,46 @@ namespace MiniMapGame.Interior
                 go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             }
             go.transform.localScale = new Vector3(room.size.x, room.size.y, 1f);
+
+            // Add stairwell interactables for floor navigation
+            if (room.type == InteriorRoomType.Stairwell)
+            {
+                bool hasFloorAbove = floorIndex < totalFloors - 1;
+                bool hasFloorBelow = floorIndex > 0;
+
+                // Create child GOs for up/down stair interactables
+                if (hasFloorAbove)
+                {
+                    var upStair = new GameObject("StairUp");
+                    upStair.transform.SetParent(go.transform);
+                    upStair.transform.localPosition = new Vector3(0f, 0.05f, 0.3f);
+
+                    var upCol = upStair.AddComponent<BoxCollider>();
+                    upCol.isTrigger = true;
+                    upCol.size = new Vector3(room.size.x * 0.4f, 2f, room.size.y * 0.4f);
+
+                    var upInteractable = upStair.AddComponent<StairInteractable>();
+                    upInteractable.floorIndex = floorIndex;
+                    upInteractable.targetFloorIndex = floorIndex + 1;
+                    upInteractable.goesUp = true;
+                }
+
+                if (hasFloorBelow)
+                {
+                    var downStair = new GameObject("StairDown");
+                    downStair.transform.SetParent(go.transform);
+                    downStair.transform.localPosition = new Vector3(0f, 0.05f, -0.3f);
+
+                    var downCol = downStair.AddComponent<BoxCollider>();
+                    downCol.isTrigger = true;
+                    downCol.size = new Vector3(room.size.x * 0.4f, 2f, room.size.y * 0.4f);
+
+                    var downInteractable = downStair.AddComponent<StairInteractable>();
+                    downInteractable.floorIndex = floorIndex;
+                    downInteractable.targetFloorIndex = floorIndex - 1;
+                    downInteractable.goesUp = false;
+                }
+            }
         }
 
         private void CreateNewRoomWalls(InteriorRoom room, int roomIndex, List<InteriorDoor> doors,
