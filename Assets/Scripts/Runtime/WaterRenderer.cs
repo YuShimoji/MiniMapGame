@@ -18,7 +18,8 @@ namespace MiniMapGame.Runtime
         public Material waterMaterial;
 
         [Header("Settings")]
-        public float waterYOffset = 0.02f;
+        [Tooltip("Height above carved terrain for water surfaces (must be >> groundYOffset to avoid Z-fighting)")]
+        public float waterYOffset = 0.15f;
 
         private readonly List<GameObject> _spawnedObjects = new();
 
@@ -142,7 +143,21 @@ namespace MiniMapGame.Runtime
                 : WaterProfile.CreateDefaultFallback();
 
             var points = water.pathPoints;
-            float coastY = waterYOffset * 0.5f;
+
+            // Sample minimum terrain elevation along the coast perimeter
+            // to place the water surface consistently above the carved shore
+            float minTerrainElev = 0f;
+            if (mapManager != null && mapManager.CurrentElevationMap != null)
+            {
+                minTerrainElev = float.MaxValue;
+                foreach (var p in points)
+                {
+                    float elev = mapManager.CurrentElevationMap.Sample(p);
+                    if (elev < minTerrainElev) minTerrainElev = elev;
+                }
+                if (minTerrainElev == float.MaxValue) minTerrainElev = 0f;
+            }
+            float coastY = Mathf.Max(minTerrainElev, 0f) + waterYOffset;
 
             // Compute centroid
             var centroid = Vector2.zero;
