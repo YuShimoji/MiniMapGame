@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using MiniMapGame.GameLoop;
 
 namespace MiniMapGame.Interior
@@ -15,6 +16,10 @@ namespace MiniMapGame.Interior
         public InteriorRenderer interiorRenderer;
         public Transform playerTransform;
         public MapEventBus eventBus;
+
+        [Header("UI")]
+        public GameObject promptPanel;
+        public TextMeshProUGUI promptText;
 
         [Header("Settings")]
         public float hiddenDoorRevealRadius = 1.2f;
@@ -68,6 +73,9 @@ namespace MiniMapGame.Interior
             _hiddenDoors.Clear();
             _currentTarget = null;
             _buildingId = null;
+
+            if (promptPanel != null)
+                promptPanel.SetActive(false);
         }
 
         void Update()
@@ -83,10 +91,30 @@ namespace MiniMapGame.Interior
             // Find nearest available interactable on active floor
             _currentTarget = FindNearestInteractable(activeFloor);
 
+            // Update prompt UI
+            UpdatePromptUI();
+
             // Interact on key press
             if (_currentTarget != null && Input.GetKeyDown(interactKey))
             {
                 _currentTarget.Interact(this);
+            }
+        }
+
+        private void UpdatePromptUI()
+        {
+            string msg = GetCurrentPrompt();
+            if (string.IsNullOrEmpty(msg))
+            {
+                if (promptPanel != null && promptPanel.activeSelf)
+                    promptPanel.SetActive(false);
+            }
+            else
+            {
+                if (promptPanel != null && !promptPanel.activeSelf)
+                    promptPanel.SetActive(true);
+                if (promptText != null)
+                    promptText.text = msg;
             }
         }
 

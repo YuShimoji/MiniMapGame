@@ -291,7 +291,7 @@ namespace MiniMapGame.EditorTools
             // SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
 
             // 14. Interior System
-            SetupInteriorSystem(mapManager, camCtrl, playerGo.transform);
+            SetupInteriorSystem(mapManager, camCtrl, playerGo.transform, canvas);
 
             // 15. MiniGame System
             SetupMiniGameSystem();
@@ -1160,7 +1160,7 @@ namespace MiniMapGame.EditorTools
         // ── Interior System ──
 
         private static void SetupInteriorSystem(MapManager mapManager,
-            CameraController cameraController, Transform playerTransform)
+            CameraController cameraController, Transform playerTransform, Canvas canvas)
         {
             var rendererGo = FindOrCreate("InteriorRenderer");
             var renderer = EnsureComponent<InteriorRenderer>(rendererGo);
@@ -1195,6 +1195,33 @@ namespace MiniMapGame.EditorTools
             var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
             interactionMgr.eventBus = eventBus;
             controller.interactionManager = interactionMgr;
+
+            // Interior interaction prompt UI (bottom-center, similar to exterior InteractionMessage)
+            var promptPanelGo = FindOrCreate("InteriorPrompt", canvas.transform);
+            RemoveComponentIfPresent<TextMeshProUGUI>(promptPanelGo);
+            RemoveComponentIfPresent<Image>(promptPanelGo);
+            SetRectFromBottomCenter(promptPanelGo, 0f, 90f, 480f, 48f);
+
+            var promptBgGo = FindOrCreate("Background", promptPanelGo.transform);
+            var promptBg = EnsureComponent<Image>(promptBgGo);
+            promptBg.color = new Color(0.03f, 0.05f, 0.08f, 0.84f);
+            var promptOutline = EnsureComponent<Outline>(promptBgGo);
+            promptOutline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.45f);
+            promptOutline.effectDistance = new Vector2(2f, -2f);
+            SetRect(promptBgGo, Vector2.zero, Vector2.one);
+
+            var promptTextGo = FindOrCreate("Text", promptPanelGo.transform);
+            var promptTmp = EnsureComponent<TextMeshProUGUI>(promptTextGo);
+            promptTmp.alignment = TextAlignmentOptions.Center;
+            promptTmp.fontSize = 20f;
+            promptTmp.fontStyle = FontStyles.Bold;
+            promptTmp.color = new Color(0.92f, 0.97f, 1f, 0.96f);
+            promptTmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRect(promptTextGo, Vector2.zero, Vector2.one);
+
+            interactionMgr.promptPanel = promptPanelGo;
+            interactionMgr.promptText = promptTmp;
+            promptPanelGo.SetActive(false);
 
             EditorUtility.SetDirty(renderer);
             EditorUtility.SetDirty(controller);
