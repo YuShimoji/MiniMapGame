@@ -20,6 +20,10 @@ namespace MiniMapGame.Runtime
         [Header("Building Height")]
         public float floorHeight = 1.2f;
 
+        [Header("Roof Fade")]
+        [Tooltip("Material using MiniMapGame/BuildingFade shader. If null, buildings use prefab material without roof fade.")]
+        public Material buildingFadeMaterial;
+
         private readonly List<GameObject> _spawnedBuildings = new();
         private Color _normalColor = new(0.22f, 0.28f, 0.38f);
         private Color _landmarkColor = new(0.10f, 0.16f, 0.25f);
@@ -86,6 +90,10 @@ namespace MiniMapGame.Runtime
                     interaction.context = BuildingClassifier.Classify(
                         b, preset, data.terrain, mapManager.CurrentElevationMap);
                 }
+
+                // Apply roof-fade material if available
+                if (buildingFadeMaterial != null)
+                    ApplyFadeMaterial(go);
 
                 ApplyBuildingVariation(go, b.id, b.isLandmark);
                 _spawnedBuildings.Add(go);
@@ -174,6 +182,13 @@ namespace MiniMapGame.Runtime
             tower.transform.localRotation = Quaternion.identity;
 
             return root;
+        }
+
+        private void ApplyFadeMaterial(GameObject go)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+                r.sharedMaterial = buildingFadeMaterial;
         }
 
         private void ApplyBuildingVariation(GameObject go, string buildingId, bool isLandmark)

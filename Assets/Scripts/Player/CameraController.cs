@@ -4,7 +4,7 @@ namespace MiniMapGame.Player
 {
     public class CameraController : MonoBehaviour
     {
-        private enum CameraState { Following, ManualOrbit, ManualPan, Interior }
+        private enum CameraState { Following, ManualOrbit, ManualPan, Interior, BuildingView }
 
         [Header("Focus Settings")]
         public Transform playerTarget;
@@ -89,6 +89,15 @@ namespace MiniMapGame.Player
         void LateUpdate()
         {
             if (_state == CameraState.Interior) return;
+
+            // BuildingView: allow orbit/zoom but skip preset keys and auto-follow
+            if (_state == CameraState.BuildingView)
+            {
+                UpdateBuildingViewInput();
+                UpdateCameraOrbitAndDistance();
+                ApplyCameraTransform();
+                return;
+            }
 
             HandleCameraPresets();
             UpdateState();
@@ -188,6 +197,28 @@ namespace MiniMapGame.Player
             transform.rotation = rotation;
         }
 
+        private void UpdateBuildingViewInput()
+        {
+            // In BuildingView, allow orbit with right-click (same as ManualOrbit)
+            if (Input.GetMouseButton(1))
+            {
+                _currentOrbitAngles.y += Input.GetAxis("Mouse X") * rotationSpeed;
+                _currentOrbitAngles.x -= Input.GetAxis("Mouse Y") * rotationSpeed;
+                _currentOrbitAngles.x = Mathf.Clamp(_currentOrbitAngles.x, pitchMinMax.x, pitchMinMax.y);
+                _targetOrbitAngles = _currentOrbitAngles;
+            }
+            else
+            {
+                // Smooth interpolation when not manually orbiting
+                _currentOrbitAngles.x = Mathf.SmoothDamp(
+                    _currentOrbitAngles.x, _targetOrbitAngles.x,
+                    ref _orbitVelocity.x, followRotationSmoothTime);
+                _currentOrbitAngles.y = Mathf.SmoothDamp(
+                    _currentOrbitAngles.y, _targetOrbitAngles.y,
+                    ref _orbitVelocity.y, followRotationSmoothTime);
+            }
+        }
+
         private void HandleCameraPresets()
         {
             if (Input.GetKeyDown(topDownKey))
@@ -204,6 +235,29 @@ namespace MiniMapGame.Player
             }
         }
 
+        /// <summary>
+        /// Smoothly transition to a near-top-down perspective view centered on a building.
+        /// Used by the semi-seamless building entry system (exterior stays visible, roof fades).
+        /// </summary>
+        public void SetBuildingViewMode(Vector3 buildingPosition, float viewDistance)
+        {
+            if (_camera == null) return;
+
+            _savedOrbitAngles = _currentOrbitAngles;
+            _savedDistance = _currentDistance;
+
+            _focusPoint = buildingPosition + new Vector3(0, 1f, 0);
+            _focusPointVelocity = Vector3.zero;
+            _targetDistance = viewDistance;
+            _targetOrbitAngles.x = 82f; // Near top-down but with slight perspective
+            _state = CameraState.BuildingView;
+            // Camera stays in Perspective mode — no orthographic switch
+        }
+
+        /// <summary>
+        /// Legacy: switches camera to orthographic top-down for old interior system.
+        /// Prefer SetBuildingViewMode for the new semi-seamless approach.
+        /// </summary>
         public void SetInteriorMode(Vector3 position, float orthoSize)
         {
             if (_camera == null) return;

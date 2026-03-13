@@ -105,6 +105,9 @@ namespace MiniMapGame.Player
             move.y = _verticalVelocity;
             _controller.Move(move * Time.deltaTime);
 
+            // Broadcast player position to shaders (used by BuildingFade roof dissolve)
+            Shader.SetGlobalVector("_MiniMapPlayerPosition", transform.position);
+
             // Building interaction
             if (_currentBuilding != null && Input.GetKeyDown(interactKey))
             {

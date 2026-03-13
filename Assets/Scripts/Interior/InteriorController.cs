@@ -67,7 +67,7 @@ namespace MiniMapGame.Interior
             if (building.context.buildingId != null && preset != null)
             {
                 data = InteriorMapGenerator.Generate(building.context, preset, seed);
-                SetExteriorVisible(false);
+                // Exterior stays visible — roof fades via BuildingFade shader
                 interiorRenderer.Render(data, buildingPos, preset, building.buildingId, seed);
             }
             else
@@ -75,7 +75,6 @@ namespace MiniMapGame.Interior
                 // Legacy fallback
 #pragma warning disable CS0618
                 data = InteriorMapGenerator.Generate(seed);
-                SetExteriorVisible(false);
                 interiorRenderer.Render(data, buildingPos, building.buildingId, seed);
 #pragma warning restore CS0618
             }
@@ -92,11 +91,10 @@ namespace MiniMapGame.Interior
             Vector3 entranceWorld = FindEntrancePosition(data, buildingPos);
             TeleportPlayer(entranceWorld);
 
-            // Switch camera to interior top-down mode
+            // Switch camera to building view (perspective, no ortho switch)
             float maxDist = CalculateInteriorExtent(data);
-            cameraController.SetInteriorMode(
-                buildingPos + new Vector3(0, interiorCameraHeight, 0),
-                maxDist + interiorOrthoMargin);
+            float viewDist = maxDist + interiorOrthoMargin;
+            cameraController.SetBuildingViewMode(buildingPos, viewDist);
 
         }
 
@@ -119,9 +117,6 @@ namespace MiniMapGame.Interior
 
             // Clear interior
             interiorRenderer.Clear();
-
-            // Show exterior map
-            SetExteriorVisible(true);
 
             // Return player to saved position
             TeleportPlayer(_savedPlayerPosition);
