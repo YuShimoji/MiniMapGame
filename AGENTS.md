@@ -6,13 +6,18 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（SP-032 Slice 5 色パレット調整 → 統合手動検証待ち）
-直近の状態:
-  - Gate-1(P4道路検証)をSP-032統合検証に正式吸収。blocker5件修正済み(099bf56)
-  - UIフォーカス不具合: 原因特定→SetupCanvas()のearly returnでEventSystemが作成されなかった。修正済み
-  - SP-032色パレット構成を調査完了: 3層(強度/色/シェーダー合成)の全容把握
-  - 開発方向を「視覚品質仕上げ優先」に決定
-次の作業: Unity再Bootstrap(メニュー: MiniMapGame > Bootstrap Test Scene) → シーン保存 → Play → UIフォーカス確認 → SP-032 Slice 5手動検証
+現フェーズ: α（Interior Interaction基盤完成 → 手動検証待ち）
+直近の状態 (2026-03-16):
+
+- SP-060 Interior Interaction System: Discovery収集+ドア操作+鍵紐づけ+隠しドア。実装完了(80%)
+- SP-061 Exploration Progress: 永続探索記録+マップマーカー+IキーメニューUI+SaveManager連携。実装完了(85%)
+- SP-062 Floor Navigation: StairInteractable(Stairwell自動生成)+ChangeFloor+テレポート。実装完了(90%)
+- semi-seamless建物入場(BuildingFade shader+Perspective camera維持)
+- 水面Z-fighting修正、Baker空間インデクシング修正
+- プリセット拡張(Island/Downtown/Valley追加)
+- origin/master: a141ee7 (pull済み)
+
+次の作業: Unity再Bootstrap → 建物入場→Discovery収集→階移動→Iキーメニュー→退出→マーカー→セーブロード の手動確認
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -41,6 +46,11 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-11 | GameLoop UI/Controller/PlayerHUDをSceneBootstrapperで無効化 | 削除 / コメントアウト / 非表示 | DECISION LOG 2026-03-08「GameLoop凍結」の反映。コード残存・セットアップ停止 |
 | 2026-03-11 | MapControlUIの独自レスポンシブスケーリング削除 | 修正 / 削除 / CanvasScaler無効化 | CanvasScaler(ScaleWithScreenSize)と二重適用が原因。CanvasScalerに委ねる |
 | 2026-03-12 | Gate-1(P4道路検証)をSP-032統合検証に吸収 | SP-032統合 / Gate-1合格扱い / 個別実施 | blocker5件修正済み。SP-032 Slice 5で4preset x 2theme一括検証し道路+地表を同時カバー |
+| 2026-03-13 | 水辺ビジュアル基準: 全既定プリセットで水辺を見せる。Gridはriver+bridge既定ON、Dark/Parchment水色は深浅差を読みやすく調整 | river追加なし / riverのみ / river+bridge+palette調整 | 全presetで水辺体験を担保しつつ、Gridの道路-水面交差破綻を避け、SP-032の読図性を上げるため |
+| 2026-03-13 | Task B FB修正: coast深浅の実装整合・ThemeCreator同期・Grid表示名互換維持 | docsのみ修正 / 実装修正 / save migration追加 | docs期待値との不整合と再生成巻き戻しを解消しつつ、displayName保存方式で既存saveを壊さないため |
+| 2026-03-13 | SP-060: 鍵-ドア1:1紐づけ（汎用鍵にしない）、ドア操作は拡張可能設計(DoorUnlockMethod enum) | 汎用鍵 / 1:1紐づけ | 探索の深さを出すため。将来の破壊/ミニゲーム/回り込みも受容可能 |
+| 2026-03-13 | SP-061: 探索記録は永続(建物退出で消えない)、セーブ連携あり | per-visit / 永続 | プレイヤーの進捗を可視化し、再訪問時に前回の状態を維持 |
+| 2026-03-13 | SP-062: フロア移動をFloorNavigatorキー操作からStairInteractable(E key)に変更 | キー操作 / インタラクタブル | SP-060のIInteriorInteractableパターンに統一。没入感向上 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)

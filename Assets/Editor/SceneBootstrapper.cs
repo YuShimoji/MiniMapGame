@@ -1223,6 +1223,13 @@ namespace MiniMapGame.EditorTools
             interactionMgr.promptText = promptTmp;
             promptPanelGo.SetActive(false);
 
+            // FloorNavigator
+            var floorNavGo = FindOrCreate("FloorNavigator");
+            var floorNav = EnsureComponent<FloorNavigator>(floorNavGo);
+            floorNav.interiorRenderer = renderer;
+            floorNav.playerTransform = playerTransform;
+            controller.floorNavigator = floorNav;
+
             // ExplorationProgressManager
             var explorationGo = FindOrCreate("ExplorationProgressManager");
             var explorationMgr = EnsureComponent<ExplorationProgressManager>(explorationGo);
@@ -1263,6 +1270,7 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(renderer);
             EditorUtility.SetDirty(controller);
             EditorUtility.SetDirty(interactionMgr);
+            EditorUtility.SetDirty(floorNav);
             EditorUtility.SetDirty(explorationMgr);
             EditorUtility.SetDirty(explorationMenu);
         }

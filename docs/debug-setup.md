@@ -8,10 +8,11 @@
 2. メニュー: `MiniMapGame > Bootstrap Test Scene`
 3. 以下が自動生成される:
    - MapManager + Renderer/Spawner群
-   - 4プリセット (Coastal / Rural / Grid / Mountain)
+   - 7プリセット (Coastal / Rural / Grid / Mountain / Island / Downtown / Valley)
    - 2テーマ (Dark / Parchment)
    - 3ロードプロファイル (Modern / Rural / Historic)
    - UI (MapControlUI / MiniMap / PlayerHUD)
+   - Interior系 (InteriorController / InteriorRenderer / InteractionManager / ExplorationProgress)
    - カメラ + プレイヤー + ライティング
 4. Play ボタンでマップが自動生成される
 
@@ -22,6 +23,10 @@
 | **F1** | コントロールパネルの表示/非表示 |
 | **Tab** | デバッグオーバーレイ切替: Off → Analysis → Terrain → Off |
 | **WASD / 矢印** | プレイヤー移動 |
+| **E** | インタラクション (Interior内: Discovery収集 / ドア操作 / 階段移動) |
+| **I** | 探索メニュー表示/非表示 (Exploration Records) |
+| **PageUp / PageDown** | フロア移動 (Stairwell付近で有効) |
+| **Escape** | 建物から退出 |
 | **マウス** | カメラ操作 |
 
 ### 3. Control Panel (F1)
@@ -252,6 +257,84 @@ Slice 5 の手動検証項目。各プリセットで最低2-3シードを試す
 | Rural | 中 (0.5) | 低 (0.2) | 最高 (0.5) | 低 | 緩やかな川、浅瀬で色差あり |
 | Grid | 低 (0.25) | 最低 (0.1) | 低 (0.2) | 最高 (0.4/0.35) | 直線寄りの運河、橋で横断 |
 | Mountain | 最高 (0.7) | 最高 (0.35) | 高 (0.4) | 低 | 谷筋の渓流、狭い流路 |
+
+---
+
+## SP-060/061/062: Interior Interaction 検証
+
+建物入場→Discovery収集→ドア操作→階移動→Tab探索メニュー→退出→マーカー→セーブ/ロード の一連の体験を検証する。
+
+### 前提条件
+
+- Bootstrap済みシーンで Play
+- 建物が表示されている状態でマップ上の建物に近づく
+- 建物入場は BuildingInteraction コンポーネント経由（建物をクリック）
+
+### 建物入場・退出 (InteriorController)
+
+- [ ] 建物クリック → Interior 描画が表示される
+- [ ] カメラが建物俯瞰モードに切り替わる
+- [ ] プレイヤーが Entrance 部屋にテレポートする
+- [ ] 建物外の exterior が引き続き表示される（BuildingFade shader による屋根フェード）
+- [ ] Escape キー → 建物退出
+- [ ] 退出後にプレイヤーが元の位置に復帰する
+- [ ] カメラが通常の Follow モードに復帰する
+- [ ] 退出後に Interior オブジェクトがクリアされる（Hierarchy で確認）
+- [ ] 連続入場/退出（3回以上）でクラッシュ・メモリリークなし
+
+### Discovery 収集 (SP-060 DiscoveryInteractable)
+
+- [ ] 家具オブジェクト（Container/Document/Photo/Note）が Interior 内に描画される
+- [ ] Discovery の近くで E キー → 「Press E to collect」プロンプトが表示される
+- [ ] E キー押下 → Discovery が消える / 収集済みになる
+- [ ] 同じ Discovery を再度収集できない（IsAvailable = false）
+- [ ] Console にエラーなし
+
+### ドア操作 (SP-060 DoorInteractable)
+
+- [ ] 施錠ドアが赤色インジケーターで表示される
+- [ ] 開放ドアが緑色インジケーターで表示される
+- [ ] 施錠ドアは通行を物理的にブロックする（blockingCollider）
+- [ ] Container 型 Discovery を収集 → 対応するドアが自動解錠（鍵-ドア 1:1 紐づけ）
+- [ ] 解錠後に blockingCollider が除去され通行可能になる
+- [ ] 隠しドアがプレイヤー近接（1.2m以内）で出現する
+
+### 階移動 (SP-062 StairInteractable)
+
+- [ ] Stairwell 部屋に StairUp/StairDown インタラクタブルが存在する
+- [ ] 階段の近くで E キー → フロア切替が発生する
+- [ ] 上の階に移動: 現在フロア非表示 → 上階のみ表示
+- [ ] 下の階に移動: 現在フロア非表示 → 下階のみ表示
+- [ ] テレポート先が移動先フロアの Stairwell 位置になる
+- [ ] 最上階で StairUp なし / 最下階で StairDown なし（境界値正常）
+- [ ] フロアラベル（1F/2F/B1 等）が正しい
+
+### 探索進捗 (SP-061 ExplorationProgressManager)
+
+- [ ] 建物入場時に BuildingExplorationRecord が作成される
+- [ ] 地上階 (floor 0) が visited としてマークされる
+- [ ] 階移動で該当フロアが visited としてマークされる
+- [ ] Discovery 収集が record に反映される（collectedDiscoveries 増加）
+- [ ] 全 Discovery 収集 + 全フロア踏破 → IsComplete = true
+
+### 探索メニュー (SP-061 ExplorationMenuUI)
+
+- [ ] I キー → 探索メニュー表示
+- [ ] 訪問済み建物一覧が表示される
+- [ ] 各建物のフロア踏破数 (n/n)、Discovery 収集数 (n/n) が表示される
+- [ ] 鍵/ドア状態が表示される
+- [ ] 完了建物と未完了建物が区別できる
+
+### マップマーカー (SP-061 BuildingSpawner)
+
+- [ ] 建物退出後にマップ上にマーカーが表示される
+- [ ] 未完了建物と完了建物でマーカーが区別される
+
+### セーブ/ロード連携 (SP-061 SaveManager)
+
+- [ ] 建物探索後にセーブ → ロード → 探索記録が復元される
+- [ ] ロード後にマップマーカーが正しく表示される
+- [ ] ロード後に同じ建物に再入場 → 前回の収集済み状態が維持される
 
 ---
 

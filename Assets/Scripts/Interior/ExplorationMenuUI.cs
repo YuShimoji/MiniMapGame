@@ -19,7 +19,7 @@ namespace MiniMapGame.Interior
         public TextMeshProUGUI menuText;
 
         [Header("Settings")]
-        public KeyCode toggleKey = KeyCode.Tab;
+        public KeyCode toggleKey = KeyCode.I;
 
         void Update()
         {

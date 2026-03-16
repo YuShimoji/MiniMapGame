@@ -10,14 +10,14 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 直近の状態 (2026-03-13):
 
 - SP-060 Interior Interaction System: Discovery収集+ドア操作+鍵紐づけ+隠しドア。実装完了(80%)
-- SP-061 Exploration Progress: 永続探索記録+マップマーカー+TabメニューUI+SaveManager連携。実装完了(85%)
+- SP-061 Exploration Progress: 永続探索記録+マップマーカー+IキーメニューUI+SaveManager連携。実装完了(85%)
 - SP-062 Floor Navigation: StairInteractable(Stairwell自動生成)+ChangeFloor+テレポート。実装完了(90%)
 - semi-seamless建物入場(BuildingFade shader+Perspective camera維持)
 - 水面Z-fighting修正、Baker空間インデクシング修正
 - プリセット拡張(Island/Downtown/Valley追加)
 - origin/master: b4767a4 (8コミット push済み)
 
-次の作業: Unity再Bootstrap → 建物入場→Discovery収集→階移動→Tab→退出→マーカー→セーブロード の手動確認
+次の作業: Unity再Bootstrap → 建物入場→Discovery収集→階移動→Iキーメニュー→退出→マーカー→セーブロード の手動確認
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
