@@ -6,19 +6,21 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior blocker全修正済み → 再Bootstrap + 手動検証待ち）
+現フェーズ: α（Interior フィードバックUI追加済み → 再Bootstrap + 手動検証待ち）
 直近の状態 (2026-03-18):
 
-- SP-060/061/062 Interior Interaction: 実装完了、blocker 2件とも修正済み
-- Blocker 1 (77f6b88): SceneBootstrapper にDisableFrozenGameLoopObjects()追加
-- Blocker 2 (380a877): BuildingInteraction.SetHighlight() — 近接時色変化+emission
-- コード品質改善 (ef1eb5a): ExplorationProgressManager キャッシュ化, 未使用メソッド削除
-- origin/master: f9e9f90、ローカル: 380a877 (+4 commits)
+- BuildingFade.shader修正 (0d09570): Shadows.hlslインクルード欠落→建物非表示の原因
+- InteriorFeedbackUI (062d05a): トースト通知(収集/解錠/隠しドア/フロア移動) + フロアインジケーター
+- FloorChangedEvent: 新規イベント、InteriorInteractionManager.ChangeFloor から発行
+- 建物近接ハイライト (380a877): 色変化+emission、テキストに[E]キーヒント
+- Blocker 1 修正 (77f6b88): DisableFrozenGameLoopObjects()
+- コード品質 (ef1eb5a): FindAnyObjectByTypeキャッシュ化、未使用メソッド削除
+- origin/master: 0d09570、ローカル: 68a9588 (+2 commits unpushed)
 
 次の作業:
-1. Unity再Bootstrap → Interior手動検証を再実施
-2. SP-032 Slice 5 手動検証 (4preset x 2theme)
-3. push
+1. push
+2. Unity再Bootstrap → Interior手動検証 (建物入場→Discovery→階移動→メニュー→退出→セーブロード)
+3. SP-032 Slice 5 手動検証 (4preset x 2theme)
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
