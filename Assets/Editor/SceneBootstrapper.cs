@@ -59,7 +59,7 @@ namespace MiniMapGame.EditorTools
         {
             // Ensure prefabs, presets, and profiles exist
             CreateBuildingPrefabs();
-            CreateGameLoopPrefabs();
+            // CreateGameLoopPrefabs(); // FROZEN — see DECISION LOG 2026-03-08
             RoadProfileCreator.CreateDefaultProfiles();
             MapPresetCreator.CreateDefaultPresets();
             AutoBindRoadProfiles();
@@ -318,6 +318,9 @@ namespace MiniMapGame.EditorTools
                 EditorUtility.SetDirty(themeManager);
             }
 
+            // Disable any residual GameLoop objects (FROZEN — see DECISION LOG 2026-03-08)
+            DisableFrozenGameLoopObjects();
+
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
             EditorUtility.SetDirty(buildingSpawner);
@@ -325,6 +328,71 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(decorationSpawner);
             Debug.Log("[SceneBootstrapper] Test scene bootstrapped. Press Play to generate map.");
             Debug.Log("[SceneBootstrapper] NOTE: Ensure 'Ground' layer and 'Player' tag exist in Tags & Layers.");
+        }
+
+        // ── Frozen GameLoop Cleanup ──
+
+        /// <summary>
+        /// Find and disable any GameLoop-related objects that may remain in the scene
+        /// from a previous bootstrap run. These systems are frozen per DECISION LOG 2026-03-08.
+        /// </summary>
+        private static void DisableFrozenGameLoopObjects()
+        {
+            int disabled = 0;
+
+            // Disable GameLoopController
+            var glc = Object.FindAnyObjectByType<GameLoopController>(FindObjectsInactive.Include);
+            if (glc != null)
+            {
+                glc.gameObject.SetActive(false);
+                EditorUtility.SetDirty(glc.gameObject);
+                disabled++;
+            }
+
+            // Disable ExtractionPoint(s)
+            foreach (var ep in Object.FindObjectsByType<ExtractionPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                ep.gameObject.SetActive(false);
+                EditorUtility.SetDirty(ep.gameObject);
+                disabled++;
+            }
+
+            // Disable EncounterZone(s)
+            foreach (var ez in Object.FindObjectsByType<EncounterZone>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                ez.gameObject.SetActive(false);
+                EditorUtility.SetDirty(ez.gameObject);
+                disabled++;
+            }
+
+            // Disable ValueObjectBehaviour(s)
+            foreach (var vo in Object.FindObjectsByType<ValueObjectBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                vo.gameObject.SetActive(false);
+                EditorUtility.SetDirty(vo.gameObject);
+                disabled++;
+            }
+
+            // Disable PlayerHUD if present
+            var hud = Object.FindAnyObjectByType<PlayerHUD>(FindObjectsInactive.Include);
+            if (hud != null)
+            {
+                hud.gameObject.SetActive(false);
+                EditorUtility.SetDirty(hud.gameObject);
+                disabled++;
+            }
+
+            // Disable GameLoopUI if present
+            var glui = Object.FindAnyObjectByType<GameLoopUI>(FindObjectsInactive.Include);
+            if (glui != null)
+            {
+                glui.gameObject.SetActive(false);
+                EditorUtility.SetDirty(glui.gameObject);
+                disabled++;
+            }
+
+            if (disabled > 0)
+                Debug.Log($"[SceneBootstrapper] Disabled {disabled} frozen GameLoop object(s).");
         }
 
         // ── Road Profile Auto-Binding ──
