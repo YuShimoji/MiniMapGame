@@ -6,24 +6,25 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior手動検証中 → blocker修正待ち）
+現フェーズ: α（Interior手動検証中 → blocker1修正済み → 再検証待ち）
 直近の状態 (2026-03-17):
 
 - SP-060/061/062 Interior Interaction: 実装完了、手動検証でblocker2件発見
 - FloorNavigator未接続バグ修正済み (854dc54)
 - ExplorationMenuUI Tab→I キー競合修正済み (854dc54)
 - 検証チェックリスト追加済み (docs/debug-setup.md)
-- AGENTS.md と CLAUDE.md の PROJECT CONTEXT / DECISION LOG 同期済み
-- origin/master: 854dc54 (push済み)
+- Blocker 1 修正済み (77f6b88): SceneBootstrapper にDisableFrozenGameLoopObjects()追加
+  GameLoop残存オブジェクト(ExtractionPoint等)をBootstrap時に自動無効化
+- origin/master: f9e9f90 (push済み)、ローカル: 77f6b88
 
-手動検証で発見した問題:
-1. GameLoopController がシーンに残存 → ExtractionPoint の Extraction Decision ダイアログが常時表示（裏で操作は可能）
-2. 建物の視認性が低い → どれが入場可能な建物か不明
+未解決の問題:
+1. [HUMAN_AUTHORITY] 建物の視認性が低い → どれが入場可能な建物か不明
+   → 視覚フィードバック方式の設計判断が必要（アウトライン/色変化/パーティクル等）
 
 次の作業:
-1. SceneBootstrapper で GameLoopController/ExtractionPoint/EncounterZone/ValueObject を明示的に無効化
-2. BuildingInteraction に近接時の視覚フィードバック追加（アウトライン/プロンプト）
-3. 上記修正後に再Bootstrap → Interior手動検証を再実施
+1. BuildingInteraction に近接時の視覚フィードバック追加（設計判断待ち）
+2. 上記修正後に再Bootstrap → Interior手動検証を再実施
+3. SP-032 Slice 5 手動検証 (4preset x 2theme)
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |

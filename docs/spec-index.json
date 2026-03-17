@@ -255,7 +255,7 @@
     "id": "SP-029",
     "title": "Pre-Gate仕様整理",
     "status": "partial",
-    "pct": 55,
+    "pct": 65,
     "cat": "infra",
     "file": "docs/specs/pre-gate-spec-refinement.md",
     "summary": "Gate-1待ち時間に進める仕様監査・論点分解・一問一答キューを整理"
@@ -321,7 +321,7 @@
     "pct": 80,
     "cat": "core",
     "file": "docs/specs/interior-interaction.md",
-    "summary": "建物内Discovery収集+ドア操作。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。SP-026上に構築"
+    "summary": "建物内Discovery収集+ドア操作。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。SP-026上に構築。GameLoop残存blocker修正済み(77f6b88)。残: 建物視認性FB + 手動検証"
   },
   {
     "id": "SP-061",

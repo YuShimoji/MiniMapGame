@@ -6,18 +6,21 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior Interaction基盤完成 → 手動検証待ち）
-直近の状態 (2026-03-16):
+現フェーズ: α（Interior手動検証中 → blocker1修正済み → 再検証待ち）
+直近の状態 (2026-03-17):
 
-- SP-060 Interior Interaction System: Discovery収集+ドア操作+鍵紐づけ+隠しドア。実装完了(80%)
-- SP-061 Exploration Progress: 永続探索記録+マップマーカー+IキーメニューUI+SaveManager連携。実装完了(85%)
-- SP-062 Floor Navigation: StairInteractable(Stairwell自動生成)+ChangeFloor+テレポート。実装完了(90%)
-- semi-seamless建物入場(BuildingFade shader+Perspective camera維持)
-- 水面Z-fighting修正、Baker空間インデクシング修正
-- プリセット拡張(Island/Downtown/Valley追加)
-- origin/master: a141ee7 (pull済み)
+- SP-060/061/062 Interior Interaction: 実装完了、手動検証でblocker2件発見
+- FloorNavigator未接続バグ修正済み (854dc54)
+- ExplorationMenuUI Tab→I キー競合修正済み (854dc54)
+- Blocker 1 修正済み (77f6b88): SceneBootstrapper にDisableFrozenGameLoopObjects()追加
+- origin/master: f9e9f90、ローカル: 77f6b88
 
-次の作業: Unity再Bootstrap → 建物入場→Discovery収集→階移動→Iキーメニュー→退出→マーカー→セーブロード の手動確認
+未解決: 建物の視認性（HUMAN_AUTHORITY: 視覚フィードバック方式の設計判断待ち）
+
+次の作業:
+1. BuildingInteraction 視覚フィードバック追加（設計判断待ち）
+2. 再Bootstrap → Interior手動検証を再実施
+3. SP-032 Slice 5 手動検証
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
