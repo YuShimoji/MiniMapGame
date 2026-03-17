@@ -37,4 +37,12 @@ namespace MiniMapGame.Interior
         public int doorIndex;
         public string buildingId;
     }
+
+    [System.Serializable]
+    public struct FloorChangedEvent
+    {
+        public int floorIndex;
+        public string floorLabel;
+        public string buildingId;
+    }
 }

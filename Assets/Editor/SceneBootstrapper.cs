@@ -293,6 +293,9 @@ namespace MiniMapGame.EditorTools
             // 14. Interior System
             SetupInteriorSystem(mapManager, camCtrl, playerGo.transform, canvas);
 
+            // 14b. Interior Feedback UI (toast + floor indicator)
+            SetupInteriorFeedbackUI(canvas);
+
             // 15. MiniGame System
             SetupMiniGameSystem();
 
@@ -328,6 +331,79 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(decorationSpawner);
             Debug.Log("[SceneBootstrapper] Test scene bootstrapped. Press Play to generate map.");
             Debug.Log("[SceneBootstrapper] NOTE: Ensure 'Ground' layer and 'Player' tag exist in Tags & Layers.");
+        }
+
+        // ── Interior Feedback UI ──
+
+        private static void SetupInteriorFeedbackUI(Canvas canvas)
+        {
+            var feedbackGo = FindOrCreate("InteriorFeedbackUI", canvas.transform);
+            var feedback = EnsureComponent<InteriorFeedbackUI>(feedbackGo);
+
+            // Wire references
+            var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
+            feedback.eventBus = eventBus;
+            feedback.interiorController = Object.FindAnyObjectByType<InteriorController>();
+
+            // Toast panel (top-center)
+            var toastPanel = FindOrCreate("ToastPanel", feedbackGo.transform);
+            var toastRect = EnsureComponent<RectTransform>(toastPanel);
+            toastRect.anchorMin = new Vector2(0.3f, 0.85f);
+            toastRect.anchorMax = new Vector2(0.7f, 0.92f);
+            toastRect.offsetMin = Vector2.zero;
+            toastRect.offsetMax = Vector2.zero;
+
+            var toastBg = EnsureComponent<Image>(toastPanel);
+            toastBg.color = new Color(0.03f, 0.05f, 0.08f, 0.80f);
+
+            var toastCg = EnsureComponent<CanvasGroup>(toastPanel);
+            toastCg.alpha = 0f;
+            toastPanel.SetActive(false);
+            feedback.toastCanvasGroup = toastCg;
+
+            var toastTextGo = FindOrCreate("ToastText", toastPanel.transform);
+            var toastTmp = EnsureComponent<TextMeshProUGUI>(toastTextGo);
+            toastTmp.text = "";
+            toastTmp.fontSize = 18;
+            toastTmp.fontStyle = FontStyles.Bold;
+            toastTmp.color = new Color(0.92f, 0.97f, 1f, 0.96f);
+            toastTmp.alignment = TextAlignmentOptions.Center;
+            var toastTmpRect = toastTmp.GetComponent<RectTransform>();
+            toastTmpRect.anchorMin = Vector2.zero;
+            toastTmpRect.anchorMax = Vector2.one;
+            toastTmpRect.offsetMin = new Vector2(10f, 2f);
+            toastTmpRect.offsetMax = new Vector2(-10f, -2f);
+            feedback.toastText = toastTmp;
+
+            // Floor indicator (top-left)
+            var floorRoot = FindOrCreate("FloorIndicator", feedbackGo.transform);
+            var floorRect = EnsureComponent<RectTransform>(floorRoot);
+            floorRect.anchorMin = new Vector2(0.02f, 0.90f);
+            floorRect.anchorMax = new Vector2(0.18f, 0.96f);
+            floorRect.offsetMin = Vector2.zero;
+            floorRect.offsetMax = Vector2.zero;
+
+            var floorBg = EnsureComponent<Image>(floorRoot);
+            floorBg.color = new Color(0.05f, 0.08f, 0.12f, 0.75f);
+            floorRoot.SetActive(false);
+            feedback.floorIndicatorRoot = floorRoot;
+
+            var floorTextGo = FindOrCreate("FloorText", floorRoot.transform);
+            var floorTmp = EnsureComponent<TextMeshProUGUI>(floorTextGo);
+            floorTmp.text = "F1";
+            floorTmp.fontSize = 16;
+            floorTmp.fontStyle = FontStyles.Bold;
+            floorTmp.color = new Color(0.7f, 0.85f, 1f, 0.9f);
+            floorTmp.alignment = TextAlignmentOptions.Center;
+            var floorTmpRect = floorTmp.GetComponent<RectTransform>();
+            floorTmpRect.anchorMin = Vector2.zero;
+            floorTmpRect.anchorMax = Vector2.one;
+            floorTmpRect.offsetMin = new Vector2(4f, 2f);
+            floorTmpRect.offsetMax = new Vector2(-4f, -2f);
+            feedback.floorIndicatorText = floorTmp;
+
+            EditorUtility.SetDirty(feedback);
+            Debug.Log("[SceneBootstrapper] Interior feedback UI created.");
         }
 
         // ── Frozen GameLoop Cleanup ──

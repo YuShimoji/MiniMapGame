@@ -238,6 +238,18 @@ namespace MiniMapGame.Interior
             // Track floor visit for exploration progress
             if (interiorController != null && interiorController.explorationProgress != null)
                 interiorController.explorationProgress.OnFloorVisited(_buildingId, targetFloorIndex);
+
+            // Publish floor change event for feedback UI
+            if (eventBus != null)
+            {
+                string label = interiorRenderer.GetCurrentFloorLabel();
+                eventBus.Publish(new FloorChangedEvent
+                {
+                    floorIndex = targetFloorIndex,
+                    floorLabel = label,
+                    buildingId = _buildingId
+                });
+            }
         }
 
         // ===== Event publishing =====
