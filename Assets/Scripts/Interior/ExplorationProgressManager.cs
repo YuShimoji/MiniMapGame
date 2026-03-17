@@ -15,6 +15,7 @@ namespace MiniMapGame.Interior
 
         private readonly Dictionary<string, BuildingExplorationRecord> _records = new();
         private string _activeBuildingId;
+        private InteriorInteractionManager _interactionMgr;
 
         void OnEnable()
         {
@@ -143,11 +144,12 @@ namespace MiniMapGame.Interior
             // Check if this discovery is a key for a door
             if (_activeBuildingId == evt.buildingId)
             {
-                var interactionMgr = FindAnyObjectByType<InteriorInteractionManager>();
-                if (interactionMgr?.SessionState != null)
+                if (_interactionMgr == null)
+                    _interactionMgr = FindAnyObjectByType<InteriorInteractionManager>();
+                if (_interactionMgr?.SessionState != null)
                 {
                     // Check all doors to see if this discovery unlocked any
-                    foreach (var kv in interactionMgr.SessionState.doorKeyMap)
+                    foreach (var kv in _interactionMgr.SessionState.doorKeyMap)
                     {
                         if (kv.Value == evt.discoveryId)
                         {

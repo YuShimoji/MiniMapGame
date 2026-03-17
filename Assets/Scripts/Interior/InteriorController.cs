@@ -215,20 +215,6 @@ namespace MiniMapGame.Interior
                 playerTransform.position = position;
         }
 
-        private void SetExteriorVisible(bool visible)
-        {
-            if (mapManager == null) return;
-
-            if (mapManager.mapRenderer != null)
-                mapManager.mapRenderer.gameObject.SetActive(visible);
-
-            if (mapManager.buildingSpawner != null)
-                mapManager.buildingSpawner.gameObject.SetActive(visible);
-
-            if (mapManager.groundPlane != null)
-                mapManager.groundPlane.SetActive(visible);
-        }
-
         private float CalculateInteriorExtent(InteriorMapData data)
         {
             float maxDist = 0f;
