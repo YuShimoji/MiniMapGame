@@ -6,18 +6,24 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior Interaction基盤完成 → 手動検証待ち）
-直近の状態 (2026-03-13):
+現フェーズ: α（Interior手動検証中 → blocker修正待ち）
+直近の状態 (2026-03-17):
 
-- SP-060 Interior Interaction System: Discovery収集+ドア操作+鍵紐づけ+隠しドア。実装完了(80%)
-- SP-061 Exploration Progress: 永続探索記録+マップマーカー+IキーメニューUI+SaveManager連携。実装完了(85%)
-- SP-062 Floor Navigation: StairInteractable(Stairwell自動生成)+ChangeFloor+テレポート。実装完了(90%)
-- semi-seamless建物入場(BuildingFade shader+Perspective camera維持)
-- 水面Z-fighting修正、Baker空間インデクシング修正
-- プリセット拡張(Island/Downtown/Valley追加)
-- origin/master: b4767a4 (8コミット push済み)
+- SP-060/061/062 Interior Interaction: 実装完了、手動検証でblocker2件発見
+- FloorNavigator未接続バグ修正済み (854dc54)
+- ExplorationMenuUI Tab→I キー競合修正済み (854dc54)
+- 検証チェックリスト追加済み (docs/debug-setup.md)
+- AGENTS.md と CLAUDE.md の PROJECT CONTEXT / DECISION LOG 同期済み
+- origin/master: 854dc54 (push済み)
 
-次の作業: Unity再Bootstrap → 建物入場→Discovery収集→階移動→Iキーメニュー→退出→マーカー→セーブロード の手動確認
+手動検証で発見した問題:
+1. GameLoopController がシーンに残存 → ExtractionPoint の Extraction Decision ダイアログが常時表示（裏で操作は可能）
+2. 建物の視認性が低い → どれが入場可能な建物か不明
+
+次の作業:
+1. SceneBootstrapper で GameLoopController/ExtractionPoint/EncounterZone/ValueObject を明示的に無効化
+2. BuildingInteraction に近接時の視覚フィードバック追加（アウトライン/プロンプト）
+3. 上記修正後に再Bootstrap → Interior手動検証を再実施
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
