@@ -7,6 +7,7 @@ namespace MiniMapGame.Runtime
     /// <summary>
     /// Attached to buildings. Triggers interior map generation on interaction.
     /// Holds InteriorBuildingContext for v2 context-aware generation.
+    /// Provides proximity highlight via MaterialPropertyBlock color shift.
     /// </summary>
     public class BuildingInteraction : MonoBehaviour
     {
@@ -14,9 +15,16 @@ namespace MiniMapGame.Runtime
         [HideInInspector] public bool isLandmark;
         [HideInInspector] public InteriorBuildingContext context;
 
+        private static readonly Color HighlightEmission = new(0.18f, 0.25f, 0.4f);
+        private const float HighlightBrighten = 0.12f;
+
+        private Renderer[] _renderers;
+        private MaterialPropertyBlock _propBlock;
+        private bool _highlighted;
+
         public string GetInteractionMessage()
         {
-            return isLandmark ? $"Enter {buildingId}" : buildingId;
+            return isLandmark ? $"[E] Enter {buildingId}" : buildingId;
         }
 
         public void Interact()
@@ -31,6 +39,54 @@ namespace MiniMapGame.Runtime
             else
             {
                 Debug.LogWarning("[BuildingInteraction] InteriorController not found in scene.");
+            }
+        }
+
+        /// <summary>
+        /// Brightens the building color to indicate it is interactable.
+        /// </summary>
+        public void SetHighlight(bool on)
+        {
+            if (!isLandmark || on == _highlighted) return;
+            _highlighted = on;
+
+            if (_renderers == null)
+                _renderers = GetComponentsInChildren<Renderer>();
+            if (_propBlock == null)
+                _propBlock = new MaterialPropertyBlock();
+
+            foreach (var r in _renderers)
+            {
+                r.GetPropertyBlock(_propBlock);
+
+                if (on)
+                {
+                    // Read current base color, brighten it
+                    Color baseColor = _propBlock.GetColor("_BaseColor");
+                    if (baseColor == default)
+                        baseColor = new Color(0.10f, 0.16f, 0.25f);
+                    _propBlock.SetColor("_BaseColor", new Color(
+                        Mathf.Clamp01(baseColor.r + HighlightBrighten),
+                        Mathf.Clamp01(baseColor.g + HighlightBrighten),
+                        Mathf.Clamp01(baseColor.b + HighlightBrighten),
+                        baseColor.a));
+                    _propBlock.SetColor("_EmissionColor", HighlightEmission);
+                }
+                else
+                {
+                    // Restore: read brightened color, subtract
+                    Color cur = _propBlock.GetColor("_BaseColor");
+                    _propBlock.SetColor("_BaseColor", new Color(
+                        Mathf.Clamp01(cur.r - HighlightBrighten),
+                        Mathf.Clamp01(cur.g - HighlightBrighten),
+                        Mathf.Clamp01(cur.b - HighlightBrighten),
+                        cur.a));
+                    // Restore landmark emission (set by BuildingSpawner)
+                    Color landmarkBase = new(0.10f, 0.16f, 0.25f);
+                    _propBlock.SetColor("_EmissionColor", landmarkBase * 0.15f);
+                }
+
+                r.SetPropertyBlock(_propBlock);
             }
         }
     }

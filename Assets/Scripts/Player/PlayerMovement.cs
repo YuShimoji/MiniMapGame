@@ -176,6 +176,7 @@ namespace MiniMapGame.Player
                 interactionMessageText.gameObject.SetActive(true);
                 _currentInteractionCollider = other;
                 _currentBuilding = building;
+                building.SetHighlight(true);
             }
         }
 
@@ -185,6 +186,7 @@ namespace MiniMapGame.Player
             {
                 if (interactionMessageText != null)
                     interactionMessageText.gameObject.SetActive(false);
+                _currentBuilding?.SetHighlight(false);
                 _currentInteractionCollider = null;
                 _currentBuilding = null;
             }
