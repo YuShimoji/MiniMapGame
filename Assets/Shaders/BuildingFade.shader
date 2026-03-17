@@ -125,6 +125,7 @@ Shader "MiniMapGame/BuildingFade"
             #pragma fragment ShadowFrag
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
             float4 _MiniMapPlayerPosition;
 
