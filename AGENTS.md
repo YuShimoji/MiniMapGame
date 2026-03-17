@@ -119,7 +119,7 @@ Assets/
     Player/         PlayerMovement, CameraController
     UI/             MapControlUI, PlayerHUD, MiniMapController,
                     WorldPositionTrackerUI, LabelController,
-                    VerificationChecklistUI
+                    VerificationChecklistUI, InteriorFeedbackUI
     MiniGame/       MiniGameManager, MiniGameTypes, IMiniGame, RoomTrigger,
                     TimingCombatGame, MemoryMatchGame, TrapDodgeGame
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,

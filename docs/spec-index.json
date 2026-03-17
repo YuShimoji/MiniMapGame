@@ -321,7 +321,7 @@
     "pct": 80,
     "cat": "core",
     "file": "docs/specs/interior-interaction.md",
-    "summary": "建物内Discovery収集+ドア操作。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。SP-026上に構築。GameLoop残存blocker修正済み(77f6b88)。残: 建物視認性FB + 手動検証"
+    "summary": "建物内Discovery収集+ドア操作+フィードバックUI。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。InteriorFeedbackUI(トースト通知+フロアインジケーター)、建物近接ハイライト追加。残: 手動検証"
   },
   {
     "id": "SP-061",
