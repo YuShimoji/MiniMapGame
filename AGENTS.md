@@ -6,21 +6,18 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior手動検証中 → blocker1修正済み → 再検証待ち）
-直近の状態 (2026-03-17):
+現フェーズ: α（Interior blocker全修正済み → 再Bootstrap + 手動検証待ち）
+直近の状態 (2026-03-18):
 
-- SP-060/061/062 Interior Interaction: 実装完了、手動検証でblocker2件発見
-- FloorNavigator未接続バグ修正済み (854dc54)
-- ExplorationMenuUI Tab→I キー競合修正済み (854dc54)
-- Blocker 1 修正済み (77f6b88): SceneBootstrapper にDisableFrozenGameLoopObjects()追加
-- origin/master: f9e9f90、ローカル: 77f6b88
-
-未解決: 建物の視認性（HUMAN_AUTHORITY: 視覚フィードバック方式の設計判断待ち）
+- SP-060/061/062 blocker 2件とも修正済み
+  - Blocker 1 (77f6b88): GameLoop残存オブジェクト自動無効化
+  - Blocker 2 (380a877): 建物近接ハイライト (色変化+emission)
+- origin/master: f9e9f90、ローカル: 380a877 (+4 commits)
 
 次の作業:
-1. BuildingInteraction 視覚フィードバック追加（設計判断待ち）
-2. 再Bootstrap → Interior手動検証を再実施
-3. SP-032 Slice 5 手動検証
+1. Unity再Bootstrap → Interior手動検証を再実施
+2. SP-032 Slice 5 手動検証
+3. push
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -54,6 +51,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-13 | SP-060: 鍵-ドア1:1紐づけ（汎用鍵にしない）、ドア操作は拡張可能設計(DoorUnlockMethod enum) | 汎用鍵 / 1:1紐づけ | 探索の深さを出すため。将来の破壊/ミニゲーム/回り込みも受容可能 |
 | 2026-03-13 | SP-061: 探索記録は永続(建物退出で消えない)、セーブ連携あり | per-visit / 永続 | プレイヤーの進捗を可視化し、再訪問時に前回の状態を維持 |
 | 2026-03-13 | SP-062: フロア移動をFloorNavigatorキー操作からStairInteractable(E key)に変更 | キー操作 / インタラクタブル | SP-060のIInteriorInteractableパターンに統一。没入感向上 |
+| 2026-03-18 | 建物近接フィードバックを色変化+emission方式に決定 | A:アウトライン / B:色変化 / C:パーティクル / D:テキストのみ | shader追加不要で低コスト。MaterialPropertyBlockで既存パイプラインに統合 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)

@@ -6,25 +6,19 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior手動検証中 → blocker1修正済み → 再検証待ち）
-直近の状態 (2026-03-17):
+現フェーズ: α（Interior blocker全修正済み → 再Bootstrap + 手動検証待ち）
+直近の状態 (2026-03-18):
 
-- SP-060/061/062 Interior Interaction: 実装完了、手動検証でblocker2件発見
-- FloorNavigator未接続バグ修正済み (854dc54)
-- ExplorationMenuUI Tab→I キー競合修正済み (854dc54)
-- 検証チェックリスト追加済み (docs/debug-setup.md)
-- Blocker 1 修正済み (77f6b88): SceneBootstrapper にDisableFrozenGameLoopObjects()追加
-  GameLoop残存オブジェクト(ExtractionPoint等)をBootstrap時に自動無効化
-- origin/master: f9e9f90 (push済み)、ローカル: 77f6b88
-
-未解決の問題:
-1. [HUMAN_AUTHORITY] 建物の視認性が低い → どれが入場可能な建物か不明
-   → 視覚フィードバック方式の設計判断が必要（アウトライン/色変化/パーティクル等）
+- SP-060/061/062 Interior Interaction: 実装完了、blocker 2件とも修正済み
+- Blocker 1 (77f6b88): SceneBootstrapper にDisableFrozenGameLoopObjects()追加
+- Blocker 2 (380a877): BuildingInteraction.SetHighlight() — 近接時色変化+emission
+- コード品質改善 (ef1eb5a): ExplorationProgressManager キャッシュ化, 未使用メソッド削除
+- origin/master: f9e9f90、ローカル: 380a877 (+4 commits)
 
 次の作業:
-1. BuildingInteraction に近接時の視覚フィードバック追加（設計判断待ち）
-2. 上記修正後に再Bootstrap → Interior手動検証を再実施
-3. SP-032 Slice 5 手動検証 (4preset x 2theme)
+1. Unity再Bootstrap → Interior手動検証を再実施
+2. SP-032 Slice 5 手動検証 (4preset x 2theme)
+3. push
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -58,6 +52,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-13 | SP-060: 鍵-ドア1:1紐づけ（汎用鍵にしない）、ドア操作は拡張可能設計(DoorUnlockMethod enum) | 汎用鍵 / 1:1紐づけ | 探索の深さを出すため。将来の破壊/ミニゲーム/回り込みも受容可能 |
 | 2026-03-13 | SP-061: 探索記録は永続(建物退出で消えない)、セーブ連携あり | per-visit / 永続 | プレイヤーの進捗を可視化し、再訪問時に前回の状態を維持 |
 | 2026-03-13 | SP-062: フロア移動をFloorNavigatorキー操作からStairInteractable(E key)に変更 | キー操作 / インタラクタブル | SP-060のIInteriorInteractableパターンに統一。没入感向上 |
+| 2026-03-18 | 建物近接フィードバックを色変化+emission方式に決定 | A:アウトライン / B:色変化 / C:パーティクル / D:テキストのみ | shader追加不要で低コスト。MaterialPropertyBlockで既存パイプラインに統合 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)
