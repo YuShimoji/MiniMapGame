@@ -7,15 +7,13 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 
 ## PROJECT CONTEXT
 現フェーズ: α（3系統実装完了 → Unity手動検証待ち）
-直近の状態 (2026-03-18 session 5 handoff):
+直近の状態 (2026-03-18 session 6 nightshift):
 
-- SP-060/061/062: Interior実装完了、Blocker修正済み、コード事前チェック7項目全PASS
-- SP-020 Layer 1: DiscoveryTextSystem + 60件テキスト(v2空間客観描写) + Toast rarity色分け 実装済み
-- SP-001: Sandbox+Quest仕様策定済み (draft/0%, game-loop-sandbox-quest.md)
-- discovery-text-policy.md: テキスト方針文書新規 (排除項目/文体/カテゴリ別空間質/レアリティ=解像度)
-- REFRESH自己診断: 仕様策定偏重を検出、手動検証フェーズへ移行決定
-- origin/master: af4cceb、push済み
-- 検証チェックリスト: debug-setup.md に3系統分追加済み
+- SP-026レガシークリーンアップ完了 (94%→98%): RoomNode/CorridorEdge/RoomType削除、旧Generate(int seed)廃止、MiniGame参照除去 (-427行)
+- SPEC.md同期: section 11 v2 API更新、section 18に Interior v2/Interaction/Discovery追加
+- SP-020 specヘッダー修正 (draft/0%→partial/30%)
+- spec-index整合性監査: 全partial/todoスペックのpct妥当性確認済み
+- origin/master: 11448f2、ローカル+2 commits (未push)
 
 次の作業:
 1. Unity Bootstrap → 手動検証3系統 (Interior統合 / SP-032 Slice 5 / SP-020 Layer 1)
