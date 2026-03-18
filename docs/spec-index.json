@@ -1,12 +1,12 @@
 [
   {
     "id": "SP-001",
-    "title": "ゲーム概要・コアループ",
-    "status": "partial",
-    "pct": 60,
+    "title": "ゲームループ — Sandbox + Quest",
+    "status": "draft",
+    "pct": 0,
     "cat": "core",
-    "file": "SPEC.md#1-ゲーム概要",
-    "summary": "探索・発見ゲーム。コアループ再定義済み。凍結中機能あり（エンカウント/脱出/HP）"
+    "file": "docs/specs/game-loop-sandbox-quest.md",
+    "summary": "Sandbox型自由探索 + クエストシステム。旧GameLoop(HP/エンカウント/脱出)を廃止。Phase1: 旧コード整理+最小クエスト10件。Phase2: クエスト拡充+HUD。Phase3: プロシージャル生成+チェーン"
   },
   {
     "id": "SP-002",
