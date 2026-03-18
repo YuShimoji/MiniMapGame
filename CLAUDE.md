@@ -6,19 +6,25 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（3系統実装完了 → Unity手動検証待ち）
-直近の状態 (2026-03-18 session 6 nightshift):
+現フェーズ: α（3系統実装完了 → Unity手動検証待ち → 体験ループ構築へ軸転換）
+直近の状態 (2026-03-19 session 7 handoff):
 
-- SP-026レガシークリーンアップ完了 (94%→98%): RoomNode/CorridorEdge/RoomType削除、旧Generate(int seed)廃止、MiniGame参照除去 (-427行)
-- SPEC.md同期: section 11 v2 API更新、section 18に Interior v2/Interaction/Discovery追加
-- SP-020 specヘッダー修正 (draft/0%→partial/30%)
-- spec-index整合性監査: 全partial/todoスペックのpct妥当性確認済み
-- origin/master: 11448f2、ローカル+2 commits (未push)
+- session 6 nightshift 成果: SP-026レガシー削除(-427行), SPEC.md同期, spec-index監査
+- REFRESH実施: 3ブロック連続の整備偏重を検出。体験逆算への軸転換を提案 (docs/refresh-2026-03-19.md)
+- ローカル+4 commits (未push): 8e3351b, d8d1523, 750ae44, a33884c
+- 未ステージ変更: Road材質3件 + BootstrapTestScene (Unity Editor自動変更)
+- spec-index: 35エントリ (done 24 / partial 8 / draft 1 / todo 3)
 
-次の作業:
-1. Unity Bootstrap → 手動検証3系統 (Interior統合 / SP-032 Slice 5 / SP-020 Layer 1)
-2. 検証結果に基づく修正
-3. SP-001 Phase 1実装 or SP-020 Layer 2実装
+致命的欠落 (REFRESH分析):
+- SP-001 ゲームループ: 0% — 探索の目的が存在しない
+- SP-020 Layer 2: 未着手 — マップ上の進捗可視化なし
+- SP-021 オーディオ: 0% — 世界が無音
+- SP-022 UIメニュー: 0% — ポーズ・設定不能
+
+次の作業 (方針未決定 — HUMAN_AUTHORITY):
+1. 方針選択: A(SP-001設計) / B(手動検証84項目) / C(探索フィードバックループ) / D(体験プロトタイプ) → docs/refresh-2026-03-19.md 参照
+2. 選択した方針に基づく実装
+3. git push (4 commits)
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
