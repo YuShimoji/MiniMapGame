@@ -797,7 +797,9 @@ namespace MiniMapGame.Runtime
 
 ---
 
-## 11. インテリアマップシステム
+## 11. インテリアマップシステム (v2)
+
+> 詳細仕様: `docs/specs/interior-system-v2.md`
 
 ### InteriorMapGenerator
 
@@ -807,46 +809,52 @@ namespace MiniMapGame.Interior
     public static class InteriorMapGenerator
     {
         /// <summary>
-        /// 建物IDからシードを生成し、部屋・廊下構造を返す。
-        /// BSP分割 + ランダム分岐で4-8部屋を生成。
+        /// Context-aware generation: 建物分類・InteriorPreset・seedから
+        /// マルチフロアの間取り+家具データを生成。
         /// </summary>
-        public static InteriorMapData Generate(int seed);
+        public static InteriorMapData Generate(
+            InteriorBuildingContext context, InteriorPreset preset, int seed);
     }
 
     [System.Serializable]
     public class InteriorMapData
     {
-        public List<RoomNode> rooms;        // ノード = 部屋
-        public List<CorridorEdge> corridors; // エッジ = 廊下
-        public List<int> alcoveIndices;      // degree==1 の部屋 = 隠し小部屋
+        public InteriorBuildingContext context;
+        public List<InteriorFloorData> floors;
+        public int totalRoomCount;
+        public int totalDiscoveryCount;
+        public int totalFurnitureCount;
     }
 
     [System.Serializable]
-    public struct RoomNode
+    public class InteriorFloorData
     {
-        public Vector2 position;
-        public Vector2 size;
-        public RoomType type;  // enum: Normal, Entrance, Boss, Treasure, Alcove
+        public int floorIndex;              // 0=ground, -1=basement, 1+=upper
+        public List<InteriorRoom> rooms;
+        public List<InteriorDoor> doors;
+        public List<InteriorCorridor> corridors;
+        public List<InteriorFurniture> furniture;
     }
 
-    [System.Serializable]
-    public struct CorridorEdge
-    {
-        public int roomA;
-        public int roomB;
-        public float width;
-    }
-
-    public enum RoomType { Normal, Entrance, Boss, Treasure, Alcove }
+    // 34種の InteriorRoomType enum (Entrance, Hallway, Stairwell, LivingRoom, ...)
+    // 31種の FurnitureType enum (Table, Chair, Bed, ...)
+    // 5種の BuildingCategory enum (Residential, Commercial, Industrial, Public, Special)
 }
 ```
 
-**生成フロー**:
-1. `seed = building.id.GetHashCode()` (e.g. "B42" → int)
-2. BSP分割 or ランダムウォークで部屋配置
-3. 最小全域木 + α で廊下接続
-4. `degree == 1` の部屋 → Alcove(隠し小部屋)
-5. Additive SceneとしてUnityにロード
+### 生成パイプライン
+1. `BuildingClassifier.Classify()` → `InteriorBuildingContext`
+2. `FloorPlanFactory.Create(category)` → `IFloorPlanGenerator`
+3. 地下/地上フロア生成: `IFloorPlanGenerator.Generate()` → `InteriorFloorData`
+4. 家具配置: `InteriorFurniturePlanner.Generate()` → `InteriorFloorData.furniture`
+5. Discovery スロット集計
+
+### 関連システム
+- **InteriorInteractionManager** (SP-060): Discovery収集 + ドア操作 + 近接プロンプト
+- **ExplorationProgressManager** (SP-061): 建物探索の永続記録 + マップマーカー
+- **StairInteractable** (SP-062): フロア移動インタラクタブル
+- **DiscoveryTextSystem** (SP-020): カテゴリ別テキスト断片 (60エントリ, EN/JA, レアリティ3段階)
+- **InteriorFeedbackUI**: トースト通知 + フロアインジケーター
 
 ---
 
@@ -923,15 +931,14 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 
 ---
 
-## 18. 実装済み機能一覧 (2026-03-08 時点)
+## 18. 実装済み機能一覧 (2026-03-18 時点)
 
 ### Phase A-D: 基盤 (完了)
 - データ構造全種、SeededRng、SpatialHash
 - 4ジェネレータ (Organic/Grid/Mountain/Rural)
 - MapManager統合、MapRenderer、BuildingSpawner
-- InteriorController + BSP部屋生成
-- GameLoop (遭遇/回収/脱出) + セーブ/ロード
-- ミニゲーム3種 (TimingCombat/MemoryMatch/TrapDodge)
+- GameLoop (遭遇/回収/脱出) + セーブ/ロード — **凍結中** (SP-001で再設計予定)
+- ミニゲーム3種 (TimingCombat/MemoryMatch/TrapDodge) — **凍結中**
 
 ### Phase E: ビジュアル (完了)
 - ライティング/ポストプロセス/フォグ/パーティクル
@@ -1042,6 +1049,28 @@ Ground carrier mesh + CPU semantic masks + compositing shader で地表を航空
 - **マテリアルライフサイクル**: template asset + runtime instance分離、Clear()で破棄
 - **地面メッシュ解像度**: groundGridResolution=96 (P5の40から引き上げ)
 - **残タスク** (Slice 5): 色パレット最終調整、4preset x 2theme手動検証
+
+### Interior System v2 (SP-026, Phase 1-3 + レガシークリーンアップ完了)
+- **Context-aware生成**: BuildingClassifier → InteriorBuildingContext → IFloorPlanGenerator
+- **4カテゴリ別間取り**: Residential / Commercial / Industrial / Special
+- **マルチフロア**: basement + 地上階、InteriorFloorData per floor
+- **家具配置MVP**: InteriorFurniturePlanner, 31種FurnitureType, RNGサブシード分離
+- **可視性制御**: InteriorVisibilityController (カメラ距離3段階LOD)
+- **FloorNavigator**: Stairwell近接検出 + PageUp/PageDown移動 + 階数ラベル
+- **デバッグ**: InteriorDebugSpawner (F5再生成) + InteriorDebugPreview (Editorウィンドウ)
+- **レガシー削除完了**: RoomNode/CorridorEdge/RoomType型 + 旧Generate(int seed) APIは廃止
+
+### Interior Interaction (SP-060/061/062, 実装完了・手動検証待ち)
+- **SP-060 InteriorInteractionManager**: Discovery収集(E key) + ドア操作 + 隠しドア近接出現 + 鍵-ドア1:1紐づけ
+- **SP-061 ExplorationProgressManager**: 建物探索の永続記録 + Tab探索メニュー + マップマーカー + SaveManager連携
+- **SP-062 StairInteractable**: E key フロア移動 + FloorNavigator統合 + フロアインジケーター
+- **InteriorFeedbackUI**: トースト通知 (収集/解錠/隠しドア/フロア移動) + レアリティ色分け
+- **建物近接ハイライト**: 色変化+emission, MaterialPropertyBlock, [E]キーヒント
+
+### Discovery テキスト (SP-020 Layer 1, 実装完了)
+- **DiscoveryTextSystem**: カテゴリ別テキスト断片 (60エントリ, EN/JA)
+- **レアリティ3段階**: Common(白,70%) / Uncommon(青,25%) / Rare(金,5%)
+- **セッション重複除去**: 同一建物内で同じテキストが出現しない
 
 ---
 
