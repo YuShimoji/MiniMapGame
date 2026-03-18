@@ -1,0 +1,486 @@
+{
+  "version": 1,
+  "locale_default": "en",
+  "entries": [
+    {
+      "id": "RES_DOC_C01",
+      "furnitureType": "Document",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "A lease agreement, unsigned. The tenant never moved in.",
+      "textJA": "未署名の賃貸契約書。入居者は来なかったようだ。"
+    },
+    {
+      "id": "RES_DOC_C02",
+      "furnitureType": "Document",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "Utility bills stacked months deep. Power was cut in March.",
+      "textJA": "何ヶ月分もの公共料金の請求書。3月に電気が止められている。"
+    },
+    {
+      "id": "RES_NOTE_C01",
+      "furnitureType": "Note",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "\"Don't forget to water the plants.\" The plants are long dead.",
+      "textJA": "「植物に水をやること」。植物はとっくに枯れている。"
+    },
+    {
+      "id": "RES_NOTE_C02",
+      "furnitureType": "Note",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "A grocery list. Milk, eggs, batteries. The last item is underlined twice.",
+      "textJA": "買い物リスト。牛乳、卵、電池。最後の項目に二重線。"
+    },
+    {
+      "id": "RES_PHOTO_C01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "A family photo. Someone's face has been carefully cut out.",
+      "textJA": "家族写真。誰かの顔が丁寧に切り抜かれている。"
+    },
+    {
+      "id": "RES_PHOTO_C02",
+      "furnitureType": "Photo",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "A polaroid of a birthday party. The date on the back is recent.",
+      "textJA": "誕生日パーティーのポラロイド。裏の日付は最近だ。"
+    },
+    {
+      "id": "RES_CONT_C01",
+      "furnitureType": "Container",
+      "buildingCategory": "Residential",
+      "rarity": "Common",
+      "textEN": "A shoebox under the bed. Old letters and a rusted key inside.",
+      "textJA": "ベッド下の靴箱。古い手紙と錆びた鍵が入っている。"
+    },
+    {
+      "id": "RES_DOC_U01",
+      "furnitureType": "Document",
+      "buildingCategory": "Residential",
+      "rarity": "Uncommon",
+      "textEN": "A handwritten will, dated last week. No witnesses signed.",
+      "textJA": "先週の日付の手書きの遺言書。証人の署名はない。"
+    },
+    {
+      "id": "RES_NOTE_U01",
+      "furnitureType": "Note",
+      "buildingCategory": "Residential",
+      "rarity": "Uncommon",
+      "textEN": "\"They came again last night. I'm leaving the key under the mat.\"",
+      "textJA": "「昨夜もまた来た。鍵はマットの下に置いておく」"
+    },
+    {
+      "id": "RES_PHOTO_U01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Residential",
+      "rarity": "Uncommon",
+      "textEN": "A photo of this street taken from above. Red circles mark three buildings.",
+      "textJA": "この通りの俯瞰写真。3つの建物に赤い丸が付いている。"
+    },
+    {
+      "id": "RES_CONT_R01",
+      "furnitureType": "Container",
+      "buildingCategory": "Residential",
+      "rarity": "Rare",
+      "textEN": "A locked diary. The last entry reads: \"The signal tower changed everything.\"",
+      "textJA": "施錠された日記。最後の記述:「信号塔がすべてを変えた」"
+    },
+    {
+      "id": "COM_DOC_C01",
+      "furnitureType": "Document",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "A delivery manifest. Half the items are marked \"undeliverable.\"",
+      "textJA": "配送伝票。品目の半分が「配達不能」と記されている。"
+    },
+    {
+      "id": "COM_DOC_C02",
+      "furnitureType": "Document",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "An employee schedule. No one was assigned after the 15th.",
+      "textJA": "シフト表。15日以降は誰も割り当てられていない。"
+    },
+    {
+      "id": "COM_NOTE_C01",
+      "furnitureType": "Note",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "\"Customer complained about the smell again. Check the basement.\"",
+      "textJA": "「また客から臭いの苦情。地下を確認すること」"
+    },
+    {
+      "id": "COM_NOTE_C02",
+      "furnitureType": "Note",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "A sticky note on the register: \"Do NOT open after 9 PM.\"",
+      "textJA": "レジに貼られた付箋:「午後9時以降は絶対に開けるな」"
+    },
+    {
+      "id": "COM_PHOTO_C01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "A security camera printout. The timestamp shows 3:33 AM.",
+      "textJA": "防犯カメラの印刷。タイムスタンプは午前3時33分。"
+    },
+    {
+      "id": "COM_PHOTO_C02",
+      "furnitureType": "Photo",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "A faded \"Grand Opening\" banner photo. This place was once full of life.",
+      "textJA": "色あせた「グランドオープン」の看板写真。かつては活気があった。"
+    },
+    {
+      "id": "COM_CONT_C01",
+      "furnitureType": "Container",
+      "buildingCategory": "Commercial",
+      "rarity": "Common",
+      "textEN": "A cash register, pried open. A few coins and a folded note remain.",
+      "textJA": "こじ開けられたレジ。数枚の硬貨と折り畳まれたメモが残る。"
+    },
+    {
+      "id": "COM_DOC_U01",
+      "furnitureType": "Document",
+      "buildingCategory": "Commercial",
+      "rarity": "Uncommon",
+      "textEN": "Insurance claim filed the day before the incident. Coincidence?",
+      "textJA": "事件の前日に提出された保険請求。偶然だろうか?"
+    },
+    {
+      "id": "COM_NOTE_U01",
+      "furnitureType": "Note",
+      "buildingCategory": "Commercial",
+      "rarity": "Uncommon",
+      "textEN": "\"The shipment from the north warehouse isn't what we ordered.\"",
+      "textJA": "「北倉庫からの荷物は注文した品ではない」"
+    },
+    {
+      "id": "COM_PHOTO_U01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Commercial",
+      "rarity": "Uncommon",
+      "textEN": "Staff group photo. One person is circled in red marker.",
+      "textJA": "スタッフ集合写真。一人が赤いマーカーで丸をつけられている。"
+    },
+    {
+      "id": "COM_CONT_R01",
+      "furnitureType": "Container",
+      "buildingCategory": "Commercial",
+      "rarity": "Rare",
+      "textEN": "A safe behind the counter. Inside: a map with routes marked to the coast.",
+      "textJA": "カウンター裏の金庫。中には海岸へのルートが記された地図。"
+    },
+    {
+      "id": "IND_DOC_C01",
+      "furnitureType": "Document",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "A safety inspection report. Every item is marked \"PASS\" in the same pen.",
+      "textJA": "安全検査報告書。全項目が同じペンで「合格」と記されている。"
+    },
+    {
+      "id": "IND_DOC_C02",
+      "furnitureType": "Document",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "Work order for machine maintenance. \"URGENT\" stamped three times.",
+      "textJA": "機械整備の作業指示書。「至急」のスタンプが3つ押されている。"
+    },
+    {
+      "id": "IND_NOTE_C01",
+      "furnitureType": "Note",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "\"Night shift reported strange noises from Sector C. Ignore it.\"",
+      "textJA": "「夜勤がCセクターから異音を報告。無視せよ」"
+    },
+    {
+      "id": "IND_NOTE_C02",
+      "furnitureType": "Note",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "Scrawled on a locker: \"Last day. Finally free.\"",
+      "textJA": "ロッカーに走り書き:「最終日。やっと自由だ」"
+    },
+    {
+      "id": "IND_PHOTO_C01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "Blueprint fragment. The structure doesn't match any building nearby.",
+      "textJA": "設計図の断片。近くのどの建物とも一致しない構造だ。"
+    },
+    {
+      "id": "IND_PHOTO_C02",
+      "furnitureType": "Photo",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "Aerial photo of the factory district. A section is blacked out.",
+      "textJA": "工場地区の航空写真。一区画が黒く塗りつぶされている。"
+    },
+    {
+      "id": "IND_CONT_C01",
+      "furnitureType": "Container",
+      "buildingCategory": "Industrial",
+      "rarity": "Common",
+      "textEN": "A toolbox with a false bottom. Empty, but recently used.",
+      "textJA": "二重底の工具箱。空だが、最近使われた形跡がある。"
+    },
+    {
+      "id": "IND_DOC_U01",
+      "furnitureType": "Document",
+      "buildingCategory": "Industrial",
+      "rarity": "Uncommon",
+      "textEN": "Chemical analysis results. One compound is highlighted: \"Not catalogued.\"",
+      "textJA": "化学分析結果。一つの化合物がハイライト:「未登録」"
+    },
+    {
+      "id": "IND_NOTE_U01",
+      "furnitureType": "Note",
+      "buildingCategory": "Industrial",
+      "rarity": "Uncommon",
+      "textEN": "\"If anyone finds this, the underground level is not on any map.\"",
+      "textJA": "「これを見つけた人へ。地下階はどの図面にも載っていない」"
+    },
+    {
+      "id": "IND_CONT_R01",
+      "furnitureType": "Container",
+      "buildingCategory": "Industrial",
+      "rarity": "Rare",
+      "textEN": "A sealed drum in a locked room. The label reads: \"Project Meridian — DO NOT OPEN.\"",
+      "textJA": "施錠された部屋の密封ドラム缶。ラベル:「メリディアン計画 — 開封禁止」"
+    },
+    {
+      "id": "PUB_DOC_C01",
+      "furnitureType": "Document",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "City council minutes. A motion to \"relocate all residents\" was tabled.",
+      "textJA": "市議会議事録。「全住民の移転」動議が棚上げされている。"
+    },
+    {
+      "id": "PUB_DOC_C02",
+      "furnitureType": "Document",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "A public notice about water quality testing. Results section is blank.",
+      "textJA": "水質検査に関する公告。検査結果の欄が空白だ。"
+    },
+    {
+      "id": "PUB_NOTE_C01",
+      "furnitureType": "Note",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "A librarian's note: \"Section 7 books moved to restricted. Do not ask why.\"",
+      "textJA": "司書のメモ:「第7区画の本は制限区域へ移動。理由を聞くな」"
+    },
+    {
+      "id": "PUB_NOTE_C02",
+      "furnitureType": "Note",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "\"Lost and found has been sealed. By order of the director.\"",
+      "textJA": "「遺失物保管室は封鎖された。所長命令により」"
+    },
+    {
+      "id": "PUB_PHOTO_C01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "A framed photo of the building's dedication ceremony. The mayor looks uneasy.",
+      "textJA": "建物の落成式の額縁写真。市長の表情が冴えない。"
+    },
+    {
+      "id": "PUB_PHOTO_C02",
+      "furnitureType": "Photo",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "Old newspaper clipping about a fire. This building was rebuilt.",
+      "textJA": "火災に関する古い新聞の切り抜き。この建物は再建されたものだ。"
+    },
+    {
+      "id": "PUB_CONT_C01",
+      "furnitureType": "Container",
+      "buildingCategory": "Public",
+      "rarity": "Common",
+      "textEN": "A filing cabinet, drawers pulled out. Most folders are empty.",
+      "textJA": "引き出しが引き抜かれたファイルキャビネット。ほとんどのフォルダが空だ。"
+    },
+    {
+      "id": "PUB_DOC_U01",
+      "furnitureType": "Document",
+      "buildingCategory": "Public",
+      "rarity": "Uncommon",
+      "textEN": "An evacuation plan dated two years ago. It was never distributed.",
+      "textJA": "2年前の避難計画。一度も配布されなかったようだ。"
+    },
+    {
+      "id": "PUB_NOTE_U01",
+      "furnitureType": "Note",
+      "buildingCategory": "Public",
+      "rarity": "Uncommon",
+      "textEN": "\"The archives below are off-limits. The elevator code has been changed.\"",
+      "textJA": "「地下書庫は立入禁止。エレベーターの暗証番号は変更済み」"
+    },
+    {
+      "id": "PUB_CONT_R01",
+      "furnitureType": "Container",
+      "buildingCategory": "Public",
+      "rarity": "Rare",
+      "textEN": "A time capsule behind a loose brick. Contains a list of names and the word \"remember.\"",
+      "textJA": "緩んだ煉瓦の裏のタイムカプセル。名前のリストと「忘れるな」の文字。"
+    },
+    {
+      "id": "SPC_DOC_C01",
+      "furnitureType": "Document",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "A research log. The handwriting becomes erratic near the end.",
+      "textJA": "研究記録。終盤に向かって筆跡が乱れていく。"
+    },
+    {
+      "id": "SPC_DOC_C02",
+      "furnitureType": "Document",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "A visitor register. The same name appears every day for three months.",
+      "textJA": "来訪者台帳。同じ名前が3ヶ月間毎日記録されている。"
+    },
+    {
+      "id": "SPC_NOTE_C01",
+      "furnitureType": "Note",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "\"Readings are off the chart. Recalibrate? No — the instruments are fine.\"",
+      "textJA": "「計測値が振り切れている。再校正？いや、計器は正常だ」"
+    },
+    {
+      "id": "SPC_NOTE_C02",
+      "furnitureType": "Note",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "\"Subject 12 responded differently. See attached.\" No attachment found.",
+      "textJA": "「被験者12は異なる反応を示した。添付参照」添付は見当たらない。"
+    },
+    {
+      "id": "SPC_PHOTO_C01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "A photo of an excavation site. The soil layer shows something metallic.",
+      "textJA": "発掘現場の写真。土壌層に金属的なものが見える。"
+    },
+    {
+      "id": "SPC_PHOTO_C02",
+      "furnitureType": "Photo",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "A telescope pointed at the horizon. The film captured nothing visible.",
+      "textJA": "地平線を向いた望遠鏡。フィルムには何も映っていない。"
+    },
+    {
+      "id": "SPC_CONT_C01",
+      "furnitureType": "Container",
+      "buildingCategory": "Special",
+      "rarity": "Common",
+      "textEN": "A specimen case. The label says \"Sample 7\" but it's been cleaned out.",
+      "textJA": "標本ケース。ラベルは「サンプル7」だが中身は空だ。"
+    },
+    {
+      "id": "SPC_DOC_U01",
+      "furnitureType": "Document",
+      "buildingCategory": "Special",
+      "rarity": "Uncommon",
+      "textEN": "A classified report with heavy redactions. One visible word: \"Meridian.\"",
+      "textJA": "黒塗りだらけの機密報告書。読める単語がひとつ:「メリディアン」"
+    },
+    {
+      "id": "SPC_NOTE_U01",
+      "furnitureType": "Note",
+      "buildingCategory": "Special",
+      "rarity": "Uncommon",
+      "textEN": "\"The frequency changed on the 15th. Everything after that is different.\"",
+      "textJA": "「15日に周波数が変わった。それ以降すべてが違う」"
+    },
+    {
+      "id": "SPC_PHOTO_U01",
+      "furnitureType": "Photo",
+      "buildingCategory": "Special",
+      "rarity": "Uncommon",
+      "textEN": "A satellite image. A faint geometric pattern covers the entire district.",
+      "textJA": "衛星画像。この地区全体に微かな幾何学模様が広がっている。"
+    },
+    {
+      "id": "SPC_CONT_R01",
+      "furnitureType": "Container",
+      "buildingCategory": "Special",
+      "rarity": "Rare",
+      "textEN": "A vault sealed with an unknown mechanism. Inside: a single journal. \"Day 1 of the new world.\"",
+      "textJA": "未知の機構で封印された金庫。中には日誌が一冊。「新世界の1日目」"
+    },
+    {
+      "id": "ANY_DOC_C01",
+      "furnitureType": "Document",
+      "buildingCategory": null,
+      "rarity": "Common",
+      "textEN": "A page torn from a logbook. Only the date is legible.",
+      "textJA": "台帳から破り取られた1ページ。日付だけが読める。"
+    },
+    {
+      "id": "ANY_NOTE_C01",
+      "furnitureType": "Note",
+      "buildingCategory": null,
+      "rarity": "Common",
+      "textEN": "\"Remember: east exit only.\" Written in haste.",
+      "textJA": "「覚えておけ:東口だけだ」急いで書かれている。"
+    },
+    {
+      "id": "ANY_PHOTO_C01",
+      "furnitureType": "Photo",
+      "buildingCategory": null,
+      "rarity": "Common",
+      "textEN": "A blurry photo. Someone was moving when the shutter clicked.",
+      "textJA": "ブレた写真。シャッターの瞬間に誰かが動いた。"
+    },
+    {
+      "id": "ANY_CONT_C01",
+      "furnitureType": "Container",
+      "buildingCategory": null,
+      "rarity": "Common",
+      "textEN": "An old backpack. Whoever left it was in a hurry.",
+      "textJA": "古いリュックサック。置いていった人は急いでいたようだ。"
+    },
+    {
+      "id": "ANY_DOC_U01",
+      "furnitureType": "Document",
+      "buildingCategory": null,
+      "rarity": "Uncommon",
+      "textEN": "A hand-drawn map of underground passages. Some routes are crossed out.",
+      "textJA": "手描きの地下通路の地図。いくつかの経路が消されている。"
+    },
+    {
+      "id": "ANY_NOTE_U01",
+      "furnitureType": "Note",
+      "buildingCategory": null,
+      "rarity": "Uncommon",
+      "textEN": "\"If you're reading this, don't trust the broadcasts.\"",
+      "textJA": "「これを読んでいるなら、放送を信じるな」"
+    },
+    {
+      "id": "ANY_PHOTO_R01",
+      "furnitureType": "Photo",
+      "buildingCategory": null,
+      "rarity": "Rare",
+      "textEN": "A photo of the signal tower before it was built. The foundation was already there.",
+      "textJA": "建設前の信号塔の写真。基礎はすでにそこにあった。"
+    }
+  ]
+}
