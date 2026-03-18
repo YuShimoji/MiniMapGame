@@ -19,6 +19,10 @@ namespace MiniMapGame.Interior
         public FurnitureType furnitureType;
         public int value;
         public string buildingId;
+        /// <summary>Flavor text selected by DiscoveryTextSystem. May be null.</summary>
+        public string discoveryText;
+        /// <summary>Rarity of the selected text entry.</summary>
+        public DiscoveryRarity rarity;
     }
 
     [System.Serializable]

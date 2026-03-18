@@ -99,7 +99,7 @@ namespace MiniMapGame.Interior
 
             // Initialize interaction system
             if (interactionManager != null)
-                interactionManager.Initialize(building.buildingId);
+                interactionManager.Initialize(building.buildingId, building.context.category);
 
             // Record exploration progress
             if (explorationProgress != null)

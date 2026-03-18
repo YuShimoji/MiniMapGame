@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using MiniMapGame.Core;
+using MiniMapGame.Data;
 using MiniMapGame.GameLoop;
 
 namespace MiniMapGame.Interior
@@ -27,19 +29,35 @@ namespace MiniMapGame.Interior
 
         public InteriorSessionState SessionState { get; private set; }
 
+        /// <summary>
+        /// Discovery text system. Loaded once, session reset per building.
+        /// </summary>
+        public DiscoveryTextSystem TextSystem { get; private set; }
+
         private string _buildingId;
+        private BuildingCategory _buildingCategory;
+        private SeededRng _textRng;
         private readonly List<IInteriorInteractable> _interactables = new();
         private readonly List<DoorInteractable> _hiddenDoors = new();
         private IInteriorInteractable _currentTarget;
+
+        void Awake()
+        {
+            TextSystem = new DiscoveryTextSystem();
+            TextSystem.Load("en");
+        }
 
         /// <summary>
         /// Called by InteriorController after interior is rendered.
         /// Collects all interactables and builds key-door mappings.
         /// </summary>
-        public void Initialize(string buildingId)
+        public void Initialize(string buildingId, BuildingCategory category = BuildingCategory.Residential)
         {
             _buildingId = buildingId;
+            _buildingCategory = category;
+            _textRng = new SeededRng(buildingId?.GetHashCode() ?? 0);
             SessionState = new InteriorSessionState();
+            TextSystem?.ResetSession();
             _interactables.Clear();
             _hiddenDoors.Clear();
             _currentTarget = null;
@@ -257,12 +275,28 @@ namespace MiniMapGame.Interior
         public void PublishDiscoveryCollected(DiscoveryInteractable discovery)
         {
             if (eventBus == null) return;
+
+            // Select flavor text
+            string flavorText = null;
+            var rarity = DiscoveryRarity.Common;
+            if (TextSystem != null && _textRng != null)
+            {
+                var result = TextSystem.SelectText(discovery.furnitureType, _buildingCategory, _textRng);
+                if (result != null)
+                {
+                    flavorText = result.text;
+                    rarity = result.rarity;
+                }
+            }
+
             eventBus.Publish(new DiscoveryCollectedEvent
             {
                 discoveryId = discovery.discoveryId,
                 furnitureType = discovery.furnitureType,
                 value = discovery.value,
-                buildingId = _buildingId ?? ""
+                buildingId = _buildingId ?? "",
+                discoveryText = flavorText,
+                rarity = rarity
             });
         }
 

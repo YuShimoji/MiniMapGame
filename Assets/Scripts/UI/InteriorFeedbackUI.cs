@@ -20,7 +20,13 @@ namespace MiniMapGame.UI
         public TextMeshProUGUI toastText;
         public CanvasGroup toastCanvasGroup;
         public float toastDuration = 2.0f;
+        public float toastDurationRare = 4.0f;
         public float fadeDuration = 0.5f;
+
+        [Header("Rarity Colors")]
+        public Color commonColor = Color.white;
+        public Color uncommonColor = new Color(0.4f, 0.7f, 1.0f); // blue tint
+        public Color rareColor = new Color(1.0f, 0.85f, 0.3f);    // gold tint
 
         [Header("Floor Indicator")]
         public TextMeshProUGUI floorIndicatorText;
@@ -58,7 +64,7 @@ namespace MiniMapGame.UI
 
         // ===== Toast notifications =====
 
-        private void ShowToast(string message)
+        private void ShowToast(string message, DiscoveryRarity rarity = DiscoveryRarity.Common)
         {
             if (toastText == null || toastCanvasGroup == null) return;
 
@@ -66,15 +72,24 @@ namespace MiniMapGame.UI
                 StopCoroutine(_toastCoroutine);
 
             toastText.text = message;
+            toastText.color = rarity switch
+            {
+                DiscoveryRarity.Uncommon => uncommonColor,
+                DiscoveryRarity.Rare => rareColor,
+                _ => commonColor
+            };
+            _currentToastDuration = rarity == DiscoveryRarity.Rare ? toastDurationRare : toastDuration;
             _toastCoroutine = StartCoroutine(ToastRoutine());
         }
+
+        private float _currentToastDuration;
 
         private IEnumerator ToastRoutine()
         {
             toastCanvasGroup.alpha = 1f;
             toastCanvasGroup.gameObject.SetActive(true);
 
-            yield return new WaitForSeconds(toastDuration);
+            yield return new WaitForSeconds(_currentToastDuration);
 
             float elapsed = 0f;
             while (elapsed < fadeDuration)
@@ -121,8 +136,15 @@ namespace MiniMapGame.UI
 
         private void OnDiscoveryCollected(DiscoveryCollectedEvent evt)
         {
-            string typeName = evt.furnitureType.ToString();
-            ShowToast($"Collected: {typeName}");
+            if (!string.IsNullOrEmpty(evt.discoveryText))
+            {
+                ShowToast(evt.discoveryText, evt.rarity);
+            }
+            else
+            {
+                string typeName = evt.furnitureType.ToString();
+                ShowToast($"Collected: {typeName}");
+            }
         }
 
         private void OnDoorUnlocked(DoorUnlockedEvent evt)
