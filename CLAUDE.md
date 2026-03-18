@@ -54,6 +54,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 | 2026-03-13 | SP-061: 探索記録は永続(建物退出で消えない)、セーブ連携あり | per-visit / 永続 | プレイヤーの進捗を可視化し、再訪問時に前回の状態を維持 |
 | 2026-03-13 | SP-062: フロア移動をFloorNavigatorキー操作からStairInteractable(E key)に変更 | キー操作 / インタラクタブル | SP-060のIInteriorInteractableパターンに統一。没入感向上 |
 | 2026-03-18 | 建物近接フィードバックを色変化+emission方式に決定 | A:アウトライン / B:色変化 / C:パーティクル / D:テキストのみ | shader追加不要で低コスト。MaterialPropertyBlockで既存パイプラインに統合 |
+| 2026-03-18 | Discoveryテキスト方針を全面変更: 空間客観描写 | 旧:ポストアポカリプス陰謀 / 新:空間環境断片 | 人間要素・固有名詞・時間軸・主観知覚を排除。カテゴリ別に空間質を変え、レアリティ=解像度。文体はグラック/マルケス参照。docs/specs/discovery-text-policy.md に方針文書化 |
 
 ## Engine & Pipeline
 - Unity 6.3 (6000.3.6f1)

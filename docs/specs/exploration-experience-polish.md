@@ -81,23 +81,17 @@ SelectDiscoveryText(furnitureType, buildingCategory, shopSubtype, rng):
 - Rare発見時は専用の表示演出（色変化 + 表示延長）
 - Tabメニュー(ExplorationMenuUI)に収集済みテキスト一覧タブを追加
 
-### 1.6 テキストプール設計方針
+### 1.6 テキスト設計方針
 
-**カテゴリ別のテーマ**:
+テキスト内容の設計方針は **[Discovery Text 設計方針](discovery-text-policy.md)** に分離。
 
-| BuildingCategory | テーマ | 例 |
-|-----------------|--------|-----|
-| Residential | 私生活の断片 | 日記の一節、手紙、家族写真の裏書き |
-| Commercial | 商売と取引 | 帳簿、仕入れメモ、顧客リスト |
-| Industrial | 生産と秘密 | 作業日誌、設計図の一部、安全違反報告 |
-| Public | 記録と制度 | 古い法令、住民台帳、議事録 |
-| Special | 世界の謎 | 暗号メモ、古地図の断片、研究ノート |
+要点:
 
-**FurnitureType別のトーン**:
-- Document: 公式・記録調
-- Note: 個人的・走り書き調
-- Photo: 視覚描写・状況説明調
-- Container: 物品リスト・内容物描写調
+- 空間・環境の客観描写のみ。人間要素・固有名詞・時間軸・主観知覚を排除
+- カテゴリ別に空間の物理的質が変わる (Residential=狭い/柔らかい, Industrial=広大/金属的 等)
+- レアリティ = 描写の解像度 (Common=1文, Rare=2-3文)
+- furnitureType はコード上の分類のみ。テキスト内容には反映しない
+- 文体: グラック/マルケス的な精密で淡々とした散文
 
 ### 1.7 初期テキスト数
 
@@ -108,18 +102,12 @@ MVP: カテゴリ別 × FurnitureType別 × レアリティ別 = 5 × 4 × 3 = 6
 
 ### 1.8 テキスト生成パイプライン
 
-1. LLM (Claude/Gemini) でカテゴリ別 × Type別 × レアリティ別に一括生成
-2. JSON形式で出力 (`discovery-texts.json`)
-3. 手動レビュー・調整
-4. Editor スクリプトで JSON → DiscoveryTextPool SO に変換
-5. 必要に応じて追加・差し替え
-
-生成プロンプトの方針:
-- 世界観: 近現代の都市。ファンタジー要素なし
-- トーン: 日常的だが少し不穏。街に何かが起きた痕跡
-- 英語: 簡潔な散文体。最大80文字
-- 日本語: 同じ内容の自然な訳。最大40文字
-- Rare: 他のテキストと緩くつながるヒント（ただしストーリー連鎖は強制しない）
+1. カテゴリ別 × レアリティ別に執筆 (日本語先行)
+2. 英語対訳を作成
+3. JSON形式で出力 (`discovery-texts.json`)
+4. **[Discovery Text 設計方針](discovery-text-policy.md)** の禁止パターン一覧でレビュー
+5. Editor スクリプトで JSON → DiscoveryTextPool SO に変換
+6. 必要に応じて追加・差し替え
 
 ### 1.9 実装スコープ
 

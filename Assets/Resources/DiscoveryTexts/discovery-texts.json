@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "locale_default": "en",
   "entries": [
     {
@@ -7,480 +7,480 @@
       "furnitureType": "Document",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "A lease agreement, unsigned. The tenant never moved in.",
-      "textJA": "未署名の賃貸契約書。入居者は来なかったようだ。"
+      "textEN": "The air beneath the low ceiling has settled into a stagnant layer, and only below it does the space become faintly clear.",
+      "textJA": "低い天井の直下で空気が淀んだ層をなし、それより下だけがわずかに澄んでいる。"
     },
     {
       "id": "RES_DOC_C02",
       "furnitureType": "Document",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "Utility bills stacked months deep. Power was cut in March.",
-      "textJA": "何ヶ月分もの公共料金の請求書。3月に電気が止められている。"
+      "textEN": "A thin crack crosses the plaster and forks at the corner, its branches vanishing into a wall that has been replastered over them.",
+      "textJA": "漆喰を横切る細い亀裂が角で枝分かれし、その先は塗り直された壁の中へ消えている。"
     },
     {
       "id": "RES_NOTE_C01",
       "furnitureType": "Note",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "\"Don't forget to water the plants.\" The plants are long dead.",
-      "textJA": "「植物に水をやること」。植物はとっくに枯れている。"
+      "textEN": "Light passing through frosted glass diffuses without shadow, producing an even brightness that seems equidistant from every surface.",
+      "textJA": "磨りガラスを通った光が影をつくらず拡散し、どの面からも等距離にあるような均一な明るさを生んでいる。"
     },
     {
       "id": "RES_NOTE_C02",
       "furnitureType": "Note",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "A grocery list. Milk, eggs, batteries. The last item is underlined twice.",
-      "textJA": "買い物リスト。牛乳、卵、電池。最後の項目に二重線。"
+      "textEN": "The carpet has worn smooth in an arc just before the threshold, its curve matching the exact sweep of the door.",
+      "textJA": "敷居の手前で絨毯が円弧を描くように擦り切れている。その弧はドアの可動域と正確に重なる。"
     },
     {
       "id": "RES_PHOTO_C01",
       "furnitureType": "Photo",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "A family photo. Someone's face has been carefully cut out.",
-      "textJA": "家族写真。誰かの顔が丁寧に切り抜かれている。"
+      "textEN": "The wallpaper is lifting near the baseboard, revealing a different pattern underneath.",
+      "textJA": "巾木のあたりで壁紙が緩やかにめくれ上がり、その下に別の柄の壁紙が覗いている。"
     },
     {
       "id": "RES_PHOTO_C02",
       "furnitureType": "Photo",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "A polaroid of a birthday party. The date on the back is recent.",
-      "textJA": "誕生日パーティーのポラロイド。裏の日付は最近だ。"
+      "textEN": "The window frame has swollen shut with moisture, and a narrow gap has opened between the frame and the wall.",
+      "textJA": "窓枠が湿気で膨張して閉じたまま動かず、枠と壁の間にわずかな隙間が生じている。"
     },
     {
       "id": "RES_CONT_C01",
       "furnitureType": "Container",
       "buildingCategory": "Residential",
       "rarity": "Common",
-      "textEN": "A shoebox under the bed. Old letters and a rusted key inside.",
-      "textJA": "ベッド下の靴箱。古い手紙と錆びた鍵が入っている。"
+      "textEN": "Dust has settled in a uniform layer across every horizontal surface, revealing nothing except that nothing rests upon them.",
+      "textJA": "あらゆる水平面に均一な厚さで埃が積もり、何も置かれていないことだけが分かる。"
     },
     {
       "id": "RES_DOC_U01",
       "furnitureType": "Document",
       "buildingCategory": "Residential",
       "rarity": "Uncommon",
-      "textEN": "A handwritten will, dated last week. No witnesses signed.",
-      "textJA": "先週の日付の手書きの遺言書。証人の署名はない。"
+      "textEN": "The floorboards dip slightly toward the center of the room. The slow, uneven subsidence of the whole structure has inscribed itself into the shape of the room.",
+      "textJA": "部屋の中央に向かって床板がわずかに沈んでいる。建物全体がゆっくりと不均一に沈下してきた過程が、部屋の形そのものに刻まれている。"
     },
     {
       "id": "RES_NOTE_U01",
       "furnitureType": "Note",
       "buildingCategory": "Residential",
       "rarity": "Uncommon",
-      "textEN": "\"They came again last night. I'm leaving the key under the mat.\"",
-      "textJA": "「昨夜もまた来た。鍵はマットの下に置いておく」"
+      "textEN": "Two layers of paint are visible where the wall has chipped. The pale blue beneath the cream is the same shade as the wall in the next room.",
+      "textJA": "壁の欠けた箇所に二層の塗料が覗いている。クリーム色の下にある淡い青は、隣室の壁の色と一致している。"
     },
     {
       "id": "RES_PHOTO_U01",
       "furnitureType": "Photo",
       "buildingCategory": "Residential",
       "rarity": "Uncommon",
-      "textEN": "A photo of this street taken from above. Red circles mark three buildings.",
-      "textJA": "この通りの俯瞰写真。3つの建物に赤い丸が付いている。"
+      "textEN": "The ceiling sags in a gentle curve, the plaster darkened along its lowest point. The outline of the stain is precise, as though tracing a rectangle from somewhere above.",
+      "textJA": "天井が緩やかな曲線を描いてたわみ、最も低い箇所に沿って漆喰が黒ずんでいる。変色の輪郭は何かの矩形をなぞるように正確だ。"
     },
     {
       "id": "RES_CONT_R01",
       "furnitureType": "Container",
       "buildingCategory": "Residential",
       "rarity": "Rare",
-      "textEN": "A locked diary. The last entry reads: \"The signal tower changed everything.\"",
-      "textJA": "施錠された日記。最後の記述:「信号塔がすべてを変えた」"
+      "textEN": "A narrow corridor turns twice before descending half a step into a room where the walls grow noticeably thicker. The air here has ceased to move. A single window admits a rectangle of light that falls short of the far wall, landing on the floor at the room's midpoint and going no further.",
+      "textJA": "狭い廊下が二度折れたのち、床面が半段ほど低い部屋へと降りる。壁がここだけ厚みを増し、空気の動きが途絶えている。ひとつだけある窓から差し込む矩形の光は奥の壁には届かず、部屋のちょうど中ほどの床に落ちてそこで途切れている。"
     },
     {
       "id": "COM_DOC_C01",
       "furnitureType": "Document",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "A delivery manifest. Half the items are marked \"undeliverable.\"",
-      "textJA": "配送伝票。品目の半分が「配達不能」と記されている。"
+      "textEN": "A single fluorescent tube remains overhead, flickering at long intervals. Directly beneath it, the floor is a slightly different shade from its surroundings.",
+      "textJA": "頭上に蛍光灯が一本だけ残り、長い間隔で明滅を繰り返している。その真下だけ、床の色が周囲とわずかに異なる。"
     },
     {
       "id": "COM_DOC_C02",
       "furnitureType": "Document",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "An employee schedule. No one was assigned after the 15th.",
-      "textJA": "シフト表。15日以降は誰も割り当てられていない。"
+      "textEN": "The linoleum is lifting at the seams, and through the gaps the concrete substrate shows as thin lines.",
+      "textJA": "リノリウムが継ぎ目から浮き上がり、隙間から下地のコンクリートが線状に覗いている。"
     },
     {
       "id": "COM_NOTE_C01",
       "furnitureType": "Note",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "\"Customer complained about the smell again. Check the basement.\"",
-      "textJA": "「また客から臭いの苦情。地下を確認すること」"
+      "textEN": "The laminate surface of a long counter is cracked in a starburst pattern. The lines continue past the counter's edge and onto the wall behind it.",
+      "textJA": "長いカウンターの化粧板に放射状の罅が入っている。その線はカウンターの縁を越えて背後の壁面まで続いている。"
     },
     {
       "id": "COM_NOTE_C02",
       "furnitureType": "Note",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "A sticky note on the register: \"Do NOT open after 9 PM.\"",
-      "textJA": "レジに貼られた付箋:「午後9時以降は絶対に開けるな」"
+      "textEN": "Air descends steadily from an open ventilation duct — the only movement in the entire space.",
+      "textJA": "開いた換気ダクトから空気が絶えず降りてきている。この空間の中で動いているのはそれだけだ。"
     },
     {
       "id": "COM_PHOTO_C01",
       "furnitureType": "Photo",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "A security camera printout. The timestamp shows 3:33 AM.",
-      "textJA": "防犯カメラの印刷。タイムスタンプは午前3時33分。"
+      "textEN": "Condensation has formed only on the inside of the glass panels, while the outer surface remains dry.",
+      "textJA": "ガラスパネルの内側にだけ結露が生じ、外側は乾いたままでいる。"
     },
     {
       "id": "COM_PHOTO_C02",
       "furnitureType": "Photo",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "A faded \"Grand Opening\" banner photo. This place was once full of life.",
-      "textJA": "色あせた「グランドオープン」の看板写真。かつては活気があった。"
+      "textEN": "A row of metal shelving, slightly buckled under its own weight. Nothing rests on any of them.",
+      "textJA": "自重でわずかに撓んだ金属の棚が並んでいる。どの棚にも何も載っていない。"
     },
     {
       "id": "COM_CONT_C01",
       "furnitureType": "Container",
       "buildingCategory": "Commercial",
       "rarity": "Common",
-      "textEN": "A cash register, pried open. A few coins and a folded note remain.",
-      "textJA": "こじ開けられたレジ。数枚の硬貨と折り畳まれたメモが残る。"
+      "textEN": "Several ceiling tiles have fallen away, exposing dark ductwork above. The gaps are evenly spaced.",
+      "textJA": "天井タイルが数枚抜け落ち、上のダクトが暗く覗いている。抜けた箇所は等間隔に並んでいる。"
     },
     {
       "id": "COM_DOC_U01",
       "furnitureType": "Document",
       "buildingCategory": "Commercial",
       "rarity": "Uncommon",
-      "textEN": "Insurance claim filed the day before the incident. Coincidence?",
-      "textJA": "事件の前日に提出された保険請求。偶然だろうか?"
+      "textEN": "The floor slopes gently toward a central drain. The concrete around it is stained by standing water, recording in concentric rings the levels at which the water has risen and fallen.",
+      "textJA": "床が中央の排水口に向かって緩やかに傾斜している。周囲のコンクリートは滞留水で染まり、水位の上下を同心円状に記録している。"
     },
     {
       "id": "COM_NOTE_U01",
       "furnitureType": "Note",
       "buildingCategory": "Commercial",
       "rarity": "Uncommon",
-      "textEN": "\"The shipment from the north warehouse isn't what we ordered.\"",
-      "textJA": "「北倉庫からの荷物は注文した品ではない」"
+      "textEN": "A partition wall stops short of the ceiling, letting light and air pass between rooms. Its top edge is cut level, but at a height that bears no relation to the ceiling above.",
+      "textJA": "天井まで届かない間仕切り壁があり、隙間を通じて光と空気が隣室と行き来している。壁の上端は水平に切られているが、天井の高さとは無関係な位置で止まっている。"
     },
     {
       "id": "COM_PHOTO_U01",
       "furnitureType": "Photo",
       "buildingCategory": "Commercial",
       "rarity": "Uncommon",
-      "textEN": "Staff group photo. One person is circled in red marker.",
-      "textJA": "スタッフ集合写真。一人が赤いマーカーで丸をつけられている。"
+      "textEN": "Plate-glass windows stretching floor to ceiling are laced with hairline fractures that catch the light. Every crack runs in the same direction, suggesting not external force but an internal stress.",
+      "textJA": "床から天井まで伸びる板ガラスの窓一面に、光を拾う極細のひび割れが走っている。どのひびも同じ方向を向いており、外力ではなく内部の応力を示すような走り方をしている。"
     },
     {
       "id": "COM_CONT_R01",
       "furnitureType": "Container",
       "buildingCategory": "Commercial",
       "rarity": "Rare",
-      "textEN": "A safe behind the counter. Inside: a map with routes marked to the coast.",
-      "textJA": "カウンター裏の金庫。中には海岸へのルートが記された地図。"
+      "textEN": "A double-height space where the upper floor has partly given way, its ragged edge overhanging the ground level. Daylight enters from both the storefront and the breach above, crossing at odd angles. Only at their intersection does the slowly turning dust become visible as a column of light.",
+      "textJA": "二層吹き抜けの空間で、上階の床が一部崩れ落ちたまま不揃いな縁を一階の上に張り出させている。正面のガラス面と上の破れ目の双方から日光が差し込み、妙な角度で交差している。その交点にだけ、ゆっくりと舞う埃が光の柱として見える。"
     },
     {
       "id": "IND_DOC_C01",
       "furnitureType": "Document",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "A safety inspection report. Every item is marked \"PASS\" in the same pen.",
-      "textJA": "安全検査報告書。全項目が同じペンで「合格」と記されている。"
+      "textEN": "Corrugated metal walls hum faintly in the wind. The pitch remains constant regardless of the wind's strength.",
+      "textJA": "波板の壁が風を受けてかすかに唸っている。その音程は風の強さにかかわらず一定だ。"
     },
     {
       "id": "IND_DOC_C02",
       "furnitureType": "Document",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "Work order for machine maintenance. \"URGENT\" stamped three times.",
-      "textJA": "機械整備の作業指示書。「至急」のスタンプが3つ押されている。"
+      "textEN": "Oil stains darken the concrete in irregular patches. Each edge is sharp, as though the oil stopped at the surface without soaking in.",
+      "textJA": "コンクリートに不規則な油染みが黒く広がっている。その縁はどれも鋭く、染み込むことなく表面で止まっている。"
     },
     {
       "id": "IND_NOTE_C01",
       "furnitureType": "Note",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "\"Night shift reported strange noises from Sector C. Ignore it.\"",
-      "textJA": "「夜勤がCセクターから異音を報告。無視せよ」"
+      "textEN": "The ceiling is somewhere above the reach of the window light, but looking up, no boundary is visible in the darkness.",
+      "textJA": "窓の光が届かない高さに天井があるはずだが、見上げても暗さの中に境界は見えない。"
     },
     {
       "id": "IND_NOTE_C02",
       "furnitureType": "Note",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "Scrawled on a locker: \"Last day. Finally free.\"",
-      "textJA": "ロッカーに走り書き:「最終日。やっと自由だ」"
+      "textEN": "Steel beams overhead are stained orange with surface rust, but only on their upper face — the underside retains its original color.",
+      "textJA": "頭上の鉄骨が表面錆で橙色に染まっている。ただし錆は上面だけで、下面の鉄は元の色のままだ。"
     },
     {
       "id": "IND_PHOTO_C01",
       "furnitureType": "Photo",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "Blueprint fragment. The structure doesn't match any building nearby.",
-      "textJA": "設計図の断片。近くのどの建物とも一致しない構造だ。"
+      "textEN": "A concrete trench runs the full length of the floor and disappears into the wall at the far end.",
+      "textJA": "床の全長にわたってコンクリートの溝が走り、そのまま奥の壁の中へ消えている。"
     },
     {
       "id": "IND_PHOTO_C02",
       "furnitureType": "Photo",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "Aerial photo of the factory district. A section is blacked out.",
-      "textJA": "工場地区の航空写真。一区画が黒く塗りつぶされている。"
+      "textEN": "A heavy sliding door is jammed half-open on its rail. The gap it leaves is almost exactly the same width as the door itself.",
+      "textJA": "重い引き戸の一枚がレールの途中で噛んで半開きになっている。開いた幅と閉じた幅がほぼ等しい。"
     },
     {
       "id": "IND_CONT_C01",
       "furnitureType": "Container",
       "buildingCategory": "Industrial",
       "rarity": "Common",
-      "textEN": "A toolbox with a false bottom. Empty, but recently used.",
-      "textJA": "二重底の工具箱。空だが、最近使われた形跡がある。"
+      "textEN": "Rainwater has pooled beneath a gap in the roof panels, its surface reflecting the clouds above.",
+      "textJA": "屋根板の隙間の真下に雨水が溜まり、その水面に上空の雲が映っている。"
     },
     {
       "id": "IND_DOC_U01",
       "furnitureType": "Document",
       "buildingCategory": "Industrial",
       "rarity": "Uncommon",
-      "textEN": "Chemical analysis results. One compound is highlighted: \"Not catalogued.\"",
-      "textJA": "化学分析結果。一つの化合物がハイライト:「未登録」"
+      "textEN": "Pipes run along the ceiling in parallel bundles, branching and merging before disappearing into the far wall. The count at one end does not match the other.",
+      "textJA": "配管が天井を束になって平行に走り、分岐と合流を繰り返しながら奥の壁へ消えている。手前と奥とで本数が一致しない。"
     },
     {
       "id": "IND_NOTE_U01",
       "furnitureType": "Note",
       "buildingCategory": "Industrial",
       "rarity": "Uncommon",
-      "textEN": "\"If anyone finds this, the underground level is not on any map.\"",
-      "textJA": "「これを見つけた人へ。地下階はどの図面にも載っていない」"
+      "textEN": "The floor changes from concrete to gridded metal in this section alone. Through the grating, a lower level is barely visible in the dark, but there is no way down.",
+      "textJA": "この区画だけ床がコンクリートから格子状の金属に変わっている。格子の下に暗がりの中で下層が見えるが、そこへ降りる手段はどこにもない。"
     },
     {
       "id": "IND_CONT_R01",
       "furnitureType": "Container",
       "buildingCategory": "Industrial",
       "rarity": "Rare",
-      "textEN": "A sealed drum in a locked room. The label reads: \"Project Meridian — DO NOT OPEN.\"",
-      "textJA": "施錠された部屋の密封ドラム缶。ラベル:「メリディアン計画 — 開封禁止」"
+      "textEN": "A hall so vast that the far wall dissolves into haze. The concrete floor slopes almost imperceptibly toward a central drain, where a thin thread of daylight descends from far above. Along the walls, mineral deposits trace pale lines where water has followed the same paths — and the pattern on one wall mirrors the other exactly.",
+      "textJA": "奥の壁が霞みに溶けるほど広大なホール。コンクリートの床がほぼ気づかないほどの傾斜で中央の排水口へ向かい、はるか上方から細い光の筋が降りている。壁面には水が同じ経路をたどった鉱物の縞が走り、その模様は左右の壁で完全に対称をなしている。"
     },
     {
       "id": "PUB_DOC_C01",
       "furnitureType": "Document",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "City council minutes. A motion to \"relocate all residents\" was tabled.",
-      "textJA": "市議会議事録。「全住民の移転」動議が棚上げされている。"
+      "textEN": "Marble floor tiles, cracked but still fitted tightly, the fracture lines adding a new pattern over the old.",
+      "textJA": "大理石の床タイルが割れてはいるが隙間なく嵌まったままで、亀裂の線だけが新しい模様として加わっている。"
     },
     {
       "id": "PUB_DOC_C02",
       "furnitureType": "Document",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "A public notice about water quality testing. Results section is blank.",
-      "textJA": "水質検査に関する公告。検査結果の欄が空白だ。"
+      "textEN": "Columns of dusty light fall through high arched windows, converging on a single point on the floor.",
+      "textJA": "高いアーチ窓から埃をまとった光の柱が差し込み、床のある一点に集まっている。"
     },
     {
       "id": "PUB_NOTE_C01",
       "furnitureType": "Note",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "A librarian's note: \"Section 7 books moved to restricted. Do not ask why.\"",
-      "textJA": "司書のメモ:「第7区画の本は制限区域へ移動。理由を聞くな」"
+      "textEN": "Plaster molding along the ceiling has chipped at the corners, and the broken surfaces reveal a different layer of plaster beneath.",
+      "textJA": "天井に沿った漆喰のモールディングが角で欠けている。欠けた断面の下に、別の層の漆喰が覗いている。"
     },
     {
       "id": "PUB_NOTE_C02",
       "furnitureType": "Note",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "\"Lost and found has been sealed. By order of the director.\"",
-      "textJA": "「遺失物保管室は封鎖された。所長命令により」"
+      "textEN": "The stone stairs are hollowed at their centers from wear, and the hollows grow shallower toward the upper floors.",
+      "textJA": "石の階段の中央が摩耗で凹んでいる。その凹みは上の階へ行くほど浅くなる。"
     },
     {
       "id": "PUB_PHOTO_C01",
       "furnitureType": "Photo",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "A framed photo of the building's dedication ceremony. The mayor looks uneasy.",
-      "textJA": "建物の落成式の額縁写真。市長の表情が冴えない。"
+      "textEN": "The corridor stretches beyond the reach of the light, and whether anything lies at its end is impossible to tell.",
+      "textJA": "光の届く範囲よりも先まで廊下が延びており、その先に何があるのかは分からない。"
     },
     {
       "id": "PUB_PHOTO_C02",
       "furnitureType": "Photo",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "Old newspaper clipping about a fire. This building was rebuilt.",
-      "textJA": "火災に関する古い新聞の切り抜き。この建物は再建されたものだ。"
+      "textEN": "Iron railings bolted into granite, their patina migrating into the stone itself, leaving dark impressions that mirror the shape of the metal.",
+      "textJA": "花崗岩にボルトで固定された鉄の手摺り。緑青が石にまで移り、金属の形を写し取った染みが花崗岩に刻まれている。"
     },
     {
       "id": "PUB_CONT_C01",
       "furnitureType": "Container",
       "buildingCategory": "Public",
       "rarity": "Common",
-      "textEN": "A filing cabinet, drawers pulled out. Most folders are empty.",
-      "textJA": "引き出しが引き抜かれたファイルキャビネット。ほとんどのフォルダが空だ。"
+      "textEN": "An alcove set deep into the wall, its back lost in shadow. Even from directly in front, the depth cannot be gauged.",
+      "textJA": "壁に深く設けられた壁龕の奥が影に沈んでいる。真正面からでも奥行きが判然としない。"
     },
     {
       "id": "PUB_DOC_U01",
       "furnitureType": "Document",
       "buildingCategory": "Public",
       "rarity": "Uncommon",
-      "textEN": "An evacuation plan dated two years ago. It was never distributed.",
-      "textJA": "2年前の避難計画。一度も配布されなかったようだ。"
+      "textEN": "The ceiling rises to a dome, its plaster stained in concentric rings where moisture has gathered and dried repeatedly. Each ring is a different shade.",
+      "textJA": "天井がドーム状に高まり、漆喰に同心円状の染みが浮かんでいる。湿気が幾度も集まっては乾いた痕跡で、環のひとつひとつが異なる濃さを持っている。"
     },
     {
       "id": "PUB_NOTE_U01",
       "furnitureType": "Note",
       "buildingCategory": "Public",
       "rarity": "Uncommon",
-      "textEN": "\"The archives below are off-limits. The elevator code has been changed.\"",
-      "textJA": "「地下書庫は立入禁止。エレベーターの暗証番号は変更済み」"
+      "textEN": "A section of the carved stone balustrade overlooking the main hall is missing, as though it had never been there. The remaining edges are smooth, showing no sign of breakage.",
+      "textJA": "大広間を見下ろすギャラリーの石の欄干から一区画がまるで最初からなかったかのように抜け落ちている。残った部分の端は滑らかで、破壊の痕跡がない。"
     },
     {
       "id": "PUB_CONT_R01",
       "furnitureType": "Container",
       "buildingCategory": "Public",
       "rarity": "Rare",
-      "textEN": "A time capsule behind a loose brick. Contains a list of names and the word \"remember.\"",
-      "textJA": "緩んだ煉瓦の裏のタイムカプセル。名前のリストと「忘れるな」の文字。"
+      "textEN": "A rotunda with unusual acoustics — the shape of the domed ceiling gathers vibrations from one side and delivers them precisely to the opposite wall. The floor is a mosaic of dark and pale stone, half-concealed by a fine white powder sifting down from the crumbling plaster above, slowly forming a new stratum.",
+      "textJA": "特異な音響を持つロタンダ。ドーム天井の形状が、片側の空気の振動を反対側の壁面へと正確に集める。床は濃淡の石を組んだモザイクだが、上部で崩壊が進む漆喰から降り積もった白い微粉がその紋様を半ば覆い隠し、新たな地層をつくりつつある。"
     },
     {
       "id": "SPC_DOC_C01",
       "furnitureType": "Document",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "A research log. The handwriting becomes erratic near the end.",
-      "textJA": "研究記録。終盤に向かって筆跡が乱れていく。"
+      "textEN": "The walls here are a different material from the rest of the building, and there are no seams anywhere.",
+      "textJA": "ここだけ壁の素材が建物の他の部分と異なり、継ぎ目がどこにもない。"
     },
     {
       "id": "SPC_DOC_C02",
       "furnitureType": "Document",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "A visitor register. The same name appears every day for three months.",
-      "textJA": "来訪者台帳。同じ名前が3ヶ月間毎日記録されている。"
+      "textEN": "A room with no right angles — every corner is slightly off true, yet the opposing walls run perfectly parallel.",
+      "textJA": "直角のない部屋。どの角もわずかにずれているのに、対面する壁は完全な平行を保っている。"
     },
     {
       "id": "SPC_NOTE_C01",
       "furnitureType": "Note",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "\"Readings are off the chart. Recalibrate? No — the instruments are fine.\"",
-      "textJA": "「計測値が振り切れている。再校正？いや、計器は正常だ」"
+      "textEN": "The walls in the adjacent rooms are damp with condensation, but in this section every surface is completely dry.",
+      "textJA": "隣接する部屋では結露が生じているのに、この区画の壁面だけは完全に乾いている。"
     },
     {
       "id": "SPC_NOTE_C02",
       "furnitureType": "Note",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "\"Subject 12 responded differently. See attached.\" No attachment found.",
-      "textJA": "「被験者12は異なる反応を示した。添付参照」添付は見当たらない。"
+      "textEN": "A faint hum rises from beneath the floorboards. The vibration does not transmit to any other part of the building.",
+      "textJA": "床板の下からかすかな唸りが昇ってきている。その振動は建物の他のどこにも伝わっていない。"
     },
     {
       "id": "SPC_PHOTO_C01",
       "furnitureType": "Photo",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "A photo of an excavation site. The soil layer shows something metallic.",
-      "textJA": "発掘現場の写真。土壌層に金属的なものが見える。"
+      "textEN": "A copper-green stain spreads from a single point on the ceiling. No copper is used anywhere in the building.",
+      "textJA": "天井の一点から銅緑色の染みが広がっている。建物のどこにも銅は使われていない。"
     },
     {
       "id": "SPC_PHOTO_C02",
       "furnitureType": "Photo",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "A telescope pointed at the horizon. The film captured nothing visible.",
-      "textJA": "地平線を向いた望遠鏡。フィルムには何も映っていない。"
+      "textEN": "A window that faces the wall of the next room rather than the outside. The frame and the surrounding masonry are of the same material.",
+      "textJA": "外ではなく隣室の壁に面した窓。窓枠と周囲の壁が同じ建材でできている。"
     },
     {
       "id": "SPC_CONT_C01",
       "furnitureType": "Container",
       "buildingCategory": "Special",
       "rarity": "Common",
-      "textEN": "A specimen case. The label says \"Sample 7\" but it's been cleaned out.",
-      "textJA": "標本ケース。ラベルは「サンプル7」だが中身は空だ。"
+      "textEN": "A seam in the floor where two different foundations meet. The tile grid on one side is rotated a few degrees from the other.",
+      "textJA": "二つの異なる基礎が出会う床の継ぎ目。片側のタイルの目地方向が、もう片側から数度だけ回転している。"
     },
     {
       "id": "SPC_DOC_U01",
       "furnitureType": "Document",
       "buildingCategory": "Special",
       "rarity": "Uncommon",
-      "textEN": "A classified report with heavy redactions. One visible word: \"Meridian.\"",
-      "textJA": "黒塗りだらけの機密報告書。読める単語がひとつ:「メリディアン」"
+      "textEN": "There is no visible ventilation, yet the air here moves. No path can be found for where it enters or where it goes.",
+      "textJA": "目に見える換気口がないにもかかわらず、ここでは空気が動いている。どこから流入しどこへ抜けるのか、経路が存在しない。"
     },
     {
       "id": "SPC_NOTE_U01",
       "furnitureType": "Note",
       "buildingCategory": "Special",
       "rarity": "Uncommon",
-      "textEN": "\"The frequency changed on the 15th. Everything after that is different.\"",
-      "textJA": "「15日に周波数が変わった。それ以降すべてが違う」"
+      "textEN": "A staircase leading down ends abruptly at a wall of poured concrete. The surface still bears the grain of its wooden formwork, sharp and unweathered.",
+      "textJA": "下へ向かう階段が打ちっ放しのコンクリート壁で唐突に終わっている。壁の表面には型枠の木目がくっきりと残っている。"
     },
     {
       "id": "SPC_PHOTO_U01",
       "furnitureType": "Photo",
       "buildingCategory": "Special",
       "rarity": "Uncommon",
-      "textEN": "A satellite image. A faint geometric pattern covers the entire district.",
-      "textJA": "衛星画像。この地区全体に微かな幾何学模様が広がっている。"
+      "textEN": "At a seam, the ceiling drops by exactly one step and the plaster gives way to raw concrete. The walls on the lower side are set farther apart than those on the higher.",
+      "textJA": "継ぎ目を境に天井がちょうど一段分下がり、漆喰が打ちっ放しのコンクリートに変わっている。低い側の壁は高い側より間隔が広い。"
     },
     {
       "id": "SPC_CONT_R01",
       "furnitureType": "Container",
       "buildingCategory": "Special",
       "rarity": "Rare",
-      "textEN": "A vault sealed with an unknown mechanism. Inside: a single journal. \"Day 1 of the new world.\"",
-      "textJA": "未知の機構で封印された金庫。中には日誌が一冊。「新世界の1日目」"
+      "textEN": "A small chamber below the main floor, accessible through a gap where the foundations have shifted apart. Its walls are rough-cut stone rather than the brick of the levels above, and the ceiling is vaulted in a style entirely unlike the rest of the structure. The air is perfectly still, and the stone surfaces carry a faint sheen of moisture.",
+      "textJA": "基礎がずれてできた隙間から入れる、メインフロアより低い位置の小部屋。壁は上階の煉瓦ではなく粗く切り出された石で、天井は建物の他のどこにもない様式のヴォールトを描いている。空気は完全に静止し、石の表面がわずかに湿りを帯びている。"
     },
     {
       "id": "ANY_DOC_C01",
       "furnitureType": "Document",
       "buildingCategory": null,
       "rarity": "Common",
-      "textEN": "A page torn from a logbook. Only the date is legible.",
-      "textJA": "台帳から破り取られた1ページ。日付だけが読める。"
+      "textEN": "Dust is visible only within a shaft of light from above — beyond its edges, the air appears transparent.",
+      "textJA": "上方から差す光の筋の中にだけ埃が見え、その境界の外では空気が透明に戻る。"
     },
     {
       "id": "ANY_NOTE_C01",
       "furnitureType": "Note",
       "buildingCategory": null,
       "rarity": "Common",
-      "textEN": "\"Remember: east exit only.\" Written in haste.",
-      "textJA": "「覚えておけ:東口だけだ」急いで書かれている。"
+      "textEN": "A draft rises steadily from somewhere below. It cannot be traced to any particular gap in the floor.",
+      "textJA": "どこか下方から隙間風が絶えず昇ってきている。その流れは床のどの隙間からとも特定できない。"
     },
     {
       "id": "ANY_PHOTO_C01",
       "furnitureType": "Photo",
       "buildingCategory": null,
       "rarity": "Common",
-      "textEN": "A blurry photo. Someone was moving when the shutter clicked.",
-      "textJA": "ブレた写真。シャッターの瞬間に誰かが動いた。"
+      "textEN": "Paint is flaking from the doorframe in dry curls. The exposed surface beneath is a different color on each side of the frame.",
+      "textJA": "ドア枠から塗料が乾いた薄片になって剥がれている。剥がれた下の面はドア枠の表と裏で色が異なる。"
     },
     {
       "id": "ANY_CONT_C01",
       "furnitureType": "Container",
       "buildingCategory": null,
       "rarity": "Common",
-      "textEN": "An old backpack. Whoever left it was in a hurry.",
-      "textJA": "古いリュックサック。置いていった人は急いでいたようだ。"
+      "textEN": "Condensation beads on a pipe running along the baseboard. The droplets cling only to the lower half.",
+      "textJA": "巾木に沿う配管に結露の水滴がついている。水滴は配管の下半分にだけ集中している。"
     },
     {
       "id": "ANY_DOC_U01",
       "furnitureType": "Document",
       "buildingCategory": null,
       "rarity": "Uncommon",
-      "textEN": "A hand-drawn map of underground passages. Some routes are crossed out.",
-      "textJA": "手描きの地下通路の地図。いくつかの経路が消されている。"
+      "textEN": "A room where the acoustics shift at the threshold. Echoes from outside cease at the line of the doorway, and the interior holds a silence of its own.",
+      "textJA": "敷居を境に音響が切り替わる部屋。外の反響が入口の線で途絶え、内部は独自の静寂を保っている。"
     },
     {
       "id": "ANY_NOTE_U01",
       "furnitureType": "Note",
       "buildingCategory": null,
       "rarity": "Uncommon",
-      "textEN": "\"If you're reading this, don't trust the broadcasts.\"",
-      "textJA": "「これを読んでいるなら、放送を信じるな」"
+      "textEN": "Two walls of different thickness meet at an angle just short of ninety degrees, leaving a narrow wedge of shadow between them. Within that shadow, the wall surface is smoother than anywhere else.",
+      "textJA": "厚さの違う二枚の壁が直角からわずかにずれた角度で交わり、間に細い楔形の影を生んでいる。その影の中だけ、壁の表面が周囲より滑らかだ。"
     },
     {
       "id": "ANY_PHOTO_R01",
       "furnitureType": "Photo",
       "buildingCategory": null,
       "rarity": "Rare",
-      "textEN": "A photo of the signal tower before it was built. The foundation was already there.",
-      "textJA": "建設前の信号塔の写真。基礎はすでにそこにあった。"
+      "textEN": "A skylight in an interior room with no access to the roof. The light must pass through several layers of structure before arriving here — it is soft and faintly blue. On the wall below, a smooth gradient of discoloration follows the shape of the light as it shifts across the surface.",
+      "textJA": "屋上に通じていない内部の部屋にある天窓。光はここに届くまでに何層もの構造を透過しているらしく、柔らかくわずかに青みを帯びている。その下の壁面は、光が面を横切る軌跡に沿って滑らかな階調で変色している。"
     }
   ]
 }
