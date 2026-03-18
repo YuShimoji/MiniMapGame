@@ -5,6 +5,7 @@ namespace MiniMapGame.MiniGame
 {
     /// <summary>
     /// Attached to room floors. Detects player entry and starts the corresponding mini-game.
+    /// Currently frozen (GameLoop redesign pending SP-001).
     /// </summary>
     [RequireComponent(typeof(BoxCollider))]
     public class RoomTrigger : MonoBehaviour
@@ -36,15 +37,15 @@ namespace MiniMapGame.MiniGame
         }
 
         /// <summary>
-        /// Maps RoomType to MiniGameType. Returns null for rooms without mini-games.
+        /// Maps InteriorRoomType to MiniGameType. Returns null for rooms without mini-games.
         /// </summary>
-        public static MiniGameType? GetGameType(RoomType roomType)
+        public static MiniGameType? GetGameType(InteriorRoomType roomType)
         {
             return roomType switch
             {
-                RoomType.Boss => MiniGameType.TimingCombat,
-                RoomType.Treasure => MiniGameType.MemoryMatch,
-                RoomType.Alcove => MiniGameType.TrapDodge,
+                InteriorRoomType.Vault => MiniGameType.MemoryMatch,
+                InteriorRoomType.SecretRoom => MiniGameType.TrapDodge,
+                InteriorRoomType.Laboratory => MiniGameType.TimingCombat,
                 _ => null
             };
         }

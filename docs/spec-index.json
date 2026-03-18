@@ -228,10 +228,10 @@
     "id": "SP-026",
     "title": "Interior System v2",
     "status": "partial",
-    "pct": 94,
+    "pct": 98,
     "cat": "core",
     "file": "docs/specs/interior-system-v2.md",
-    "summary": "建物内部v2: Phase1-3完了 + 家具配置MVP実装。カテゴリ別間取り生成、マルチフロア描画、door gap world補正、current-floor維持LOD、家具RNGサブシード分離。残: レガシー削除/RoomTrigger更新/style拡張"
+    "summary": "建物内部v2: Phase1-3完了 + 家具配置MVP + レガシークリーンアップ完了。カテゴリ別間取り生成、マルチフロア描画、door gap world補正、current-floor維持LOD、家具RNGサブシード分離。残: style拡張(InteriorStyle→生成バイアス)"
   },
   {
     "id": "SP-027",

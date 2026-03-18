@@ -1,22 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
-using MiniMapGame.MiniGame;
-
 namespace MiniMapGame.Interior
 {
     /// <summary>
     /// Renders InteriorMapData as 3D primitives.
     /// Supports multi-floor rendering with per-floor visibility toggle.
-    /// New data path: InteriorFloorData with InteriorRoom/InteriorDoor/InteriorCorridor/InteriorFurniture.
-    /// Legacy data path: RoomNode/CorridorEdge (single floor, backward compatible).
+    /// Uses InteriorFloorData with InteriorRoom/InteriorDoor/InteriorCorridor/InteriorFurniture.
     /// </summary>
     public class InteriorRenderer : MonoBehaviour
     {
         [Header("Materials")]
         public Material wallMaterial;
-
-        [Header("MiniGame")]
-        public MiniGameManager miniGameManager;
 
         [Header("Settings")]
         public float floorY = 0.02f;
@@ -80,18 +74,6 @@ namespace MiniMapGame.Interior
             { InteriorRoomType.Restroom, new Color(0.6f, 0.65f, 0.7f) },
             { InteriorRoomType.Utility, new Color(0.48f, 0.48f, 0.5f) },
         };
-
-        // Legacy colors for backward compat
-#pragma warning disable CS0618
-        private static readonly Dictionary<RoomType, Color> LegacyRoomColors = new()
-        {
-            { RoomType.Entrance, new Color(0.2f, 0.7f, 0.3f) },
-            { RoomType.Boss, new Color(0.8f, 0.2f, 0.2f) },
-            { RoomType.Treasure, new Color(0.9f, 0.75f, 0.2f) },
-            { RoomType.Alcove, new Color(0.45f, 0.45f, 0.5f) },
-            { RoomType.Normal, new Color(0.6f, 0.65f, 0.7f) }
-        };
-#pragma warning restore CS0618
 
         private static readonly Color DefaultWallColor = new(0.3f, 0.35f, 0.4f);
         private static readonly Color DefaultCorridorColor = new(0.5f, 0.5f, 0.55f);
@@ -160,37 +142,6 @@ namespace MiniMapGame.Interior
             // Show only ground floor initially
             SetActiveFloor(0);
         }
-
-        /// <summary>
-        /// Legacy single-floor render path. Backward compatible with old InteriorMapData.
-        /// </summary>
-#pragma warning disable CS0618
-        public void Render(InteriorMapData data, Vector3 worldOrigin,
-            string buildingId = null, int seed = 0)
-        {
-            Clear();
-            _currentBuildingId = buildingId;
-            _currentSeed = seed;
-            _activePreset = null;
-            _currentWorldOrigin = worldOrigin;
-
-            // Legacy path: use rooms/corridors properties (triggers Obsolete warning suppressed here)
-            var rooms = data.rooms;
-            var corridors = data.corridors;
-
-            for (int i = 0; i < rooms.Count; i++)
-            {
-                CreateLegacyRoomFloor(rooms[i], worldOrigin);
-                AttachLegacyRoomTrigger(rooms[i], i, worldOrigin);
-            }
-
-            foreach (var room in rooms)
-                CreateLegacyRoomWalls(room, worldOrigin);
-
-            foreach (var corridor in corridors)
-                CreateLegacyCorridorFloor(corridor, rooms, worldOrigin);
-        }
-#pragma warning restore CS0618
 
         public void Clear()
         {
@@ -524,103 +475,6 @@ namespace MiniMapGame.Interior
             go.transform.localScale = new Vector3(width, length, 1f);
         }
 
-        // ===== Legacy rendering (backward compat) =====
-
-#pragma warning disable CS0618
-        private void CreateLegacyRoomFloor(RoomNode room, Vector3 origin)
-        {
-            var go = new GameObject($"RoomFloor_{room.type}");
-            go.transform.SetParent(transform);
-
-            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
-            go.AddComponent<MeshRenderer>().sharedMaterial =
-                GetCachedFloorMaterial(LegacyRoomColors.GetValueOrDefault(room.type, Color.white));
-
-            var pos = InteriorToWorld(room.position, origin);
-            go.transform.position = pos;
-            go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            go.transform.localScale = new Vector3(room.size.x, room.size.y, 1f);
-
-            _spawnedObjects.Add(go);
-        }
-
-        private void CreateLegacyRoomWalls(RoomNode room, Vector3 origin)
-        {
-            var go = new GameObject($"RoomWalls_{room.type}");
-            go.transform.SetParent(transform);
-
-            var lr = go.AddComponent<LineRenderer>();
-            lr.useWorldSpace = true;
-            lr.loop = true;
-            lr.startWidth = wallHeight;
-            lr.endWidth = wallHeight;
-            lr.material = wallMaterial != null ? wallMaterial : GetCachedWallMaterial();
-            lr.startColor = DefaultWallColor;
-            lr.endColor = DefaultWallColor;
-
-            var center = InteriorToWorld(room.position, origin);
-            float hw = room.size.x * 0.5f;
-            float hh = room.size.y * 0.5f;
-            float wy = center.y + 0.05f;
-
-            lr.positionCount = 4;
-            lr.SetPosition(0, new Vector3(center.x - hw, wy, center.z - hh));
-            lr.SetPosition(1, new Vector3(center.x + hw, wy, center.z - hh));
-            lr.SetPosition(2, new Vector3(center.x + hw, wy, center.z + hh));
-            lr.SetPosition(3, new Vector3(center.x - hw, wy, center.z + hh));
-
-            _spawnedObjects.Add(go);
-        }
-
-        private void CreateLegacyCorridorFloor(CorridorEdge corridor, List<RoomNode> rooms, Vector3 origin)
-        {
-            var roomA = rooms[corridor.roomA];
-            var roomB = rooms[corridor.roomB];
-
-            var posA = InteriorToWorld(roomA.position, origin);
-            var posB = InteriorToWorld(roomB.position, origin);
-
-            var midpoint = (posA + posB) * 0.5f;
-            float length = Vector3.Distance(posA, posB);
-            float angle = Mathf.Atan2(posB.x - posA.x, posB.z - posA.z) * Mathf.Rad2Deg;
-
-            var go = new GameObject($"Corridor_{corridor.roomA}_{corridor.roomB}");
-            go.transform.SetParent(transform);
-
-            go.AddComponent<MeshFilter>().sharedMesh = GetSharedQuadMesh();
-            go.AddComponent<MeshRenderer>().sharedMaterial = GetCachedFloorMaterial(DefaultCorridorColor);
-
-            go.transform.position = new Vector3(midpoint.x, floorY - 0.001f, midpoint.z);
-            go.transform.rotation = Quaternion.Euler(90f, angle, 0f);
-            go.transform.localScale = new Vector3(corridor.width, length, 1f);
-
-            _spawnedObjects.Add(go);
-        }
-
-        private void AttachLegacyRoomTrigger(RoomNode room, int roomIndex, Vector3 origin)
-        {
-            if (miniGameManager == null) return;
-            var gameType = RoomTrigger.GetGameType(room.type);
-            if (gameType == null) return;
-
-            var go = new GameObject($"RoomTrigger_{room.type}_{roomIndex}");
-            go.transform.SetParent(transform);
-            go.transform.position = InteriorToWorld(room.position, origin);
-
-            var col = go.AddComponent<BoxCollider>();
-            col.isTrigger = true;
-            col.size = new Vector3(room.size.x * 0.6f, 2f, room.size.y * 0.6f);
-
-            var trigger = go.AddComponent<RoomTrigger>();
-            trigger.miniGameManager = miniGameManager;
-            trigger.gameType = gameType.Value;
-            trigger.roomIndex = roomIndex;
-            trigger.buildingId = _currentBuildingId ?? "";
-            trigger.seed = _currentSeed + roomIndex;
-
-            _spawnedObjects.Add(go);
-        }
-#pragma warning restore CS0618
 
         // ===== Helpers =====
 

@@ -15,82 +15,6 @@ namespace MiniMapGame.Interior
         public int totalRoomCount;
         public int totalDiscoveryCount;
         public int totalFurnitureCount;
-
-        // Legacy compatibility: flat room/corridor access for single-floor use
-        [Obsolete("Use floors[0].rooms instead")]
-        public List<RoomNode> rooms
-        {
-            get
-            {
-                if (floors.Count == 0) return _legacyRooms;
-                var list = new List<RoomNode>();
-                foreach (var r in floors[0].rooms)
-                {
-                    list.Add(new RoomNode
-                    {
-                        position = r.position,
-                        size = r.size,
-                        type = MapLegacyRoomType(r.type)
-                    });
-                }
-                return list;
-            }
-        }
-
-        [Obsolete("Use floors[0].corridors instead")]
-        public List<CorridorEdge> corridors
-        {
-            get
-            {
-                if (floors.Count == 0) return _legacyCorridors;
-                var list = new List<CorridorEdge>();
-                foreach (var c in floors[0].corridors)
-                {
-                    list.Add(new CorridorEdge
-                    {
-                        roomA = c.roomA,
-                        roomB = c.roomB,
-                        width = c.width
-                    });
-                }
-                return list;
-            }
-        }
-
-        [Obsolete("Use discovery system instead")]
-        public List<int> alcoveIndices
-        {
-            get
-            {
-                if (floors.Count == 0) return _legacyAlcoves;
-                var list = new List<int>();
-                if (floors.Count > 0)
-                {
-                    for (int i = 0; i < floors[0].rooms.Count; i++)
-                    {
-                        if (floors[0].rooms[i].type == InteriorRoomType.SecretRoom)
-                            list.Add(i);
-                    }
-                }
-                return list;
-            }
-        }
-
-        // Backing fields for legacy Generate(int seed) path
-        internal List<RoomNode> _legacyRooms = new();
-        internal List<CorridorEdge> _legacyCorridors = new();
-        internal List<int> _legacyAlcoves = new();
-
-        private static RoomType MapLegacyRoomType(InteriorRoomType type)
-        {
-            return type switch
-            {
-                InteriorRoomType.Entrance => RoomType.Entrance,
-                InteriorRoomType.Vault => RoomType.Treasure,
-                InteriorRoomType.SecretRoom => RoomType.Alcove,
-                _ => RoomType.Normal
-            };
-        }
     }
 
     [Serializable]
@@ -147,33 +71,4 @@ namespace MiniMapGame.Interior
         public float scale;
     }
 
-    // ===== Legacy Types (kept for backward compatibility) =====
-
-    [Obsolete("Use InteriorRoom with InteriorRoomType instead")]
-    [Serializable]
-    public struct RoomNode
-    {
-        public Vector2 position;
-        public Vector2 size;
-        public RoomType type;
-    }
-
-    [Obsolete("Use InteriorCorridor instead")]
-    [Serializable]
-    public struct CorridorEdge
-    {
-        public int roomA;
-        public int roomB;
-        public float width;
-    }
-
-    [Obsolete("Use InteriorRoomType instead")]
-    public enum RoomType
-    {
-        Normal,
-        Entrance,
-        Boss,
-        Treasure,
-        Alcove
-    }
 }

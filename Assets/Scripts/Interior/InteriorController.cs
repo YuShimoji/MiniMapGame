@@ -1,15 +1,13 @@
 using UnityEngine;
 using MiniMapGame.Runtime;
 using MiniMapGame.Player;
-using MiniMapGame.MiniGame;
 using MiniMapGame.Data;
 
 namespace MiniMapGame.Interior
 {
     /// <summary>
     /// Controls building entry/exit: generates interior, toggles exterior visibility,
-    /// teleports player, switches camera mode. Supports both v2 (context-aware) and
-    /// legacy (seed-only) generation paths.
+    /// teleports player, switches camera mode.
     /// </summary>
     public class InteriorController : MonoBehaviour
     {
@@ -30,9 +28,6 @@ namespace MiniMapGame.Interior
 
         [Header("Exploration")]
         public ExplorationProgressManager explorationProgress;
-
-        [Header("MiniGame")]
-        public MiniGameManager miniGameManager;
 
         [Header("Interior Camera")]
         public float interiorCameraHeight = 40f;
@@ -66,24 +61,9 @@ namespace MiniMapGame.Interior
             int seed = building.buildingId.GetHashCode();
             var buildingPos = building.transform.position;
 
-            // Try v2 generation path (context-aware)
-            InteriorMapData data;
             InteriorPreset preset = GetInteriorPreset();
-
-            if (building.context.buildingId != null && preset != null)
-            {
-                data = InteriorMapGenerator.Generate(building.context, preset, seed);
-                // Exterior stays visible — roof fades via BuildingFade shader
-                interiorRenderer.Render(data, buildingPos, preset, building.buildingId, seed);
-            }
-            else
-            {
-                // Legacy fallback
-#pragma warning disable CS0618
-                data = InteriorMapGenerator.Generate(seed);
-                interiorRenderer.Render(data, buildingPos, building.buildingId, seed);
-#pragma warning restore CS0618
-            }
+            var data = InteriorMapGenerator.Generate(building.context, preset, seed);
+            interiorRenderer.Render(data, buildingPos, preset, building.buildingId, seed);
 
             // Initialize floor navigation
             if (floorNavigator != null && data.floors.Count > 0)
@@ -115,10 +95,6 @@ namespace MiniMapGame.Interior
         {
             if (!IsInside) return;
             IsInside = false;
-
-            // Abort any active mini-game
-            if (miniGameManager != null)
-                miniGameManager.AbortIfActive();
 
             // Deactivate floor navigation
             if (floorNavigator != null)
@@ -167,42 +143,33 @@ namespace MiniMapGame.Interior
 
         private Vector3 FindEntrancePosition(InteriorMapData data, Vector3 buildingPos)
         {
-            // New path: find Entrance room on ground floor (floorIndex == 0)
-            if (data.floors.Count > 0)
-            {
-                // Find ground floor (floorIndex == 0)
-                int groundIdx = 0;
-                for (int i = 0; i < data.floors.Count; i++)
-                {
-                    if (data.floors[i].floorIndex == 0)
-                    {
-                        groundIdx = i;
-                        break;
-                    }
-                }
+            if (data.floors.Count == 0)
+                return buildingPos;
 
-                var groundFloor = data.floors[groundIdx];
-                foreach (var room in groundFloor.rooms)
+            // Find ground floor (floorIndex == 0)
+            int groundIdx = 0;
+            for (int i = 0; i < data.floors.Count; i++)
+            {
+                if (data.floors[i].floorIndex == 0)
                 {
-                    if (room.type == InteriorRoomType.Entrance)
-                        return buildingPos + new Vector3(room.position.x, 0f, room.position.y);
-                }
-                // Fallback: first room on ground floor
-                if (groundFloor.rooms.Count > 0)
-                {
-                    var first = groundFloor.rooms[0];
-                    return buildingPos + new Vector3(first.position.x, 0f, first.position.y);
+                    groundIdx = i;
+                    break;
                 }
             }
 
-            // Legacy fallback
-#pragma warning disable CS0618
-            if (data.rooms != null && data.rooms.Count > 0)
+            var groundFloor = data.floors[groundIdx];
+            foreach (var room in groundFloor.rooms)
             {
-                var entrance = data.rooms[0];
-                return buildingPos + new Vector3(entrance.position.x, 0f, entrance.position.y);
+                if (room.type == InteriorRoomType.Entrance)
+                    return buildingPos + new Vector3(room.position.x, 0f, room.position.y);
             }
-#pragma warning restore CS0618
+
+            // Fallback: first room on ground floor
+            if (groundFloor.rooms.Count > 0)
+            {
+                var first = groundFloor.rooms[0];
+                return buildingPos + new Vector3(first.position.x, 0f, first.position.y);
+            }
 
             return buildingPos;
         }
@@ -218,33 +185,14 @@ namespace MiniMapGame.Interior
         private float CalculateInteriorExtent(InteriorMapData data)
         {
             float maxDist = 0f;
-
-            // New path
-            if (data.floors.Count > 0)
+            foreach (var floor in data.floors)
             {
-                foreach (var floor in data.floors)
-                {
-                    foreach (var room in floor.rooms)
-                    {
-                        float d = room.position.magnitude + Mathf.Max(room.size.x, room.size.y);
-                        if (d > maxDist) maxDist = d;
-                    }
-                }
-                return maxDist;
-            }
-
-            // Legacy path
-#pragma warning disable CS0618
-            if (data.rooms != null)
-            {
-                foreach (var room in data.rooms)
+                foreach (var room in floor.rooms)
                 {
                     float d = room.position.magnitude + Mathf.Max(room.size.x, room.size.y);
                     if (d > maxDist) maxDist = d;
                 }
             }
-#pragma warning restore CS0618
-
             return maxDist;
         }
     }

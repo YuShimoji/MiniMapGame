@@ -9,7 +9,7 @@
 - Phase 1 (データ層+生成ロジック): **完了**
 - Phase 2 (レンダリング+フロアナビ+可視性制御): **完了**
 - Phase 2.5 (家具配置MVP + 発見プロップ可視化): **完了**
-- Phase 3 (統合パイプライン): **完了**（レガシークリーンアップは未実施）
+- Phase 3 (統合パイプライン): **完了**（レガシークリーンアップ完了）
 
 ---
 
@@ -66,7 +66,7 @@
 - `InteriorCorridor` struct: roomA, roomB, width, waypoints
 - `InteriorFurniture` struct: roomId, type, position, angle, scale
 
-後方互換: レガシー型 (RoomNode, CorridorEdge, RoomType) を `[Obsolete]` で残存。旧 `Generate(int seed)` パスも動作。
+レガシー型 (RoomNode, CorridorEdge, RoomType) および旧 `Generate(int seed)` パスは削除済み。v2 context-aware API のみ。
 
 ### 1.5 間取り生成ストラテジー
 
@@ -191,11 +191,13 @@ InteriorRenderer.Render(data)
 - MapPreset.defaultInteriorPreset を参照
 - フロアナビゲーション初期化
 
-### 3.3 レガシークリーンアップ (未実施)
+### 3.3 レガシークリーンアップ (完了)
 - `[Obsolete]` 型の削除（RoomNode, CorridorEdge, RoomType）
 - 旧 `Generate(int seed)` パスの削除
-- InteriorRendererの旧 `Render` シグネチャ削除
-- RoomTriggerの新InteriorRoomType対応
+- InteriorRendererの旧 `Render` シグネチャ + レガシーレンダリングヘルパー削除
+- InteriorControllerのレガシーフォールバック分岐削除
+- RoomTrigger.GetGameType を InteriorRoomType 対応に更新 (Vault→MemoryMatch, SecretRoom→TrapDodge, Laboratory→TimingCombat)
+- InteriorRenderer/InteriorController から MiniGameManager 参照を除去 (MiniGame凍結中)
 
 ### 3.4 実装済みファイル一覧
 
