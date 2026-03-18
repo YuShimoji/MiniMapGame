@@ -62,6 +62,13 @@ namespace MiniMapGame.Interior
             var buildingPos = building.transform.position;
 
             InteriorPreset preset = GetInteriorPreset();
+            if (preset == null)
+            {
+                Debug.LogWarning("[InteriorController] No InteriorPreset found. Assign defaultInteriorPreset on MapPreset.");
+                IsInside = false;
+                return;
+            }
+
             var data = InteriorMapGenerator.Generate(building.context, preset, seed);
             interiorRenderer.Render(data, buildingPos, preset, building.buildingId, seed);
 
