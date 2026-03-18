@@ -6,20 +6,21 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior実装完了 + Blocker全修正 → Unity手動検証待ち）
-直近の状態 (2026-03-18):
+現フェーズ: α（3系統実装完了 → Unity手動検証待ち）
+直近の状態 (2026-03-18 session 5 handoff):
 
-- SP-060/061/062: 実装完了、Blocker 2件修正済み (GameLoop無効化 + 建物ハイライト)
-- InteriorFeedbackUI: トースト通知 + フロアインジケーター追加済み
-- BuildingFade.shader: Shadows.hlslインクルード修正済み
-- 建物近接ハイライト: 色変化+emission、[E]キーヒント
-- origin/master: f748a17、ローカル同期済み
-- ローカル未ステージ: マテリアル.mat 11件 (Unity Editor自動変更)
+- SP-060/061/062: Interior実装完了、Blocker修正済み、コード事前チェック7項目全PASS
+- SP-020 Layer 1: DiscoveryTextSystem + 60件テキスト(v2空間客観描写) + Toast rarity色分け 実装済み
+- SP-001: Sandbox+Quest仕様策定済み (draft/0%, game-loop-sandbox-quest.md)
+- discovery-text-policy.md: テキスト方針文書新規 (排除項目/文体/カテゴリ別空間質/レアリティ=解像度)
+- REFRESH自己診断: 仕様策定偏重を検出、手動検証フェーズへ移行決定
+- origin/master: af4cceb、push済み
+- 検証チェックリスト: debug-setup.md に3系統分追加済み
 
 次の作業:
-1. Unity再Bootstrap → Interior統合手動検証 (入場→Discovery→ドア→階移動→メニュー→退出→セーブロード)
-2. SP-032 Slice 5 手動検証 (4preset x 2theme)
-3. 検証結果に基づく修正 or SP-026残り6%消化
+1. Unity Bootstrap → 手動検証3系統 (Interior統合 / SP-032 Slice 5 / SP-020 Layer 1)
+2. 検証結果に基づく修正
+3. SP-001 Phase 1実装 or SP-020 Layer 2実装
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
