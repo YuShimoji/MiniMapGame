@@ -173,8 +173,8 @@
   {
     "id": "SP-020",
     "title": "探索体験ポリッシュ",
-    "status": "draft",
-    "pct": 0,
+    "status": "partial",
+    "pct": 30,
     "cat": "ui",
     "file": "docs/specs/exploration-experience-polish.md",
     "summary": "Layer 1: 発見物テキスト断片(カテゴリ別60エントリ+レアリティ3段階+Toast拡張+収集一覧)。Layer 2: マップ上探索可視化(建物マーカー5状態+カテゴリアイコン+ミニマップ連携+距離制御)。Layer 3: 報酬システム(将来)"

@@ -116,6 +116,7 @@ Assets/
                     InteriorEvents, DiscoveryInteractable,
                     DoorInteractable, StairInteractable,
                     InteriorInteractionManager, InteriorFurniturePlanner,
+                    DiscoveryRarity, DiscoveryTextSystem,
                     BuildingExplorationRecord,
                     ExplorationProgressManager, ExplorationMenuUI,
                     FloorPlanGenerators/ (Commercial, Industrial,
