@@ -6,18 +6,19 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 現フェーズ: 地形生成の視覚品質向上 → 発見物配置 → ゲームループ再設計
 
 ## PROJECT CONTEXT
-現フェーズ: α（Interior blocker全修正済み → 再Bootstrap + 手動検証待ち）
+現フェーズ: α（Interior実装完了 + Blocker全修正 → Unity手動検証待ち）
 直近の状態 (2026-03-18):
 
-- SP-060/061/062 blocker 2件とも修正済み
-  - Blocker 1 (77f6b88): GameLoop残存オブジェクト自動無効化
-  - Blocker 2 (380a877): 建物近接ハイライト (色変化+emission)
-- origin/master: f9e9f90、ローカル: 380a877 (+4 commits)
+- SP-060/061/062: 実装完了、Blocker 2件修正済み (GameLoop無効化 + 建物ハイライト)
+- InteriorFeedbackUI: トースト通知 + フロアインジケーター追加済み
+- BuildingFade.shader: Shadows.hlslインクルード修正済み
+- 建物近接ハイライト: 色変化+emission、[E]キーヒント
+- origin/master: f748a17、ローカル同期済み
 
 次の作業:
-1. Unity再Bootstrap → Interior手動検証を再実施
-2. SP-032 Slice 5 手動検証
-3. push
+1. Unity再Bootstrap → Interior統合手動検証 (入場→Discovery→ドア→階移動→メニュー→退出→セーブロード)
+2. SP-032 Slice 5 手動検証 (4preset x 2theme)
+3. 検証結果に基づく修正 or SP-026残り6%消化
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
@@ -110,6 +111,12 @@ Assets/
                     InteriorPreset, InteriorRoomType, FurnitureType,
                     FloorNavigator, FloorPlanFactory, FloorPlanUtils,
                     IFloorPlanGenerator,
+                    IInteriorInteractable, InteriorSessionState,
+                    InteriorEvents, DiscoveryInteractable,
+                    DoorInteractable, StairInteractable,
+                    InteriorInteractionManager, InteriorFurniturePlanner,
+                    BuildingExplorationRecord,
+                    ExplorationProgressManager, ExplorationMenuUI,
                     FloorPlanGenerators/ (Commercial, Industrial,
                       Residential, Special)
     GameLoop/       GameLoopController, GameState, PlayerStats,
@@ -125,7 +132,8 @@ Assets/
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
                     RoadProfileCreator, InteriorDebugPreview,
                     InteriorPresetCreator
-  Shaders/          GridGround.shader, Water.shader, Road.shader
+  Shaders/          GridGround.shader, Water.shader, Road.shader,
+                    BuildingFade.shader
   Resources/
     Presets/        Preset_Coastal.asset 等
     Themes/         Theme_Dark.asset, Theme_Parchment.asset

@@ -173,11 +173,11 @@
   {
     "id": "SP-020",
     "title": "探索体験ポリッシュ",
-    "status": "todo",
+    "status": "draft",
     "pct": 0,
     "cat": "ui",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "発見物エフェクト、探索UI、地形ビジュアル改善"
+    "file": "docs/specs/exploration-experience-polish.md",
+    "summary": "Layer 1: 発見物テキスト断片(カテゴリ別60エントリ+レアリティ3段階+Toast拡張+収集一覧)。Layer 2: マップ上探索可視化(建物マーカー5状態+カテゴリアイコン+ミニマップ連携+距離制御)。Layer 3: 報酬システム(将来)"
   },
   {
     "id": "SP-021",
@@ -317,28 +317,28 @@
   {
     "id": "SP-060",
     "title": "Interior Interaction System",
-    "status": "wip",
-    "pct": 80,
+    "status": "partial",
+    "pct": 95,
     "cat": "core",
     "file": "docs/specs/interior-interaction.md",
-    "summary": "建物内Discovery収集+ドア操作+フィードバックUI。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。InteriorFeedbackUI(トースト通知+フロアインジケーター)、建物近接ハイライト追加。残: 手動検証"
+    "summary": "建物内Discovery収集+ドア操作+フィードバックUI。鍵-ドア1:1紐づけ、隠しドア近接出現、DoorUnlockMethod拡張設計。InteriorFeedbackUI(トースト通知+フロアインジケーター)、建物近接ハイライト追加。Blocker全修正済み。残: Unity実機手動検証"
   },
   {
     "id": "SP-061",
     "title": "Exploration Progress Tracking",
-    "status": "wip",
-    "pct": 85,
+    "status": "partial",
+    "pct": 95,
     "cat": "core",
     "file": "docs/specs/exploration-progress.md",
-    "summary": "建物探索の永続記録。マップ上マーカー、フロア踏破n/n、重要アイテムn/n、鍵/ドア状態表示、Tab探索メニュー、SaveManager連携。残: 手動確認"
+    "summary": "建物探索の永続記録。マップ上マーカー、フロア踏破n/n、重要アイテムn/n、鍵/ドア状態表示、Tab探索メニュー、SaveManager連携。実装完了・Blocker修正済み。残: Unity実機手動検証"
   },
   {
     "id": "SP-062",
     "title": "Floor Navigation Interaction",
-    "status": "wip",
-    "pct": 90,
+    "status": "partial",
+    "pct": 95,
     "cat": "core",
     "file": "docs/specs/floor-navigation-interaction.md",
-    "summary": "StairInteractable実装。Stairwell部屋にUp/Downインタラクタブル自動生成、ChangeFloor経由でフロア切替+テレポート。残: 手動確認"
+    "summary": "StairInteractable実装。Stairwell部屋にUp/Downインタラクタブル自動生成、ChangeFloor経由でフロア切替+テレポート。実装完了・Blocker修正済み。残: Unity実機手動検証"
   }
 ]
