@@ -1,5 +1,8 @@
 # Exploration Progress Tracking (SP-061)
 
+**Status**: partial
+**実装率**: 95% (コード完了、Unity手動検証待ち)
+
 ## Overview
 
 建物探索の進捗を記録・表示するシステム。

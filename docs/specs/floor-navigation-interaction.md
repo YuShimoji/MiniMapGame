@@ -1,5 +1,8 @@
 # Floor Navigation Interaction (SP-062)
 
+**Status**: partial
+**実装率**: 95% (コード完了、Unity手動検証待ち)
+
 ## Overview
 
 階段部屋（Stairwell）でのフロア移動をインタラクション化する。

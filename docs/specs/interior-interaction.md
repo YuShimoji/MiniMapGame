@@ -1,5 +1,8 @@
 # Interior Interaction System (SP-060)
 
+**Status**: partial
+**実装率**: 95% (コード完了、Unity手動検証待ち)
+
 ## Overview
 
 建物内部でプレイヤーが Discovery アイテムを収集し、ドアを操作する
