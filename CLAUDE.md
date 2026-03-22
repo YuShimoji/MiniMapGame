@@ -98,7 +98,7 @@ Assets/
                     MapDecoration, DecorationType, WaterBodyType, WaterBodyData,
                     HillData, HillCluster, ClusterType, SlopeProfile,
                     NodeType, GeneratorType, BuildingCategory, ShopSubtype,
-                    InteriorBuildingContext
+                    InteriorBuildingContext, BuildingMarkerState
     Core/           SeededRng, SpatialHash, MapGenUtils, MapAnalyzer,
                     TerrainGenerator, BuildingPlacer, BuildingClassifier,
                     DecorationPlacer, BridgeTunnelDetector, ElevationMap,
@@ -111,7 +111,8 @@ Assets/
                     DecorationSpawner, PostProcessingManager,
                     AmbientParticleController,
                     GroundSemanticMaskBaker, GroundSemanticMaskSet,
-                    GroundSurfacePresetDefaults
+                    GroundSurfacePresetDefaults,
+                    BuildingMarkerManager
     Interior/       InteriorMapGenerator, InteriorMapData,
                     InteriorRenderer, InteriorController,
                     InteriorVisibilityController, InteriorDebugSpawner,
@@ -134,7 +135,8 @@ Assets/
     Player/         PlayerMovement, CameraController
     UI/             MapControlUI, PlayerHUD, MiniMapController,
                     WorldPositionTrackerUI, LabelController,
-                    VerificationChecklistUI, InteriorFeedbackUI
+                    VerificationChecklistUI, InteriorFeedbackUI,
+                    BuildingMarkerUI
     MiniGame/       MiniGameManager, MiniGameTypes, IMiniGame, RoomTrigger,
                     TimingCombatGame, MemoryMatchGame, TrapDodgeGame
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,

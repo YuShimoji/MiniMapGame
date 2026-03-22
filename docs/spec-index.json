@@ -174,10 +174,10 @@
     "id": "SP-020",
     "title": "探索体験ポリッシュ",
     "status": "partial",
-    "pct": 30,
+    "pct": 50,
     "cat": "ui",
     "file": "docs/specs/exploration-experience-polish.md",
-    "summary": "Layer 1: 発見物テキスト断片(カテゴリ別60エントリ+レアリティ3段階+Toast拡張+収集一覧)。Layer 2: マップ上探索可視化(建物マーカー5状態+カテゴリアイコン+ミニマップ連携+距離制御)。Layer 3: 報酬システム(将来)"
+    "summary": "Layer 1: 発見物テキスト断片(実装済み)。Layer 2: マップ上探索可視化(BuildingMarkerManager+BuildingMarkerUI実装済み、Prefab未作成+手動検証待ち)。Layer 3: 報酬システム(将来)"
   },
   {
     "id": "SP-021",
