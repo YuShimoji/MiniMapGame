@@ -103,6 +103,27 @@
 ## Verification Checklist
 
 各プリセットで最低2-3シードを試し、以下を確認する。
+合計117項目（P5地形33 + Gate-1道路12 + SP-032地表27 + Interior49 + Discovery8、一部重複）。
+
+### 記録ルール (SG-05)
+
+**結果記録**: 各項目に `[x]` (PASS) または `[!]` (NG) を付ける。
+
+**NG発生時の最小記録** (チェックリスト項目のすぐ下に追記):
+```
+- [!] <項目テキスト>
+  - Preset: <preset名> | Theme: <theme名> | Seed: <seed値>
+  - 症状: <1行で何が起きたか>
+  - Severity: CRITICAL / WARNING / COSMETIC
+  - Screenshot: <あれば添付ファイル名>
+```
+
+**Severityの基準**:
+- `CRITICAL`: 次タスクへ進めない。ビルド破壊・データ不整合・操作不能
+- `WARNING`: 軽微ではないが局所的。修正後に同ケース再検証
+- `COSMETIC`: 見た目の軽微な問題。記録のみで進行可
+
+**再検証**: NG修正後、同一 Preset/Theme/Seed で当該項目を再確認し、`[x]` に更新。
 
 ### H1: Hill Clustering (丘クラスタ)
 
