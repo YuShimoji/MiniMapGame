@@ -13,7 +13,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 - REFRESH実施 (session 7): 整備偏重→体験逆算軸転換提案 (docs/refresh-2026-03-19.md)
 - ローカル+7 commits (未push): 85ccedc...7e27949
 - 未ステージ変更: Road材質3件 + BootstrapTestScene (Unity Editor自動変更)
-- spec-index: 35エントリ (done 24 / partial 8 / draft 1 / todo 3)
+- spec-index: 38エントリ (done 22 / partial 10 / draft 1 / legacy 1 / merged 1 / todo 3)
 
 致命的欠落 (REFRESH分析):
 - SP-001 ゲームループ: 0% — 探索の目的が存在しない
