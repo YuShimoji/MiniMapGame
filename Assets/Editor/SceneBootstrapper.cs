@@ -1380,6 +1380,13 @@ namespace MiniMapGame.EditorTools
             explorationMgr.eventBus = eventBus;
             controller.explorationProgress = explorationMgr;
 
+            // BuildingMarkerManager (SP-020 Layer 2)
+            var markerMgrGo = FindOrCreate("BuildingMarkerManager");
+            var markerMgr = EnsureComponent<BuildingMarkerManager>(markerMgrGo);
+            markerMgr.buildingSpawner = buildingSpawner;
+            markerMgr.progressManager = explorationMgr;
+            markerMgr.mapManager = mapManager;
+
             // ExplorationMenuUI (Tab key toggle)
             var explorationMenuGo = FindOrCreate("ExplorationMenuUI");
             var explorationMenu = EnsureComponent<ExplorationMenuUI>(explorationMenuGo);

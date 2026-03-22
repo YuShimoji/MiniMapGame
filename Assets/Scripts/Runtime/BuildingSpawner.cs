@@ -26,6 +26,7 @@ namespace MiniMapGame.Runtime
         public Material buildingFadeMaterial;
 
         private readonly List<GameObject> _spawnedBuildings = new();
+        public IReadOnlyList<GameObject> SpawnedBuildings => _spawnedBuildings;
         private Color _normalColor = new(0.22f, 0.28f, 0.38f);
         private Color _landmarkColor = new(0.10f, 0.16f, 0.25f);
         private MaterialPropertyBlock _propBlock;

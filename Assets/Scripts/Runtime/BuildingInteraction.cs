@@ -24,7 +24,21 @@ namespace MiniMapGame.Runtime
 
         public string GetInteractionMessage()
         {
-            return isLandmark ? $"[E] Enter {buildingId}" : buildingId;
+            if (!isLandmark) return buildingId;
+
+            string cat = context.category.ToString();
+            int floors = context.floors;
+
+            // Check exploration progress for richer hint
+            var progress = Object.FindAnyObjectByType<Interior.ExplorationProgressManager>();
+            if (progress != null)
+            {
+                var record = progress.GetRecord(buildingId);
+                if (record != null && record.hasEntered)
+                    return $"[E] {cat} - {record.VisitedFloorCount}/{floors}F, {record.CollectedCount}/{record.totalDiscoveries} Items";
+            }
+
+            return $"[E] {cat} - {floors} Floors";
         }
 
         public void Interact()
@@ -49,6 +63,13 @@ namespace MiniMapGame.Runtime
         {
             if (!isLandmark || on == _highlighted) return;
             _highlighted = on;
+
+            // Notify marker manager that this building was discovered (approached)
+            if (on)
+            {
+                var markerMgr = Object.FindAnyObjectByType<BuildingMarkerManager>();
+                markerMgr?.OnBuildingDiscovered(buildingId);
+            }
 
             if (_renderers == null)
                 _renderers = GetComponentsInChildren<Renderer>();

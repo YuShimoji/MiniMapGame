@@ -92,6 +92,10 @@ namespace MiniMapGame.Interior
             if (explorationProgress != null)
                 explorationProgress.OnBuildingEntered(building.buildingId, data);
 
+            // Update building marker (SP-020 Layer 2)
+            var markerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
+            markerMgr?.OnBuildingEntered(building.buildingId);
+
             // Switch camera to building view (perspective, no ortho switch)
             float maxDist = CalculateInteriorExtent(data);
             float viewDist = maxDist + interiorOrthoMargin;
@@ -121,11 +125,19 @@ namespace MiniMapGame.Interior
                 string exitBuildingId = _currentBuilding != null ? _currentBuilding.buildingId : null;
                 explorationProgress.OnBuildingExited();
 
-                if (exitBuildingId != null && mapManager != null && mapManager.buildingSpawner != null)
+                if (exitBuildingId != null)
                 {
-                    var record = explorationProgress.GetRecord(exitBuildingId);
-                    if (record != null)
-                        mapManager.buildingSpawner.SetExplorationMarker(exitBuildingId, record.IsComplete);
+                    // Legacy sphere marker (BuildingSpawner)
+                    if (mapManager != null && mapManager.buildingSpawner != null)
+                    {
+                        var record = explorationProgress.GetRecord(exitBuildingId);
+                        if (record != null)
+                            mapManager.buildingSpawner.SetExplorationMarker(exitBuildingId, record.IsComplete);
+                    }
+
+                    // SP-020 Layer 2 marker update
+                    var markerMgr2 = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
+                    markerMgr2?.OnProgressChanged(exitBuildingId);
                 }
             }
 
