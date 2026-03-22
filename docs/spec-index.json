@@ -255,10 +255,10 @@
     "id": "SP-029",
     "title": "Pre-Gate仕様整理",
     "status": "partial",
-    "pct": 65,
+    "pct": 70,
     "cat": "infra",
     "file": "docs/specs/pre-gate-spec-refinement.md",
-    "summary": "Gate-1待ち時間に進める仕様監査・論点分解・一問一答キューを整理"
+    "summary": "Gate-1待ち時間に進める仕様監査・論点分解・一問一答キューを整理。SG-01/05/07完了、SG-02-04/06はHUMAN_AUTHORITY待ち"
   },
   {
     "id": "SP-030",

@@ -7,11 +7,11 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 
 ## PROJECT CONTEXT
 現フェーズ: α（3系統実装完了 → Unity手動検証待ち → 体験ループ構築へ軸転換）
-直近の状態 (2026-03-19 session 7 handoff):
+直近の状態 (2026-03-22 nightshift):
 
-- session 6 nightshift 成果: SP-026レガシー削除(-427行), SPEC.md同期, spec-index監査
-- REFRESH実施: 3ブロック連続の整備偏重を検出。体験逆算への軸転換を提案 (docs/refresh-2026-03-19.md)
-- ローカル+4 commits (未push): 8e3351b, d8d1523, 750ae44, a33884c
+- session 8 nightshift: SPEC.md/CLAUDE.md同期、検証運用標準化(SG-05)、SP-029 pct 65→70
+- REFRESH実施 (session 7): 整備偏重→体験逆算軸転換提案 (docs/refresh-2026-03-19.md)
+- ローカル+7 commits (未push): 85ccedc...7e27949
 - 未ステージ変更: Road材質3件 + BootstrapTestScene (Unity Editor自動変更)
 - spec-index: 35エントリ (done 24 / partial 8 / draft 1 / todo 3)
 
@@ -24,7 +24,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 次の作業 (方針未決定 — HUMAN_AUTHORITY):
 1. 方針選択: A(SP-001設計) / B(手動検証117項目) / C(探索フィードバックループ) / D(体験プロトタイプ) → docs/refresh-2026-03-19.md 参照
 2. 選択した方針に基づく実装
-3. git push (4 commits)
+3. git push (7 commits)
 
 ## DECISION LOG
 | 日付 | 決定事項 | 選択肢 | 決定理由 |
