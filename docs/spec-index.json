@@ -2,11 +2,11 @@
   {
     "id": "SP-001",
     "title": "ゲームループ — Sandbox + Quest",
-    "status": "draft",
-    "pct": 0,
+    "status": "partial",
+    "pct": 30,
     "cat": "core",
     "file": "docs/specs/game-loop-sandbox-quest.md",
-    "summary": "Sandbox型自由探索 + クエストシステム。旧GameLoop(HP/エンカウント/脱出)を廃止。Phase1: 旧コード整理+最小クエスト10件。Phase2: クエスト拡充+HUD。Phase3: プロシージャル生成+チェーン"
+    "summary": "Phase0(タイマーセッション基盤)+Phase1前半(旧GameLoop11クラス削除+GameState簡素化+SaveManager改修)完了。残: QuestData/QuestManager/QuestLogUI。Phase2: クエスト拡充+HUD。Phase3: プロシージャル生成+チェーン"
   },
   {
     "id": "SP-002",
@@ -100,12 +100,12 @@
   },
   {
     "id": "SP-012",
-    "title": "ゲームループ（凍結中）",
-    "status": "partial",
+    "title": "ゲームループ（削除済み）",
+    "status": "done",
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#12-ゲームループインターフェース",
-    "summary": "実装済みだがジャンル再定義に伴い凍結。追跡者システム導入時に再設計予定"
+    "summary": "旧GameLoopシステム(HP/エンカウント/脱出)を完全削除。SP-001で再設計済み。11クラス+GameState削除、SaveManager改修"
   },
   {
     "id": "SP-013",

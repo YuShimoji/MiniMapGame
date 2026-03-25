@@ -25,7 +25,6 @@ namespace MiniMapGame.EditorTools
     public static class SceneBootstrapper
     {
         private const string PrefabFolder = "Assets/Resources/Prefabs";
-        private const string GameLoopPrefabFolder = "Assets/Resources/Prefabs/GameLoop";
 
         [MenuItem("MiniMapGame/Create Building Prefabs")]
         public static void CreateBuildingPrefabs()
@@ -40,26 +39,11 @@ namespace MiniMapGame.EditorTools
             Debug.Log("[SceneBootstrapper] Building prefabs created in " + PrefabFolder);
         }
 
-        [MenuItem("MiniMapGame/Create GameLoop Prefabs")]
-        public static void CreateGameLoopPrefabs()
-        {
-            EnsureFolder(GameLoopPrefabFolder);
-
-            CreateValueObjectPrefab();
-            CreateEncounterZonePrefab();
-            CreateExtractionPointPrefab();
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("[SceneBootstrapper] GameLoop prefabs created in " + GameLoopPrefabFolder);
-        }
-
         [MenuItem("MiniMapGame/Bootstrap Test Scene")]
         public static void BootstrapTestScene()
         {
             // Ensure prefabs, presets, and profiles exist
             CreateBuildingPrefabs();
-            // CreateGameLoopPrefabs(); // FROZEN — see DECISION LOG 2026-03-08
             RoadProfileCreator.CreateDefaultProfiles();
             MapPresetCreator.CreateDefaultPresets();
             AutoBindRoadProfiles();
@@ -265,12 +249,7 @@ namespace MiniMapGame.EditorTools
             var canvas = SetupCanvas();
             SetupInteractionUI(playerMovement, canvas);
 
-            // 8. GameLoop system (FROZEN — see DECISION LOG 2026-03-08)
-            // var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
-            // var gameLoopUI = SetupGameLoopUI(canvas);
-            // SetupGameLoopController(mapManager, eventBus, gameLoopUI);
-
-            // 9. MiniMap
+            // 8. MiniMap
             SetupMiniMap(canvas, mapManager, playerGo.transform);
 
             // 10. Analysis Visualizer (Tab to toggle)
@@ -287,10 +266,7 @@ namespace MiniMapGame.EditorTools
             SetupThemeManager(mapManager, mapRenderer, buildingSpawner, waterRenderer, viz, cam);
             SetupVerificationChecklistUI(canvas, mapManager);
 
-            // 13. Player HUD (FROZEN — depends on GameLoop)
-            // SetupPlayerHUD(canvas, mapManager, eventBus, playerGo.transform);
-
-            // 14. Interior System
+            // 13. Interior System
             SetupInteriorSystem(mapManager, camCtrl, playerGo.transform, canvas);
 
             // 14b. Interior Feedback UI (toast + floor indicator)
@@ -321,8 +297,8 @@ namespace MiniMapGame.EditorTools
                 EditorUtility.SetDirty(themeManager);
             }
 
-            // Disable any residual GameLoop objects (FROZEN — see DECISION LOG 2026-03-08)
-            DisableFrozenGameLoopObjects();
+            // 19. Game Session (5-min prototype)
+            SetupGameSession(canvas, mapManager);
 
             EditorUtility.SetDirty(mapManager);
             EditorUtility.SetDirty(mapRenderer);
@@ -406,69 +382,26 @@ namespace MiniMapGame.EditorTools
             Debug.Log("[SceneBootstrapper] Interior feedback UI created.");
         }
 
-        // ── Frozen GameLoop Cleanup ──
+        // ── Game Session (5-min prototype) ──
 
-        /// <summary>
-        /// Find and disable any GameLoop-related objects that may remain in the scene
-        /// from a previous bootstrap run. These systems are frozen per DECISION LOG 2026-03-08.
-        /// </summary>
-        private static void DisableFrozenGameLoopObjects()
+        private static void SetupGameSession(Canvas canvas, MapManager mapManager)
         {
-            int disabled = 0;
+            var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
+            var explorationProgress = Object.FindAnyObjectByType<ExplorationProgressManager>();
 
-            // Disable GameLoopController
-            var glc = Object.FindAnyObjectByType<GameLoopController>(FindObjectsInactive.Include);
-            if (glc != null)
-            {
-                glc.gameObject.SetActive(false);
-                EditorUtility.SetDirty(glc.gameObject);
-                disabled++;
-            }
+            var sessionGo = FindOrCreate("GameSessionManager");
+            var sessionMgr = EnsureComponent<GameSessionManager>(sessionGo);
+            sessionMgr.mapManager = mapManager;
+            sessionMgr.eventBus = eventBus;
+            sessionMgr.explorationProgress = explorationProgress;
+            sessionMgr.mapControlUI = Object.FindAnyObjectByType<MapControlUI>();
 
-            // Disable ExtractionPoint(s)
-            foreach (var ep in Object.FindObjectsByType<ExtractionPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                ep.gameObject.SetActive(false);
-                EditorUtility.SetDirty(ep.gameObject);
-                disabled++;
-            }
+            var uiGo = FindOrCreate("GameSessionUI", canvas.transform);
+            var sessionUI = EnsureComponent<GameSessionUI>(uiGo);
+            sessionMgr.sessionUI = sessionUI;
 
-            // Disable EncounterZone(s)
-            foreach (var ez in Object.FindObjectsByType<EncounterZone>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                ez.gameObject.SetActive(false);
-                EditorUtility.SetDirty(ez.gameObject);
-                disabled++;
-            }
-
-            // Disable ValueObjectBehaviour(s)
-            foreach (var vo in Object.FindObjectsByType<ValueObjectBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                vo.gameObject.SetActive(false);
-                EditorUtility.SetDirty(vo.gameObject);
-                disabled++;
-            }
-
-            // Disable PlayerHUD if present
-            var hud = Object.FindAnyObjectByType<PlayerHUD>(FindObjectsInactive.Include);
-            if (hud != null)
-            {
-                hud.gameObject.SetActive(false);
-                EditorUtility.SetDirty(hud.gameObject);
-                disabled++;
-            }
-
-            // Disable GameLoopUI if present
-            var glui = Object.FindAnyObjectByType<GameLoopUI>(FindObjectsInactive.Include);
-            if (glui != null)
-            {
-                glui.gameObject.SetActive(false);
-                EditorUtility.SetDirty(glui.gameObject);
-                disabled++;
-            }
-
-            if (disabled > 0)
-                Debug.Log($"[SceneBootstrapper] Disabled {disabled} frozen GameLoop object(s).");
+            EditorUtility.SetDirty(sessionMgr);
+            Debug.Log("[SceneBootstrapper] GameSession system set up.");
         }
 
         // ── Road Profile Auto-Binding ──
@@ -524,84 +457,6 @@ namespace MiniMapGame.EditorTools
             triggerCol.size = new Vector3(1.5f, 2f, 1.5f);
 
             go.isStatic = true;
-
-            PrefabUtility.SaveAsPrefabAsset(go, path);
-            Object.DestroyImmediate(go);
-        }
-
-        // ── GameLoop Prefabs ──
-
-        private static void CreateValueObjectPrefab()
-        {
-            string path = $"{GameLoopPrefabFolder}/ValueObject.prefab";
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return;
-
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = "ValueObject";
-            go.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.9f, 0.75f, 0.2f);
-            mat.SetFloat("_Smoothness", 0.8f);
-            AssetDatabase.CreateAsset(mat, $"{GameLoopPrefabFolder}/ValueObject_Mat.mat");
-            go.GetComponent<Renderer>().sharedMaterial = mat;
-
-            var col = go.GetComponent<BoxCollider>();
-            col.isTrigger = true;
-            col.size = new Vector3(3f, 3f, 3f); // Larger trigger zone
-
-            go.AddComponent<ValueObjectBehaviour>();
-
-            PrefabUtility.SaveAsPrefabAsset(go, path);
-            Object.DestroyImmediate(go);
-        }
-
-        private static void CreateEncounterZonePrefab()
-        {
-            string path = $"{GameLoopPrefabFolder}/EncounterZone.prefab";
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return;
-
-            var go = new GameObject("EncounterZone");
-            var sphere = go.AddComponent<SphereCollider>();
-            sphere.isTrigger = true;
-            sphere.radius = 5f;
-
-            go.AddComponent<EncounterZone>();
-
-            PrefabUtility.SaveAsPrefabAsset(go, path);
-            Object.DestroyImmediate(go);
-        }
-
-        private static void CreateExtractionPointPrefab()
-        {
-            string path = $"{GameLoopPrefabFolder}/ExtractionPoint.prefab";
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return;
-
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            go.name = "ExtractionPoint";
-            go.transform.localScale = new Vector3(2f, 3f, 2f);
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.2f, 0.7f, 0.5f, 0.7f);
-            mat.SetFloat("_Surface", 1); // Transparent
-            mat.SetFloat("_Blend", 0);
-            mat.SetOverrideTag("RenderType", "Transparent");
-            mat.renderQueue = 3000;
-            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            AssetDatabase.CreateAsset(mat, $"{GameLoopPrefabFolder}/ExtractionPoint_Mat.mat");
-            go.GetComponent<Renderer>().sharedMaterial = mat;
-
-            // Replace MeshCollider with SphereCollider trigger
-            var meshCol = go.GetComponent<MeshCollider>();
-            if (meshCol != null) Object.DestroyImmediate(meshCol);
-            var capsuleCol = go.GetComponent<CapsuleCollider>();
-            if (capsuleCol != null) Object.DestroyImmediate(capsuleCol);
-
-            var sphere = go.AddComponent<SphereCollider>();
-            sphere.isTrigger = true;
-            sphere.radius = 2f;
-
-            go.AddComponent<ExtractionPoint>();
 
             PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
@@ -682,156 +537,6 @@ namespace MiniMapGame.EditorTools
             msgGo.SetActive(false);
         }
 
-        private static GameLoopUI SetupGameLoopUI(Canvas canvas)
-        {
-            var uiGo = FindOrCreate("GameLoopUI", canvas.transform);
-            var ui = EnsureComponent<GameLoopUI>(uiGo);
-            SetRect(uiGo, Vector2.zero, Vector2.one);
-
-            var hudCard = CreateCard(uiGo.transform, "HUD", 24f, 112f, 260f, 96f,
-                new Color(0.03f, 0.05f, 0.08f, 0.68f));
-            var hudTitle = CreateTMPChild(hudCard.transform, "HUDTitle", "Run Snapshot",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            hudTitle.fontSize = 12f;
-            hudTitle.fontStyle = FontStyles.Bold;
-            hudTitle.color = new Color(0.58f, 0.72f, 0.82f, 0.94f);
-            SetRectFromTopStretch(hudTitle.gameObject, 16f, 10f, 228f, 16f);
-
-            ui.valueText = CreateTMPChild(hudCard.transform, "ValueText", "Value: 0",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            ui.valueText.fontSize = 16f;
-            ui.valueText.fontStyle = FontStyles.Bold;
-            ui.valueText.color = new Color(0.93f, 0.86f, 0.63f, 0.95f);
-            SetRectFromTopStretch(ui.valueText.gameObject, 16f, 30f, 228f, 18f);
-
-            ui.encounterText = CreateTMPChild(hudCard.transform, "EncounterText", "Encounters: 0",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            ui.encounterText.fontSize = 14f;
-            ui.encounterText.color = new Color(0.9f, 0.72f, 0.66f, 0.9f);
-            SetRectFromTopStretch(ui.encounterText.gameObject, 16f, 52f, 228f, 16f);
-
-            ui.itemCountText = CreateTMPChild(hudCard.transform, "ItemCountText", "Items: 0",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            ui.itemCountText.fontSize = 14f;
-            ui.itemCountText.color = new Color(0.72f, 0.85f, 0.94f, 0.9f);
-            SetRectFromTopStretch(ui.itemCountText.gameObject, 16f, 72f, 228f, 16f);
-
-            var msgGo = FindOrCreate("GameLoopMessage", uiGo.transform);
-            RemoveComponentIfPresent<TextMeshProUGUI>(msgGo);
-            RemoveComponentIfPresent<Image>(msgGo);
-            RemoveComponentIfPresent<Outline>(msgGo);
-            SetRectFromCenter(msgGo, 0f, 0f, 760f, 120f);
-
-            var msgBgGo = FindOrCreate("Background", msgGo.transform);
-            var msgBg = EnsureComponent<Image>(msgBgGo);
-            msgBg.color = new Color(0.05f, 0.07f, 0.1f, 0.88f);
-            var msgOutline = EnsureComponent<Outline>(msgBgGo);
-            msgOutline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.45f);
-            msgOutline.effectDistance = new Vector2(2f, -2f);
-            SetRect(msgBgGo, Vector2.zero, Vector2.one);
-
-            var msgTextGo = FindOrCreate("Text", msgGo.transform);
-            ui.messageText = EnsureComponent<TextMeshProUGUI>(msgTextGo);
-            ui.messageText.alignment = TextAlignmentOptions.Center;
-            ui.messageText.fontSize = 28f;
-            ui.messageText.fontStyle = FontStyles.Bold;
-            ui.messageText.color = new Color(1f, 0.83f, 0.58f, 0.98f);
-            ui.messageText.textWrappingMode = TextWrappingModes.Normal;
-            SetRect(msgTextGo, Vector2.zero, Vector2.one);
-            msgGo.SetActive(false);
-
-            var extractPanel = FindOrCreate("ExtractionPanel", uiGo.transform);
-            ui.extractionPanel = extractPanel;
-            var bgImg = EnsureComponent<Image>(extractPanel);
-            bgImg.color = new Color(0.04f, 0.06f, 0.1f, 0.96f);
-            var extractOutline = EnsureComponent<Outline>(extractPanel);
-            extractOutline.effectColor = new Color(0.25f, 0.42f, 0.58f, 0.4f);
-            extractOutline.effectDistance = new Vector2(2f, -2f);
-            SetRectFromCenter(extractPanel, 0f, -10f, 620f, 360f);
-
-            var extractHeader = CreateTMPChild(extractPanel.transform, "ExtractHeader", "Extraction Decision",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            extractHeader.fontSize = 24f;
-            extractHeader.fontStyle = FontStyles.Bold;
-            extractHeader.color = new Color(0.94f, 0.97f, 1f, 0.98f);
-            SetRectFromTopStretch(extractHeader.gameObject, 28f, 24f, 564f, 28f);
-
-            var extractSub = CreateTMPChild(extractPanel.transform, "ExtractSub", "Leave now or continue exploring this seed.",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            extractSub.fontSize = 13f;
-            extractSub.color = new Color(0.62f, 0.75f, 0.84f, 0.9f);
-            SetRectFromTopStretch(extractSub.gameObject, 28f, 58f, 564f, 18f);
-
-            ui.extractionInfoText = CreateTMPChild(extractPanel.transform, "ExtractInfo", "Extract?",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            ui.extractionInfoText.fontSize = 18f;
-            ui.extractionInfoText.color = new Color(0.9f, 0.94f, 1f, 0.95f);
-            ui.extractionInfoText.textWrappingMode = TextWrappingModes.Normal;
-            SetRectFromTopStretch(ui.extractionInfoText.gameObject, 28f, 104f, 564f, 132f);
-
-            var extractBtnGo = CreateStyledButton(extractPanel.transform, "ExtractButton", "Extract Now",
-                28f, 282f, 268f, 48f, new Color(0.2f, 0.7f, 0.4f));
-            ui.extractButton = extractBtnGo.GetComponent<Button>();
-
-            var continueBtnGo = CreateStyledButton(extractPanel.transform, "ContinueButton", "Keep Exploring",
-                324f, 282f, 268f, 48f, new Color(0.4f, 0.45f, 0.58f));
-            ui.continueButton = continueBtnGo.GetComponent<Button>();
-
-            extractPanel.SetActive(false);
-
-            var resultPanel = FindOrCreate("ResultPanel", uiGo.transform);
-            ui.resultPanel = resultPanel;
-            var resultBg = EnsureComponent<Image>(resultPanel);
-            resultBg.color = new Color(0.03f, 0.06f, 0.1f, 0.97f);
-            var resultOutline = EnsureComponent<Outline>(resultPanel);
-            resultOutline.effectColor = new Color(0.27f, 0.48f, 0.38f, 0.38f);
-            resultOutline.effectDistance = new Vector2(2f, -2f);
-            SetRectFromCenter(resultPanel, 0f, -10f, 700f, 420f);
-
-            var resultHeader = CreateTMPChild(resultPanel.transform, "ResultHeader", "Run Complete",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            resultHeader.fontSize = 28f;
-            resultHeader.fontStyle = FontStyles.Bold;
-            resultHeader.color = new Color(0.92f, 0.97f, 1f, 0.98f);
-            SetRectFromTopStretch(resultHeader.gameObject, 32f, 28f, 636f, 30f);
-
-            var resultSub = CreateTMPChild(resultPanel.transform, "ResultSub", "Final snapshot for this exploration loop.",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            resultSub.fontSize = 13f;
-            resultSub.color = new Color(0.62f, 0.75f, 0.84f, 0.9f);
-            SetRectFromTopStretch(resultSub.gameObject, 32f, 64f, 636f, 18f);
-
-            ui.resultText = CreateTMPChild(resultPanel.transform, "ResultText", "",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            ui.resultText.fontSize = 22f;
-            ui.resultText.color = new Color(0.92f, 0.95f, 1f, 0.95f);
-            ui.resultText.textWrappingMode = TextWrappingModes.Normal;
-            SetRectFromTopStretch(ui.resultText.gameObject, 32f, 112f, 636f, 250f);
-
-            resultPanel.SetActive(false);
-
-            EditorUtility.SetDirty(ui);
-            return ui;
-        }
-
-        private static void SetupGameLoopController(MapManager mapManager, MapEventBus eventBus, GameLoopUI gameLoopUI)
-        {
-            var go = FindOrCreate("GameLoopController");
-            var controller = EnsureComponent<GameLoopController>(go);
-            controller.mapManager = mapManager;
-            controller.eventBus = eventBus;
-            controller.gameLoopUI = gameLoopUI;
-
-            // Assign game loop prefabs
-            controller.valueObjectPrefab =
-                AssetDatabase.LoadAssetAtPath<GameObject>($"{GameLoopPrefabFolder}/ValueObject.prefab");
-            controller.encounterZonePrefab =
-                AssetDatabase.LoadAssetAtPath<GameObject>($"{GameLoopPrefabFolder}/EncounterZone.prefab");
-            controller.extractionPointPrefab =
-                AssetDatabase.LoadAssetAtPath<GameObject>($"{GameLoopPrefabFolder}/ExtractionPoint.prefab");
-
-            EditorUtility.SetDirty(controller);
-        }
 
         // ── Map Control UI ──
 
@@ -1168,88 +873,6 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(tm);
         }
 
-        // ── Player HUD ──
-
-        private static void SetupPlayerHUD(Canvas canvas, MapManager mapManager,
-            MapEventBus eventBus, Transform playerTransform)
-        {
-            var hudGo = FindOrCreate("PlayerHUD", canvas.transform);
-            var hud = EnsureComponent<PlayerHUD>(hudGo);
-            hud.mapManager = mapManager;
-            hud.eventBus = eventBus;
-            hud.playerTransform = playerTransform;
-            SetRect(hudGo, Vector2.zero, Vector2.one);
-
-            var hpCard = CreateCard(hudGo.transform, "HPCard", 24f, 24f, 260f, 72f,
-                new Color(0.03f, 0.05f, 0.08f, 0.72f));
-
-            var hpBarGo = FindOrCreate("HPBar", hpCard.transform);
-            SetRectFromTopStretch(hpBarGo, 16f, 26f, 228f, 16f);
-
-            var hpBg = EnsureComponent<Image>(hpBarGo);
-            hpBg.color = new Color(0.1f, 0.08f, 0.08f, 0.8f);
-
-            var hpSlider = EnsureComponent<Slider>(hpBarGo);
-            hpSlider.minValue = 0f;
-            hpSlider.maxValue = 1f;
-            hpSlider.value = 1f;
-            hpSlider.interactable = false;
-
-            // Fill area
-            var fillAreaGo = FindOrCreate("HP Fill Area", hpBarGo.transform);
-            SetRect(fillAreaGo, new Vector2(0.02f, 0.1f), new Vector2(0.98f, 0.9f));
-
-            var fillGo = FindOrCreate("HP Fill", fillAreaGo.transform);
-            var fillImg = EnsureComponent<Image>(fillGo);
-            fillImg.color = new Color(0.2f, 0.85f, 0.3f);
-            SetRect(fillGo, Vector2.zero, Vector2.one);
-
-            hpSlider.fillRect = fillGo.GetComponent<RectTransform>();
-            hud.hpSlider = hpSlider;
-            hud.hpFillImage = fillImg;
-
-            // HP text
-            hud.hpText = CreateTMPChild(hpCard.transform, "HPText", "HP: 100/100",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.TopLeft);
-            hud.hpText.fontSize = 15f;
-            hud.hpText.color = new Color(0.9f, 0.95f, 1f, 0.9f);
-            hud.hpText.fontStyle = FontStyles.Bold;
-            SetRectFromTopStretch(hud.hpText.gameObject, 16f, 10f, 228f, 18f);
-
-            var centerCard = CreateCard(hudGo.transform, "HeadingCard", 0f, 20f, 180f, 76f,
-                new Color(0.03f, 0.05f, 0.08f, 0.62f));
-            var centerRect = centerCard.GetComponent<RectTransform>();
-            centerRect.anchorMin = new Vector2(0.5f, 1f);
-            centerRect.anchorMax = new Vector2(0.5f, 1f);
-            centerRect.pivot = new Vector2(0.5f, 1f);
-            centerRect.anchoredPosition = new Vector2(0f, -20f);
-
-            hud.compassText = CreateTMPChild(centerCard.transform, "CompassText", "N",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.Center);
-            hud.compassText.fontSize = 32f;
-            hud.compassText.color = new Color(0.85f, 0.9f, 1f, 0.95f);
-            hud.compassText.fontStyle = FontStyles.Bold;
-            SetRectFromTopStretch(hud.compassText.gameObject, 12f, 8f, 156f, 34f);
-
-            hud.proximityText = CreateTMPChild(centerCard.transform, "ProximityText", "Exit: ---",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.Center);
-            hud.proximityText.fontSize = 13f;
-            hud.proximityText.color = new Color(0.6f, 0.8f, 0.6f, 0.85f);
-            SetRectFromTopStretch(hud.proximityText.gameObject, 12f, 42f, 156f, 18f);
-
-            var inventoryCard = CreateCard(hudGo.transform, "InventoryCard", 0f, 24f, 260f, 56f,
-                new Color(0.03f, 0.05f, 0.08f, 0.72f));
-            SetRectFromTopRight(inventoryCard, 24f, 24f, 260f, 56f);
-
-            hud.inventoryText = CreateTMPChild(inventoryCard.transform, "InventoryText", "V:0  Items:0  Left:0",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), TextAlignmentOptions.MidlineRight);
-            hud.inventoryText.fontSize = 14f;
-            hud.inventoryText.color = new Color(0.9f, 0.85f, 0.6f, 0.9f);
-            SetRectFromTopStretch(hud.inventoryText.gameObject, 16f, 10f, 228f, 24f);
-
-            EditorUtility.SetDirty(hud);
-        }
-
         private static void SetupVerificationChecklistUI(Canvas canvas, MapManager mapManager)
         {
             var systemGo = FindOrCreate("VerificationChecklistSystem");
@@ -1488,10 +1111,6 @@ namespace MiniMapGame.EditorTools
             var go = FindOrCreate("SaveManager");
             var sm = EnsureComponent<SaveManager>(go);
             sm.mapManager = mapManager;
-
-            var glc = Object.FindAnyObjectByType<GameLoopController>();
-            if (glc != null)
-                sm.gameLoopController = glc;
 
             var explorationMgr = Object.FindAnyObjectByType<ExplorationProgressManager>();
             if (explorationMgr != null)

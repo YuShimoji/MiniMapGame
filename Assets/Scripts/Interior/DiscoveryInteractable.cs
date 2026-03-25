@@ -4,7 +4,7 @@ namespace MiniMapGame.Interior
 {
     /// <summary>
     /// Attached to discovery furniture (Document, Note, Photo, Container).
-    /// Handles collection interaction following the ValueObjectBehaviour pattern.
+    /// Handles collection interaction for discovery items.
     /// </summary>
     public class DiscoveryInteractable : MonoBehaviour, IInteriorInteractable
     {

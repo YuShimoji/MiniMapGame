@@ -26,22 +26,22 @@ Material:
     m_Ints: []
     m_Floats:
     - _CenterLineSolid: 0
-    - _CrackDensity: 0.35
-    - _CurbRatio: 0.055555552
-    - _DashGap: 0
-    - _DashLength: 0
-    - _HasCenterLine: 0
-    - _HasEdgeLines: 0
+    - _CrackDensity: 0.08
+    - _CurbRatio: 0.083333336
+    - _DashGap: 1.5
+    - _DashLength: 1.5
+    - _HasCenterLine: 1
+    - _HasEdgeLines: 1
     - _HasLaneDividers: 0
-    - _LaneCount: 1
-    - _MarkingWidthRatio: 0
-    - _Roughness: 0.7
-    - _ShoulderRatio: 0.07407407
-    - _Wear: 0.6
+    - _LaneCount: 2
+    - _MarkingWidthRatio: 0.016666666
+    - _Roughness: 0.25
+    - _ShoulderRatio: 0.11111111
+    - _Wear: 0.15
     m_Colors:
-    - _BaseColor: {r: 0.84705883, g: 0.78431374, b: 0.5019608, a: 1}
-    - _CasingColor: {r: 0.6039216, g: 0.5647059, b: 0.4392157, a: 1}
-    - _CurbColor: {r: 0.3764706, g: 0.34509805, b: 0.2509804, a: 1}
-    - _MarkingColor: {r: 0.3137255, g: 0.28235295, b: 0.1882353, a: 1}
+    - _BaseColor: {r: 0.28235295, g: 0.3764706, b: 0.5019608, a: 1}
+    - _CasingColor: {r: 0.22745098, g: 0.3137255, b: 0.4392157, a: 1}
+    - _CurbColor: {r: 0.101960786, g: 0.15686275, b: 0.21960784, a: 1}
+    - _MarkingColor: {r: 0.627451, g: 0.65882355, b: 0.59607846, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

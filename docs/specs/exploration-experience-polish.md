@@ -1,7 +1,7 @@
 # SP-020: 探索体験ポリッシュ
 
 status: partial
-pct: 30
+pct: 50
 cat: ui
 
 ## 概要

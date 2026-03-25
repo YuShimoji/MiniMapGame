@@ -23,4 +23,14 @@ namespace MiniMapGame.MiniGame
         public int seed;
         public string buildingId;
     }
+
+    [System.Serializable]
+    public struct MiniGameCompletedEvent
+    {
+        public MiniGameType type;
+        public bool success;
+        public int score;
+        public int roomIndex;
+        public string buildingId;
+    }
 }

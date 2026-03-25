@@ -9,14 +9,14 @@ using MiniMapGame.Runtime;
 namespace MiniMapGame.GameLoop
 {
     /// <summary>
-    /// Handles JSON save/load of map seed, preset, and game state.
+    /// Handles JSON save/load of map seed, preset, and exploration state.
     /// Save file: Application.persistentDataPath/save.json
+    /// Manages JSON save/load for map seed, preset, and exploration progress.
     /// </summary>
     public class SaveManager : MonoBehaviour
     {
         [Header("References")]
         public MapManager mapManager;
-        public GameLoopController gameLoopController;
         public ExplorationProgressManager explorationProgress;
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
@@ -37,13 +37,12 @@ namespace MiniMapGame.GameLoop
 
         public void Save()
         {
-            if (mapManager == null || gameLoopController == null) return;
+            if (mapManager == null) return;
 
             var data = new SaveData
             {
                 seed = mapManager.seed,
                 presetName = mapManager.activePreset != null ? mapManager.activePreset.displayName : "",
-                gameState = gameLoopController.State,
                 timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 explorationRecords = explorationProgress != null
                     ? explorationProgress.GetAllRecords().Values.ToList()
@@ -51,8 +50,15 @@ namespace MiniMapGame.GameLoop
             };
 
             string json = JsonUtility.ToJson(data, true);
-            File.WriteAllText(SavePath, json);
-            Debug.Log($"[SaveManager] Saved to {SavePath}");
+            try
+            {
+                File.WriteAllText(SavePath, json);
+                Debug.Log($"[SaveManager] Saved to {SavePath}");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[SaveManager] Save failed: {e.Message}\n{e.StackTrace}");
+            }
         }
 
         public void Load()
@@ -114,9 +120,6 @@ namespace MiniMapGame.GameLoop
 
             var pendingData = _pendingLoad;
             _pendingLoad = null;
-
-            if (gameLoopController != null && pendingData.gameState != null)
-                gameLoopController.RestoreState(pendingData.gameState);
 
             if (explorationProgress != null && pendingData.explorationRecords != null)
             {

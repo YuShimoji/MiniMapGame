@@ -1,7 +1,7 @@
 # SP-001: ゲームループ再設計 — Sandbox + Quest
 
-status: draft
-pct: 0
+status: partial
+pct: 30
 cat: core
 
 ## 概要
@@ -196,15 +196,43 @@ Quest (ScriptableObject or JSON)
 
 ## 6. 実装フェーズ
 
+### Phase 0: タイマーセッション基盤 [DONE] ✓
+
+5分間の閉じた体験ループ。クエストシステムなしで「探索→発見→スコア」の最小ループを成立させる。
+
+実装済みコンポーネント:
+- `GameSessionManager` — セッションライフサイクル (Title/Playing/Paused/Results)
+- `GameSessionUI` — プログラマティック4パネル UI
+- `GameSessionEvents` — SessionStartedEvent / SessionEndedEvent
+- `SceneBootstrapper.SetupGameSession()` — シーン統合
+
+フロー:
+```
+タイトル画面 → PLAY → マップ生成 → 5分タイマー開始
+  → WASD探索 → 建物進入 → Discovery収集 → HUDカウンタ更新
+  → ESC → ポーズ → Resume / Restart / Quit
+  → タイマー0 → 結果画面 (入場建物数/完全探索数/発見数)
+  → Play Again → タイトルへ
+```
+
+受け入れ条件:
+1. タイトル画面からPLAYで開始できる
+2. HUDにタイマー(M:SS)と進捗カウンタが表示される
+3. ESCでポーズ/リジューム/リスタート/終了ができる
+4. タイマー0で結果画面にスコアが表示される
+5. Play Againでタイトルに戻り新しいマップで再開できる
+
 ### Phase 1: 旧GameLoop整理 + 最小クエスト基盤
 
-1. 旧クラス削除 (PlayerStats, EncounterZone, ExtractionPoint, ValueObjectBehaviour, GameLoopUI, GameLoopEvents)
-2. GameLoopController → ExplorationController リネーム・改修
-3. GameState 簡素化 (クエスト状態フィールド追加)
-4. QuestData / QuestObjective / QuestState データクラス作成
-5. QuestManager 最小実装 (MapEventBus購読 → 目標進捗追跡)
-6. 手書きクエスト10件 (JSON)
-7. QuestLogUI (Tabメニュー内タブ)
+1. ~~旧クラス削除 (PlayerStats, EncounterZone, ExtractionPoint, ValueObjectBehaviour, GameLoopUI, GameLoopEvents, GameLoopController, PlayerHUD, IEncounterTrigger, IValueObject, IExtractDecision)~~ [DONE]
+2. ~~GameState 簡素化 (encounterCount/PlayerStats除去)~~ [DONE]
+3. ~~SaveManager から GameLoopController 参照除去~~ [DONE]
+4. ~~SceneBootstrapper から旧GameLoop関連コード除去~~ [DONE]
+5. ~~MiniGameCompletedEvent を MiniGame namespace に移動~~ [DONE]
+6. QuestData / QuestObjective / QuestState データクラス作成
+7. QuestManager 最小実装 (MapEventBus購読 → 目標進捗追跡)
+8. 手書きクエスト10件 (JSON)
+9. QuestLogUI (Tabメニュー内タブ)
 
 ### Phase 2: クエスト拡充 + HUD
 
