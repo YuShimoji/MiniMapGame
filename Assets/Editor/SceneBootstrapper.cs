@@ -395,6 +395,7 @@ namespace MiniMapGame.EditorTools
             sessionMgr.eventBus = eventBus;
             sessionMgr.explorationProgress = explorationProgress;
             sessionMgr.mapControlUI = Object.FindAnyObjectByType<MapControlUI>();
+            sessionMgr.questManager = Object.FindAnyObjectByType<QuestManager>();
 
             var uiGo = FindOrCreate("GameSessionUI", canvas.transform);
             var sessionUI = EnsureComponent<GameSessionUI>(uiGo);
@@ -1113,6 +1114,10 @@ namespace MiniMapGame.EditorTools
             var explorationMgr = Object.FindAnyObjectByType<ExplorationProgressManager>();
             if (explorationMgr != null)
                 sm.explorationProgress = explorationMgr;
+
+            var questMgr = Object.FindAnyObjectByType<QuestManager>();
+            if (questMgr != null)
+                sm.questManager = questMgr;
 
             // Wire into MapControlUI
             var controlUI = Object.FindAnyObjectByType<MapControlUI>();

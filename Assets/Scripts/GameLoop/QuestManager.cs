@@ -236,5 +236,71 @@ namespace MiniMapGame.GameLoop
         }
 
         public int CompletedCount => _completedQuestIds.Count;
+
+        // ════════════════════════════════════════
+        //  Save / Load
+        // ════════════════════════════════════════
+
+        public List<QuestSaveEntry> GetSaveEntries()
+        {
+            var entries = new List<QuestSaveEntry>();
+            foreach (var kvp in _activeQuests)
+            {
+                entries.Add(new QuestSaveEntry
+                {
+                    questId = kvp.Key,
+                    status = (int)kvp.Value.status,
+                    objectiveProgress = new List<int>(kvp.Value.objectiveProgress)
+                });
+            }
+            return entries;
+        }
+
+        public void RestoreFromSave(List<QuestSaveEntry> entries)
+        {
+            if (entries == null) return;
+
+            // Ensure definitions are loaded
+            if (_definitions.Count == 0)
+                LoadDefinitions();
+
+            _activeQuests.Clear();
+            _completedQuestIds.Clear();
+
+            foreach (var entry in entries)
+            {
+                if (!_defLookup.TryGetValue(entry.questId, out var def)) continue;
+
+                var state = new QuestState(def)
+                {
+                    status = (QuestStatus)entry.status,
+                    objectiveProgress = new List<int>(entry.objectiveProgress)
+                };
+
+                // Sync objective current values
+                for (int i = 0; i < def.objectives.Count && i < entry.objectiveProgress.Count; i++)
+                    def.objectives[i].current = entry.objectiveProgress[i];
+
+                _activeQuests[entry.questId] = state;
+
+                if (state.status == QuestStatus.Completed)
+                    _completedQuestIds.Add(entry.questId);
+            }
+        }
+
+        private void LoadDefinitions()
+        {
+            if (questDataAsset == null) return;
+            var collection = JsonUtility.FromJson<QuestCollection>(questDataAsset.text);
+            if (collection?.quests == null) return;
+
+            _definitions.Clear();
+            _defLookup.Clear();
+            foreach (var def in collection.quests)
+            {
+                _definitions.Add(def);
+                _defLookup[def.id] = def;
+            }
+        }
     }
 }

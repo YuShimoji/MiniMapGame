@@ -17,6 +17,7 @@ namespace MiniMapGame.GameLoop
         [Header("References")]
         public MapManager mapManager;
         public ExplorationProgressManager explorationProgress;
+        public QuestManager questManager;
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
 
@@ -45,6 +46,9 @@ namespace MiniMapGame.GameLoop
                 timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 explorationRecords = explorationProgress != null
                     ? explorationProgress.GetAllRecords().Values.ToList()
+                    : null,
+                questStates = questManager != null
+                    ? questManager.GetSaveEntries()
                     : null
             };
 
@@ -128,6 +132,9 @@ namespace MiniMapGame.GameLoop
                 if (mapManager != null && mapManager.buildingSpawner != null)
                     mapManager.buildingSpawner.RefreshAllExplorationMarkers(explorationProgress);
             }
+
+            if (questManager != null && pendingData.questStates != null)
+                questManager.RestoreFromSave(pendingData.questStates);
 
             Debug.Log($"[SaveManager] Loaded save from {SavePath}");
         }
