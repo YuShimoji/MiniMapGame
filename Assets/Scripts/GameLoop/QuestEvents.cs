@@ -23,9 +23,17 @@ namespace MiniMapGame.GameLoop
 
     /// <summary>
     /// Fired when a building is entered for the first time in a session.
-    /// Published by QuestManager to decouple from interior system.
     /// </summary>
     public struct BuildingEnteredEvent
+    {
+        public string buildingId;
+        public string buildingCategory;
+    }
+
+    /// <summary>
+    /// Fired when a building's exploration is fully completed (all floors + all discoveries).
+    /// </summary>
+    public struct BuildingCompletedEvent
     {
         public string buildingId;
         public string buildingCategory;

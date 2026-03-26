@@ -120,6 +120,133 @@
       "reward": { "value": 75, "unlockId": "" },
       "prerequisites": [],
       "isRepeatable": false
+    },
+    {
+      "id": "Q011",
+      "title": "Completionist",
+      "description": "Fully explore one building — all floors, all items.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "*", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 60, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q012",
+      "title": "Commercial Mastery",
+      "description": "Fully explore 2 commercial buildings.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "Commercial", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 80, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q013",
+      "title": "Public Records",
+      "description": "Enter 2 public buildings and find 3 documents.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Public", "count": 2, "current": 0 },
+        { "type": 1, "target": "Document", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 45, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q014",
+      "title": "Uncommon Finds",
+      "description": "Discover 3 uncommon items.",
+      "questType": 3,
+      "objectives": [
+        { "type": 4, "target": "Uncommon", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 55, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q015",
+      "title": "High Rise",
+      "description": "Visit 10 different floors across buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 2, "target": "*", "count": 10, "current": 0 }
+      ],
+      "reward": { "value": 50, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q016",
+      "title": "Note Gatherer",
+      "description": "Find 5 handwritten notes.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Note", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q017",
+      "title": "Special Investigation",
+      "description": "Enter a special building and find a rare item inside.",
+      "questType": 3,
+      "objectives": [
+        { "type": 0, "target": "Special", "count": 1, "current": 0 },
+        { "type": 4, "target": "Rare", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 120, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q018",
+      "title": "Container Search",
+      "description": "Open 5 containers found in various buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Container", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 40, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q019",
+      "title": "District Survey",
+      "description": "Enter at least one building of every category.",
+      "questType": 2,
+      "objectives": [
+        { "type": 0, "target": "Residential", "count": 1, "current": 0 },
+        { "type": 0, "target": "Commercial", "count": 1, "current": 0 },
+        { "type": 0, "target": "Industrial", "count": 1, "current": 0 },
+        { "type": 0, "target": "Public", "count": 1, "current": 0 },
+        { "type": 0, "target": "Special", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 90, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q020",
+      "title": "Grand Explorer",
+      "description": "Fully explore 3 buildings and collect 25 discoveries.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "*", "count": 3, "current": 0 },
+        { "type": 1, "target": "*", "count": 25, "current": 0 }
+      ],
+      "reward": { "value": 150, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
     }
   ]
 }

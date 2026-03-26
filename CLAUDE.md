@@ -91,7 +91,7 @@ Assets/
     UI/             MapControlUI, MiniMapController,
                     WorldPositionTrackerUI, LabelController,
                     VerificationChecklistUI, InteriorFeedbackUI,
-                    BuildingMarkerUI, QuestLogUI
+                    BuildingMarkerUI, QuestLogUI, QuestHUD
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
                     RoadProfileCreator, InteriorDebugPreview,
                     InteriorPresetCreator

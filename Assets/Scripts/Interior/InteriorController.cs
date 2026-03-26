@@ -152,6 +152,17 @@ namespace MiniMapGame.Interior
                     if (_cachedMarkerMgr == null)
                         _cachedMarkerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
                     _cachedMarkerMgr?.OnProgressChanged(exitBuildingId);
+
+                    // Publish completion event if building is fully explored
+                    var exitRecord = explorationProgress.GetRecord(exitBuildingId);
+                    if (exitRecord != null && exitRecord.IsComplete && _currentBuilding != null)
+                    {
+                        eventBus?.Publish(new BuildingCompletedEvent
+                        {
+                            buildingId = exitBuildingId,
+                            buildingCategory = _currentBuilding.context.category.ToString()
+                        });
+                    }
                 }
             }
 

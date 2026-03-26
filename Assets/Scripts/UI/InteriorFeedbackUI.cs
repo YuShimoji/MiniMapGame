@@ -43,6 +43,7 @@ namespace MiniMapGame.UI
                 eventBus.Subscribe<DoorUnlockedEvent>(OnDoorUnlocked);
                 eventBus.Subscribe<HiddenDoorRevealedEvent>(OnHiddenDoorRevealed);
                 eventBus.Subscribe<FloorChangedEvent>(OnFloorChanged);
+                eventBus.Subscribe<QuestCompletedEvent>(OnQuestCompleted);
             }
         }
 
@@ -54,6 +55,7 @@ namespace MiniMapGame.UI
                 eventBus.Unsubscribe<DoorUnlockedEvent>(OnDoorUnlocked);
                 eventBus.Unsubscribe<HiddenDoorRevealedEvent>(OnHiddenDoorRevealed);
                 eventBus.Unsubscribe<FloorChangedEvent>(OnFloorChanged);
+                eventBus.Unsubscribe<QuestCompletedEvent>(OnQuestCompleted);
             }
         }
 
@@ -160,6 +162,12 @@ namespace MiniMapGame.UI
         private void OnFloorChanged(FloorChangedEvent evt)
         {
             ShowToast($"Moved to {evt.floorLabel}");
+        }
+
+        private void OnQuestCompleted(QuestCompletedEvent evt)
+        {
+            string reward = evt.rewardValue > 0 ? $" (+{evt.rewardValue})" : "";
+            ShowToast($"Quest Complete: {evt.title}{reward}", DiscoveryRarity.Rare);
         }
     }
 }

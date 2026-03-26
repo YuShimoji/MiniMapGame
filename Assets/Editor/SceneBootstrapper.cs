@@ -1098,8 +1098,29 @@ namespace MiniMapGame.EditorTools
             questLogUI.logText = logTmp;
             logPanelGo.SetActive(false);
 
+            // QuestHUD (always-visible mini display, top-right)
+            var questHudGo = FindOrCreate("QuestHUD");
+            var questHUD = EnsureComponent<QuestHUD>(questHudGo);
+            questHUD.questManager = questMgr;
+            questHUD.eventBus = eventBus;
+
+            var hudTextGo = FindOrCreate("QuestHUDText", canvas.transform);
+            var hudTmp = EnsureComponent<TextMeshProUGUI>(hudTextGo);
+            hudTmp.alignment = TextAlignmentOptions.TopRight;
+            hudTmp.fontSize = 14f;
+            hudTmp.color = new Color(0.82f, 0.87f, 0.92f, 0.85f);
+            hudTmp.richText = true;
+            hudTmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRectFromTopRight(hudTextGo, 15f, 15f, 280f, 120f);
+            questHUD.hudText = hudTmp;
+
+            var hudShadow = hudTextGo.AddComponent<Shadow>();
+            hudShadow.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            hudShadow.effectDistance = new Vector2(1f, -1f);
+
             EditorUtility.SetDirty(questMgr);
             EditorUtility.SetDirty(questLogUI);
+            EditorUtility.SetDirty(questHUD);
             Debug.Log("[SceneBootstrapper] Quest system set up.");
         }
 

@@ -41,6 +41,7 @@ namespace MiniMapGame.GameLoop
             eventBus.Subscribe<BuildingEnteredEvent>(OnBuildingEntered);
             eventBus.Subscribe<DiscoveryCollectedEvent>(OnDiscoveryCollected);
             eventBus.Subscribe<FloorChangedEvent>(OnFloorChanged);
+            eventBus.Subscribe<BuildingCompletedEvent>(OnBuildingCompleted);
             eventBus.Subscribe<SessionStartedEvent>(OnSessionStarted);
         }
 
@@ -50,6 +51,7 @@ namespace MiniMapGame.GameLoop
             eventBus.Unsubscribe<BuildingEnteredEvent>(OnBuildingEntered);
             eventBus.Unsubscribe<DiscoveryCollectedEvent>(OnDiscoveryCollected);
             eventBus.Unsubscribe<FloorChangedEvent>(OnFloorChanged);
+            eventBus.Unsubscribe<BuildingCompletedEvent>(OnBuildingCompleted);
             eventBus.Unsubscribe<SessionStartedEvent>(OnSessionStarted);
         }
 
@@ -169,6 +171,25 @@ namespace MiniMapGame.GameLoop
                 {
                     var obj = def.objectives[i];
                     if (obj.type != ObjectiveType.VisitFloor) continue;
+                    if (IsObjectiveMet(kvp.Value, i, obj.count)) continue;
+
+                    IncrementObjective(kvp.Key, def, kvp.Value, i);
+                }
+            }
+        }
+
+        private void OnBuildingCompleted(BuildingCompletedEvent evt)
+        {
+            foreach (var kvp in _activeQuests)
+            {
+                if (kvp.Value.status != QuestStatus.Active) continue;
+                if (!_defLookup.TryGetValue(kvp.Key, out var def)) continue;
+
+                for (int i = 0; i < def.objectives.Count; i++)
+                {
+                    var obj = def.objectives[i];
+                    if (obj.type != ObjectiveType.CompleteBuilding) continue;
+                    if (obj.target != "*" && obj.target != evt.buildingCategory) continue;
                     if (IsObjectiveMet(kvp.Value, i, obj.count)) continue;
 
                     IncrementObjective(kvp.Key, def, kvp.Value, i);
