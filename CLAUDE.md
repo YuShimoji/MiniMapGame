@@ -10,7 +10,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 → 詳細は `docs/project-context.md` を参照
 
 現フェーズ: α (体験ループ構築中)
-直近の状態 (2026-03-26 session 8 nightshift): レガシー清掃完了 (SceneBootstrapper dead code ~230行, GameState.cs削除, spec pct修正)。SP-001 Phase 0実装済み・未検証。Phase 1後半(Quest基盤)が次タスク。
+直近の状態 (2026-03-26 session 9 nightshift): MiniGame全削除(1186行根絶)+Quest基盤実装完了(QuestData/Manager/LogUI/Events+10件JSON+SaveData永続化+GameSession統計)。BuildingInteractionリファクタ。SPEC.md/spec-index整合修正。Phase 1実装完了・Unity検証待ち。
 
 ## DECISION LOG
 

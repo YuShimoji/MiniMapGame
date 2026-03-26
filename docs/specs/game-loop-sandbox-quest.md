@@ -228,11 +228,14 @@ Quest (ScriptableObject or JSON)
 2. ~~GameState 簡素化 (encounterCount/PlayerStats除去)~~ [DONE]
 3. ~~SaveManager から GameLoopController 参照除去~~ [DONE]
 4. ~~SceneBootstrapper から旧GameLoop関連コード除去~~ [DONE]
-5. ~~MiniGameCompletedEvent を MiniGame namespace に移動~~ [DONE]
-6. QuestData / QuestObjective / QuestState データクラス作成
-7. QuestManager 最小実装 (MapEventBus購読 → 目標進捗追跡)
-8. 手書きクエスト10件 (JSON)
-9. QuestLogUI (Tabメニュー内タブ)
+5. ~~MiniGameCompletedEvent を MiniGame namespace に移動~~ [DONE] → MiniGame全削除済み
+6. ~~QuestData / QuestObjective / QuestState データクラス作成~~ [DONE]
+7. ~~QuestManager 最小実装 (MapEventBus購読 → 目標進捗追跡)~~ [DONE]
+8. ~~手書きクエスト10件 (JSON)~~ [DONE]
+9. ~~QuestLogUI (Qキートグル)~~ [DONE]
+10. ~~SaveData にクエスト状態保存~~ [DONE]
+11. ~~GameSessionManager にクエスト統計連携~~ [DONE]
+12. ~~InteriorController から BuildingEnteredEvent 発行~~ [DONE]
 
 ### Phase 2: クエスト拡充 + HUD
 

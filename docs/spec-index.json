@@ -3,10 +3,10 @@
     "id": "SP-001",
     "title": "ゲームループ — Sandbox + Quest",
     "status": "partial",
-    "pct": 60,
+    "pct": 70,
     "cat": "core",
     "file": "docs/specs/game-loop-sandbox-quest.md",
-    "summary": "Phase0(タイマーセッション)+Phase1前半(旧GameLoop削除)+Phase1後半(QuestData/QuestManager/QuestLogUI+手書き10件JSON)実装済み。BuildingEnteredEvent発行追加。残: Unity検証+SaveDataクエスト状態保存。Phase2: クエスト拡充+HUD。Phase3: プロシージャル生成"
+    "summary": "Phase0+Phase1全実装完了。QuestData/QuestManager/QuestLogUI/QuestEvents+手書き10件JSON+SaveData永続化+GameSession統計連携+BuildingEnteredEvent。残: Unity PlayMode検証。Phase2: クエスト20-30件+QuestHUD+プリセット別フィルタ"
   },
   {
     "id": "SP-002",
