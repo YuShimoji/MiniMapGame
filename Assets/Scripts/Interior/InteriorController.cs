@@ -42,6 +42,7 @@ namespace MiniMapGame.Interior
         private BuildingInteraction _currentBuilding;
         private Vector3 _savedPlayerPosition;
         private PlayerMovement _playerMovement;
+        private Runtime.BuildingMarkerManager _cachedMarkerMgr;
 
         void Start()
         {
@@ -104,8 +105,9 @@ namespace MiniMapGame.Interior
             });
 
             // Update building marker (SP-020 Layer 2)
-            var markerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
-            markerMgr?.OnBuildingEntered(building.buildingId);
+            if (_cachedMarkerMgr == null)
+                _cachedMarkerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
+            _cachedMarkerMgr?.OnBuildingEntered(building.buildingId);
 
             // Switch camera to building view (perspective, no ortho switch)
             float maxDist = CalculateInteriorExtent(data);
@@ -147,8 +149,9 @@ namespace MiniMapGame.Interior
                     }
 
                     // SP-020 Layer 2 marker update
-                    var markerMgr2 = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
-                    markerMgr2?.OnProgressChanged(exitBuildingId);
+                    if (_cachedMarkerMgr == null)
+                        _cachedMarkerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
+                    _cachedMarkerMgr?.OnProgressChanged(exitBuildingId);
                 }
             }
 

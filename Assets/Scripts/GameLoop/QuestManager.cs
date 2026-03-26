@@ -24,6 +24,9 @@ namespace MiniMapGame.GameLoop
         // Cached definition lookup
         private readonly Dictionary<string, QuestDefinition> _defLookup = new();
 
+        // Track unique floor visits (buildingId_floorIndex) to avoid double-counting
+        private readonly HashSet<string> _visitedFloors = new();
+
         public IReadOnlyList<QuestDefinition> Definitions => _definitions;
         public IReadOnlyDictionary<string, QuestState> ActiveQuests => _activeQuests;
         public IReadOnlyList<string> CompletedQuestIds => _completedQuestIds;
@@ -64,6 +67,7 @@ namespace MiniMapGame.GameLoop
             _defLookup.Clear();
             _activeQuests.Clear();
             _completedQuestIds.Clear();
+            _visitedFloors.Clear();
 
             if (questDataAsset == null)
             {
@@ -115,7 +119,7 @@ namespace MiniMapGame.GameLoop
                     var obj = def.objectives[i];
                     if (obj.type != ObjectiveType.EnterBuilding) continue;
                     if (obj.target != "*" && obj.target != evt.buildingCategory) continue;
-                    if (obj.IsCompleted) continue;
+                    if (IsObjectiveMet(kvp.Value, i, obj.count)) continue;
 
                     IncrementObjective(kvp.Key, def, kvp.Value, i);
                 }
@@ -132,7 +136,7 @@ namespace MiniMapGame.GameLoop
                 for (int i = 0; i < def.objectives.Count; i++)
                 {
                     var obj = def.objectives[i];
-                    if (obj.IsCompleted) continue;
+                    if (IsObjectiveMet(kvp.Value, i, obj.count)) continue;
 
                     switch (obj.type)
                     {
@@ -152,6 +156,10 @@ namespace MiniMapGame.GameLoop
 
         private void OnFloorChanged(FloorChangedEvent evt)
         {
+            // Only count unique floor visits (buildingId + floorIndex)
+            string floorKey = $"{evt.buildingId}_{evt.floorIndex}";
+            if (!_visitedFloors.Add(floorKey)) return;
+
             foreach (var kvp in _activeQuests)
             {
                 if (kvp.Value.status != QuestStatus.Active) continue;
@@ -161,11 +169,16 @@ namespace MiniMapGame.GameLoop
                 {
                     var obj = def.objectives[i];
                     if (obj.type != ObjectiveType.VisitFloor) continue;
-                    if (obj.IsCompleted) continue;
+                    if (IsObjectiveMet(kvp.Value, i, obj.count)) continue;
 
                     IncrementObjective(kvp.Key, def, kvp.Value, i);
                 }
             }
+        }
+
+        private static bool IsObjectiveMet(QuestState state, int index, int target)
+        {
+            return index < state.objectiveProgress.Count && state.objectiveProgress[index] >= target;
         }
 
         // ════════════════════════════════════════
@@ -174,27 +187,26 @@ namespace MiniMapGame.GameLoop
 
         private void IncrementObjective(string questId, QuestDefinition def, QuestState state, int objIndex)
         {
-            var obj = def.objectives[objIndex];
-            obj.current++;
-            state.objectiveProgress[objIndex] = obj.current;
+            state.objectiveProgress[objIndex]++;
+            int current = state.objectiveProgress[objIndex];
+            int target = def.objectives[objIndex].count;
 
             eventBus?.Publish(new QuestProgressEvent
             {
                 questId = questId,
                 objectiveIndex = objIndex,
-                current = obj.current,
-                target = obj.count
+                current = current,
+                target = target
             });
 
-            // Check if all objectives completed
             CheckCompletion(questId, def, state);
         }
 
         private void CheckCompletion(string questId, QuestDefinition def, QuestState state)
         {
-            foreach (var obj in def.objectives)
+            for (int i = 0; i < def.objectives.Count; i++)
             {
-                if (!obj.IsCompleted) return;
+                if (state.objectiveProgress[i] < def.objectives[i].count) return;
             }
 
             state.status = QuestStatus.Completed;
@@ -276,10 +288,6 @@ namespace MiniMapGame.GameLoop
                     status = (QuestStatus)entry.status,
                     objectiveProgress = new List<int>(entry.objectiveProgress)
                 };
-
-                // Sync objective current values
-                for (int i = 0; i < def.objectives.Count && i < entry.objectiveProgress.Count; i++)
-                    def.objectives[i].current = entry.objectiveProgress[i];
 
                 _activeQuests[entry.questId] = state;
 

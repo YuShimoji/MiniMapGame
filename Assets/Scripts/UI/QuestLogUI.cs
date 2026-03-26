@@ -110,7 +110,8 @@ namespace MiniMapGame.UI
             {
                 var obj = def.objectives[i];
                 int current = i < state.objectiveProgress.Count ? state.objectiveProgress[i] : 0;
-                string bar = obj.IsCompleted ? "<color=#6B6>DONE</color>" : $"{current}/{obj.count}";
+                bool done = current >= obj.count;
+                string bar = done ? "<color=#6B6>DONE</color>" : $"{current}/{obj.count}";
                 string label = GetObjectiveLabel(obj);
                 sb.AppendLine($"    {label}: {bar}");
             }
