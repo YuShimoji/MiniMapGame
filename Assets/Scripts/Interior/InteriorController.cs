@@ -2,6 +2,7 @@ using UnityEngine;
 using MiniMapGame.Runtime;
 using MiniMapGame.Player;
 using MiniMapGame.Data;
+using MiniMapGame.GameLoop;
 
 namespace MiniMapGame.Interior
 {
@@ -28,6 +29,9 @@ namespace MiniMapGame.Interior
 
         [Header("Exploration")]
         public ExplorationProgressManager explorationProgress;
+
+        [Header("Events")]
+        public MapEventBus eventBus;
 
         [Header("Interior Camera")]
         public float interiorCameraHeight = 40f;
@@ -91,6 +95,13 @@ namespace MiniMapGame.Interior
             // Record exploration progress
             if (explorationProgress != null)
                 explorationProgress.OnBuildingEntered(building.buildingId, data);
+
+            // Publish building entered event for quest tracking
+            eventBus?.Publish(new BuildingEnteredEvent
+            {
+                buildingId = building.buildingId,
+                buildingCategory = building.context.category.ToString()
+            });
 
             // Update building marker (SP-020 Layer 2)
             var markerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();

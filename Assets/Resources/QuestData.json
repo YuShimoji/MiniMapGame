@@ -1,0 +1,125 @@
+{
+  "quests": [
+    {
+      "id": "Q001",
+      "title": "First Steps",
+      "description": "Enter any building to begin your exploration.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 10, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q002",
+      "title": "Commercial Survey",
+      "description": "Explore 3 commercial buildings in the district.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Commercial", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 30, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q003",
+      "title": "Industrial Sweep",
+      "description": "Investigate 2 industrial facilities.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Industrial", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 25, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q004",
+      "title": "Document Collector",
+      "description": "Collect 5 documents scattered across buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Document", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 50, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q005",
+      "title": "Scavenger",
+      "description": "Collect 10 discoveries of any kind.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "*", "count": 10, "current": 0 }
+      ],
+      "reward": { "value": 40, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q006",
+      "title": "Floor Walker",
+      "description": "Visit 5 different floors across any buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 2, "target": "*", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q007",
+      "title": "Rare Find",
+      "description": "Discover a rare item hidden deep within.",
+      "questType": 3,
+      "objectives": [
+        { "type": 4, "target": "Rare", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 100, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q008",
+      "title": "Residential Tour",
+      "description": "Enter 3 residential buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Residential", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 25, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q009",
+      "title": "Photo Album",
+      "description": "Find 3 photos left behind in abandoned buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Photo", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 30, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    },
+    {
+      "id": "Q010",
+      "title": "Thorough Explorer",
+      "description": "Enter 5 buildings and collect 15 discoveries.",
+      "questType": 2,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 5, "current": 0 },
+        { "type": 1, "target": "*", "count": 15, "current": 0 }
+      ],
+      "reward": { "value": 75, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false
+    }
+  ]
+}

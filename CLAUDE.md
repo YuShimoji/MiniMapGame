@@ -84,13 +84,14 @@ Assets/
                     FloorPlanGenerators/ (Commercial, Industrial,
                       Residential, Special)
     GameLoop/       GameSessionManager, GameSessionUI, GameSessionEvents,
+                    QuestData, QuestManager, QuestEvents,
                     SaveManager, SaveData,
                     MapEventBus, IMapEventBus
     Player/         PlayerMovement, CameraController
     UI/             MapControlUI, MiniMapController,
                     WorldPositionTrackerUI, LabelController,
                     VerificationChecklistUI, InteriorFeedbackUI,
-                    BuildingMarkerUI
+                    BuildingMarkerUI, QuestLogUI
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
                     RoadProfileCreator, InteriorDebugPreview,
                     InteriorPresetCreator

@@ -272,7 +272,10 @@ namespace MiniMapGame.EditorTools
             // 14b. Interior Feedback UI (toast + floor indicator)
             SetupInteriorFeedbackUI(canvas);
 
-            // 15. Save Manager
+            // 15. Quest System
+            SetupQuestSystem(canvas);
+
+            // 16. Save Manager
             SetupSaveManager(mapManager);
 
             // 17. Lighting
@@ -999,6 +1002,7 @@ namespace MiniMapGame.EditorTools
             var explorationMgr = EnsureComponent<ExplorationProgressManager>(explorationGo);
             explorationMgr.eventBus = eventBus;
             controller.explorationProgress = explorationMgr;
+            controller.eventBus = eventBus;
 
             // BuildingMarkerManager (SP-020 Layer 2)
             var markerMgrGo = FindOrCreate("BuildingMarkerManager");
@@ -1044,6 +1048,58 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(floorNav);
             EditorUtility.SetDirty(explorationMgr);
             EditorUtility.SetDirty(explorationMenu);
+        }
+
+        // ── Quest System ──
+
+        private static void SetupQuestSystem(Canvas canvas)
+        {
+            var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
+
+            // QuestManager
+            var questMgrGo = FindOrCreate("QuestManager");
+            var questMgr = EnsureComponent<QuestManager>(questMgrGo);
+            questMgr.eventBus = eventBus;
+
+            // Load quest data from Resources
+            var questData = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Resources/QuestData.json");
+            questMgr.questDataAsset = questData;
+
+            // QuestLogUI (Q key toggle)
+            var questLogGo = FindOrCreate("QuestLogUI");
+            var questLogUI = EnsureComponent<QuestLogUI>(questLogGo);
+            questLogUI.questManager = questMgr;
+            questLogUI.eventBus = eventBus;
+
+            var logPanelGo = FindOrCreate("QuestLogPanel", canvas.transform);
+            RemoveComponentIfPresent<TextMeshProUGUI>(logPanelGo);
+            RemoveComponentIfPresent<Image>(logPanelGo);
+            SetRectFromCenter(logPanelGo, 0f, 0f, 600f, 500f);
+
+            var logBgGo = FindOrCreate("Background", logPanelGo.transform);
+            var logBg = EnsureComponent<Image>(logBgGo);
+            logBg.color = new Color(0.03f, 0.05f, 0.08f, 0.92f);
+            var logOutline = EnsureComponent<Outline>(logBgGo);
+            logOutline.effectColor = new Color(0.42f, 0.35f, 0.18f, 0.45f);
+            logOutline.effectDistance = new Vector2(2f, -2f);
+            SetRect(logBgGo, Vector2.zero, Vector2.one);
+
+            var logTextGo = FindOrCreate("Text", logPanelGo.transform);
+            var logTmp = EnsureComponent<TextMeshProUGUI>(logTextGo);
+            logTmp.alignment = TextAlignmentOptions.TopLeft;
+            logTmp.fontSize = 16f;
+            logTmp.color = new Color(0.92f, 0.97f, 1f, 0.96f);
+            logTmp.richText = true;
+            logTmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRect(logTextGo, new Vector2(0.04f, 0.04f), new Vector2(0.96f, 0.96f));
+
+            questLogUI.logPanel = logPanelGo;
+            questLogUI.logText = logTmp;
+            logPanelGo.SetActive(false);
+
+            EditorUtility.SetDirty(questMgr);
+            EditorUtility.SetDirty(questLogUI);
+            Debug.Log("[SceneBootstrapper] Quest system set up.");
         }
 
         // ── Save Manager ──
