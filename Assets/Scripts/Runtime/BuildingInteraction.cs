@@ -22,6 +22,11 @@ namespace MiniMapGame.Runtime
         private MaterialPropertyBlock _propBlock;
         private bool _highlighted;
 
+        // Cached singleton references (lazy-initialized, avoid per-frame FindAnyObjectByType)
+        private ExplorationProgressManager _cachedProgress;
+        private InteriorController _cachedController;
+        private BuildingMarkerManager _cachedMarkerMgr;
+
         public string GetInteractionMessage()
         {
             if (!isLandmark) return buildingId;
@@ -29,11 +34,12 @@ namespace MiniMapGame.Runtime
             string cat = context.category.ToString();
             int floors = context.floors;
 
-            // Check exploration progress for richer hint
-            var progress = Object.FindAnyObjectByType<Interior.ExplorationProgressManager>();
-            if (progress != null)
+            if (_cachedProgress == null)
+                _cachedProgress = Object.FindAnyObjectByType<ExplorationProgressManager>();
+
+            if (_cachedProgress != null)
             {
-                var record = progress.GetRecord(buildingId);
+                var record = _cachedProgress.GetRecord(buildingId);
                 if (record != null && record.hasEntered)
                     return $"[E] {cat} - {record.VisitedFloorCount}/{floors}F, {record.CollectedCount}/{record.totalDiscoveries} Items";
             }
@@ -45,10 +51,12 @@ namespace MiniMapGame.Runtime
         {
             if (!isLandmark) return;
 
-            var controller = Object.FindAnyObjectByType<InteriorController>();
-            if (controller != null)
+            if (_cachedController == null)
+                _cachedController = Object.FindAnyObjectByType<InteriorController>();
+
+            if (_cachedController != null)
             {
-                controller.EnterBuilding(this);
+                _cachedController.EnterBuilding(this);
             }
             else
             {
@@ -64,11 +72,11 @@ namespace MiniMapGame.Runtime
             if (!isLandmark || on == _highlighted) return;
             _highlighted = on;
 
-            // Notify marker manager that this building was discovered (approached)
             if (on)
             {
-                var markerMgr = Object.FindAnyObjectByType<BuildingMarkerManager>();
-                markerMgr?.OnBuildingDiscovered(buildingId);
+                if (_cachedMarkerMgr == null)
+                    _cachedMarkerMgr = Object.FindAnyObjectByType<BuildingMarkerManager>();
+                _cachedMarkerMgr?.OnBuildingDiscovered(buildingId);
             }
 
             if (_renderers == null)
