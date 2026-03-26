@@ -35,7 +35,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 ## Code Style
 - C# naming: PascalCase (public), camelCase (private), _camelCase (fields)
 - 1ファイル1クラス原則（小型のenum/structは例外）
-- namespace: `MiniMapGame`（サブ: `.Data`, `.Core`, `.MapGen`, `.Runtime`, `.Interior`, `.GameLoop`, `.Player`, `.UI`, `.MiniGame`）
+- namespace: `MiniMapGame`（サブ: `.Data`, `.Core`, `.MapGen`, `.Runtime`, `.Interior`, `.GameLoop`, `.Player`, `.UI`）
 - コメント: 日本語OK、ただしAPIドキュメントは英語
 
 ## Unity 6.x API 注意事項
@@ -91,9 +91,6 @@ Assets/
                     WorldPositionTrackerUI, LabelController,
                     VerificationChecklistUI, InteriorFeedbackUI,
                     BuildingMarkerUI
-    MiniGame/       MiniGameManager, MiniGameTypes (+ MiniGameCompletedEvent),
-                    IMiniGame, RoomTrigger,
-                    TimingCombatGame, MemoryMatchGame, TrapDodgeGame
   Editor/           SceneBootstrapper, MapPresetCreator, MapThemeCreator,
                     RoadProfileCreator, InteriorDebugPreview,
                     InteriorPresetCreator

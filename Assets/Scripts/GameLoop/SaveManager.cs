@@ -11,7 +11,6 @@ namespace MiniMapGame.GameLoop
     /// <summary>
     /// Handles JSON save/load of map seed, preset, and exploration state.
     /// Save file: Application.persistentDataPath/save.json
-    /// Manages JSON save/load for map seed, preset, and exploration progress.
     /// </summary>
     public class SaveManager : MonoBehaviour
     {

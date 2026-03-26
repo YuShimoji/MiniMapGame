@@ -858,49 +858,14 @@ namespace MiniMapGame.Interior
 
 ---
 
-## 12. ゲームループインターフェース
+## 12. ゲームループインターフェース（削除済み）
 
-> **注意**: 以下のインターフェースおよび実装クラスは完全に実装済みだが、
-> ジャンル再定義（探索・発見ゲーム）に伴い**凍結中**。
-> 追跡者システム導入時に再設計する可能性がある。
-
-```csharp
-namespace MiniMapGame.GameLoop
-{
-    /// <summary>チョークフラグ付きMapEdge進入時に発火</summary>
-    public interface IEncounterTrigger
-    {
-        void OnEncounter(MapEdge chokeEdge, MapData context);
-    }
-
-    /// <summary>行き止まりノードに配置される価値物</summary>
-    public interface IValueObject
-    {
-        string ObjectId { get; }
-        int Value { get; }
-        void OnCollect();
-    }
-
-    /// <summary>出口ノード到達時の脱出判断</summary>
-    public interface IExtractDecision
-    {
-        bool ShouldExtract(MapData context, int collectedValue);
-        void OnExtract();
-        void OnContinue();
-    }
-
-    /// <summary>
-    /// ScriptableObject チャンネルによるイベントバス。
-    /// MonoBehaviour間の疎結合通信。
-    /// </summary>
-    public interface IMapEventBus
-    {
-        void Publish<T>(T eventData);
-        void Subscribe<T>(System.Action<T> handler);
-        void Unsubscribe<T>(System.Action<T> handler);
-    }
-}
-```
+> 旧ゲームループシステム (HP/エンカウント/脱出) の11クラスおよびインターフェース
+> (IEncounterTrigger, IValueObject, IExtractDecision) は、ジャンル再定義
+> （探索・発見ゲーム）に伴い**完全削除**。SP-001 で GameSessionManager ベースの
+> セッション型ゲームループとして再設計済み。
+>
+> IMapEventBus は現役。GameLoop/MapEventBus.cs に ScriptableObject 実装として存続。
 
 ---
 
@@ -937,8 +902,8 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - データ構造全種、SeededRng、SpatialHash
 - 4ジェネレータ (Organic/Grid/Mountain/Rural)
 - MapManager統合、MapRenderer、BuildingSpawner
-- GameLoop (遭遇/回収/脱出) + セーブ/ロード — **凍結中** (SP-001で再設計予定)
-- ミニゲーム3種 (TimingCombat/MemoryMatch/TrapDodge) — **凍結中**
+- GameLoop — SP-001で GameSessionManager ベースに再設計済み (旧11クラス削除)
+- ミニゲーム3種 — **削除済み** (探索ゲーム転換に伴いフロー切断、7ファイル根絶)
 
 ### Phase E: ビジュアル (完了)
 - ライティング/ポストプロセス/フォグ/パーティクル

@@ -96,7 +96,7 @@
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#11-インテリアマップシステム",
-    "summary": "v1 BSP部屋分割 + InteriorController + ミニゲーム連携。SP-026 (v2) で置換予定"
+    "summary": "v1 BSP部屋分割 + InteriorController。SP-026 (v2) で置換済み。InteriorControllerは現役だがv2アーキテクチャ下で動作"
   },
   {
     "id": "SP-012",
@@ -145,12 +145,12 @@
   },
   {
     "id": "SP-017",
-    "title": "ミニゲームシステム（凍結検討中）",
-    "status": "done",
-    "pct": 100,
+    "title": "ミニゲームシステム（削除済み）",
+    "status": "deprecated",
+    "pct": 0,
     "cat": "core",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種。探索ゲームでの位置づけは再検討予定"
+    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種+MiniGameManager+RoomTrigger全7ファイル削除済み。探索ゲームへのジャンル転換によりフロー切断、デッドコードとして根絶"
   },
   {
     "id": "SP-018",
@@ -289,12 +289,12 @@
   },
   {
     "id": "SP-033",
-    "title": "SP-032 MVP実装計画",
-    "status": "partial",
-    "pct": 85,
+    "title": "SP-032 MVP実装計画（SP-032に統合）",
+    "status": "merged",
+    "pct": 0,
     "cat": "system",
     "file": "docs/specs/ground-surface-mvp-implementation-plan.md",
-    "summary": "Slice 1-4完了(Infrastructure/CPU Baker/Shader/Theme)、SPEC.md・debug-setup.md同期済み。Slice 5残: ground + water 色パレット確認・4preset x 2theme手動検証"
+    "summary": "SP-032の実装計画ドキュメント。内容・検証条件・進捗がSP-032と完全同一のためmerged"
   },
   {
     "id": "SP-034",

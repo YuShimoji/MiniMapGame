@@ -7,7 +7,7 @@ namespace MiniMapGame.Interior
     {
         Key,        // Corresponding key item collected
         Force,      // Door broken (future)
-        MiniGame,   // Mini-game cleared (future)
+        MiniGame,   // Reserved (mini-game system removed)
         InsideOpen, // Opened from the other side (future)
         Bypass      // Alternate route / vent (future)
     }
