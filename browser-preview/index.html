@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MiniMapGame — Map Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: #16213e;
+      border-bottom: 1px solid #334;
+      flex-wrap: wrap;
+    }
+    .toolbar label { font-size: 13px; color: #aab; }
+    .toolbar input, .toolbar select, .toolbar button {
+      font-size: 13px;
+      padding: 4px 8px;
+      border: 1px solid #445;
+      border-radius: 4px;
+      background: #1a1a2e;
+      color: #e0e0e0;
+    }
+    .toolbar input[type="number"] { width: 90px; }
+    .toolbar button {
+      cursor: pointer;
+      background: #0f3460;
+      border-color: #1a5276;
+    }
+    .toolbar button:hover { background: #1a5276; }
+    .toolbar button.primary { background: #e94560; border-color: #e94560; color: #fff; }
+    .toolbar button.primary:hover { background: #c33; }
+    .toolbar .sep { width: 1px; height: 24px; background: #334; }
+    .toolbar .toggle { display: flex; align-items: center; gap: 4px; }
+    .toolbar .toggle input { width: auto; }
+
+    .canvas-wrap {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: #111;
+    }
+    canvas {
+      background: #d4c9a8;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    .status {
+      padding: 4px 16px;
+      font-size: 12px;
+      background: #16213e;
+      border-top: 1px solid #334;
+      color: #889;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <label>Seed</label>
+    <input type="number" id="seed" value="42">
+    <button id="btn-random" title="Random seed">Random</button>
+    <div class="sep"></div>
+
+    <label>Type</label>
+    <select id="gen-type">
+      <option value="Organic" selected>Organic</option>
+      <option value="Grid">Grid</option>
+      <option value="Mountain">Mountain</option>
+      <option value="Rural">Rural</option>
+    </select>
+    <div class="sep"></div>
+
+    <button id="btn-generate" class="primary">Generate</button>
+    <div class="sep"></div>
+
+    <div class="toggle">
+      <input type="checkbox" id="opt-nodes"> <label for="opt-nodes">Nodes</label>
+    </div>
+    <div class="toggle">
+      <input type="checkbox" id="opt-labels" checked> <label for="opt-labels">Labels</label>
+    </div>
+    <div class="toggle">
+      <input type="checkbox" id="opt-grid"> <label for="opt-grid">Grid</label>
+    </div>
+    <div class="toggle">
+      <input type="checkbox" id="opt-terrain" checked> <label for="opt-terrain">Terrain</label>
+    </div>
+    <div class="toggle">
+      <input type="checkbox" id="opt-stats" checked> <label for="opt-stats">Stats</label>
+    </div>
+    <div class="sep"></div>
+    <button id="btn-export" title="Save as PNG">Export PNG</button>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="map-canvas"></canvas>
+  </div>
+
+  <div class="status" id="status">Ready</div>
+
+  <script src="map-gen.js"></script>
+  <script src="renderer.js"></script>
+  <script>
+    const canvas = document.getElementById('map-canvas');
+    const seedInput = document.getElementById('seed');
+    const genType = document.getElementById('gen-type');
+    const statusEl = document.getElementById('status');
+
+    let currentMap = null;
+
+    function resizeCanvas() {
+      const wrap = document.querySelector('.canvas-wrap');
+      const maxW = wrap.clientWidth - 32;
+      const maxH = wrap.clientHeight - 32;
+      // Maintain map aspect ratio (860:580)
+      const ratio = 860 / 580;
+      let w, h;
+      if (maxW / maxH > ratio) {
+        h = maxH;
+        w = h * ratio;
+      } else {
+        w = maxW;
+        h = w / ratio;
+      }
+      canvas.width = Math.floor(w);
+      canvas.height = Math.floor(h);
+      if (currentMap) render();
+    }
+
+    function getOptions() {
+      return {
+        showNodes: document.getElementById('opt-nodes').checked,
+        showLabels: document.getElementById('opt-labels').checked,
+        showGrid: document.getElementById('opt-grid').checked,
+        showTerrain: document.getElementById('opt-terrain').checked,
+        showStats: document.getElementById('opt-stats').checked,
+      };
+    }
+
+    function render() {
+      if (!currentMap) return;
+      const t0 = performance.now();
+      Renderer.renderMap(canvas, currentMap, getOptions());
+      const dt = (performance.now() - t0).toFixed(1);
+      statusEl.textContent = `Rendered in ${dt}ms | ${currentMap.nodes.length} nodes, ${currentMap.edges.length} edges, ${currentMap.buildings.length} buildings`;
+    }
+
+    function generate() {
+      const seed = parseInt(seedInput.value) || 1;
+      const type = genType.value;
+      const t0 = performance.now();
+      currentMap = MapGen.generateMap(seed, type);
+      const genTime = (performance.now() - t0).toFixed(1);
+      statusEl.textContent = `Generated in ${genTime}ms`;
+      render();
+    }
+
+    // Event handlers
+    document.getElementById('btn-generate').addEventListener('click', generate);
+
+    document.getElementById('btn-random').addEventListener('click', () => {
+      seedInput.value = Math.floor(Math.random() * 999999) + 1;
+      generate();
+    });
+
+    document.getElementById('btn-export').addEventListener('click', () => {
+      if (!currentMap) return;
+      const link = document.createElement('a');
+      link.download = `minimap-${currentMap.generatorType}-${currentMap.seed}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // Re-render on toggle changes
+    ['opt-nodes', 'opt-labels', 'opt-grid', 'opt-terrain', 'opt-stats'].forEach(id => {
+      document.getElementById(id).addEventListener('change', render);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); generate(); }
+      if (e.key === 'r' || e.key === 'R') {
+        seedInput.value = Math.floor(Math.random() * 999999) + 1;
+        generate();
+      }
+    });
+
+    // Init — read URL hash params
+    const hashParams = new URLSearchParams(location.hash.slice(1));
+    if (hashParams.has('type')) {
+      const t = hashParams.get('type');
+      if (MapGen.PRESETS[t]) genType.value = t;
+    }
+    if (hashParams.has('seed')) seedInput.value = hashParams.get('seed');
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    generate();
+  </script>
+</body>
+</html>
