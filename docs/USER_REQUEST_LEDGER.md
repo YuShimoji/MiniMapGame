@@ -12,8 +12,7 @@
 
 ## 未反映の是正要求
 
-- 「5分間遊んで楽しいか」は AI が session 7 drift 診断で定式化した表現。ユーザー本来の意図か要確認。refresh-2026-03-19.md → project-context.md FINAL DELIVERABLE IMAGE に転記されている
-- project-context.md の FINAL DELIVERABLE IMAGE の受け入れ基準はユーザー未承認のまま
+- (解決済み) 「5分間遊んで楽しいか」は AI session 7 起源。ユーザーは「基準は後回し」を選択 (session 10, 2026-04-03)。project-context.md に保留として記録済み
 
 ## Backlog Delta
 
@@ -24,8 +23,8 @@
 
 ## 今後明文化すべきこと
 
-- ブラウザプレビューと Unity 版の関係 (開発ツール / 独立成果物 / Unity の代替)
-- 最終成果物像の再定義 (「5分セッション型ゲーム」はユーザー未承認)
+- (解決済み) ブラウザプレビューと Unity 版の関係 → **両方並行** (session 10, 2026-04-03)
+- 受け入れ基準の正式定義 (マップ生成完成度を優先した上で後回し)
 
 ## 運用ルール
 

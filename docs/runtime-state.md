@@ -55,9 +55,9 @@
 
 ## Pending Questions
 
-- 「5分間遊んで楽しいか」は AI session 7 の定式化。ユーザー本来の意図か → HUMAN_AUTHORITY
-- ブラウザプレビューと Unity 版の最終的な関係 → HUMAN_AUTHORITY
-- SP-001 Quest 基盤の優先度 (ブラウザ方向転換後) → HUMAN_AUTHORITY
+- (解決) 「5分間遊んで楽しいか」→ 基準は後回し。マップ生成完成度を優先 (session 10)
+- (解決) ブラウザ vs Unity → **両方並行** (session 10)
+- SP-001 Quest 基盤の優先度 (ブラウザ方向転換後) → HUMAN_AUTHORITY (未解決)
 
 ## Session 9 実施内容
 

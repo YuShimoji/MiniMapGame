@@ -1,6 +1,7 @@
 // MiniMapGame Browser Preview — Canvas 2D Renderer
 // Phase A: Road network + Buildings
 // Phase B: Terrain elevation heatmap + Water (rivers/coasts)
+// Phase C: Decorations (street furniture, vegetation, terrain scatter)
 
 const ROAD_COLORS = ['#2c2c2c', '#4a4a4a', '#6e6e6e']; // tier 0, 1, 2
 const ROAD_WIDTHS = [6, 3.5, 1.8]; // tier 0, 1, 2
@@ -183,6 +184,11 @@ function renderMap(canvas, mapData, options = {}) {
     ctx.restore();
   }
 
+  // === Phase C: Decorations ===
+  if (mapData.decorations && options.showDecorations !== false) {
+    renderDecorations(ctx, mapData.decorations, tx, ty, ts);
+  }
+
   // Nodes
   if (options.showNodes) {
     for (let i = 0; i < nodes.length; i++) {
@@ -216,7 +222,7 @@ function renderMap(canvas, mapData, options = {}) {
     const waterCount = terrain && terrain.waterBodies ? terrain.waterBodies.length : 0;
     const hillCount = terrain ? terrain.hills.length : 0;
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(4, 4, 220, 130);
+    ctx.fillRect(4, 4, 220, 145);
     ctx.fillStyle = '#fff';
     ctx.font = '12px monospace';
     ctx.textAlign = 'left';
@@ -230,6 +236,7 @@ function renderMap(canvas, mapData, options = {}) {
       `Hills: ${hillCount}`,
       `Water bodies: ${waterCount}`,
       `Dead-ends: ${analysis.deadEndIndices.length}`,
+      `Decorations: ${mapData.decorations ? mapData.decorations.length : 0}`,
     ];
     lines.forEach((l, i) => ctx.fillText(l, 10, 10 + i * 15));
   }
@@ -327,6 +334,90 @@ function renderWater(ctx, waterBodies, tx, ty, ts) {
         }
       }
       ctx.stroke();
+    }
+  }
+}
+
+// === Phase C: Decoration rendering ===
+
+const DECORATION_STYLES = {
+  StreetLight: { color: '#888', shape: 'circle', baseSize: 1.5 },
+  Tree:        { color: '#4a7a3a', shape: 'circle', baseSize: 3.0 },
+  Stump:       { color: '#7a6a4a', shape: 'circle', baseSize: 1.2 },
+  Fence:       { color: '#8a7a5a', shape: 'line', baseSize: 4.0 },
+  Bollard:     { color: '#666', shape: 'square', baseSize: 1.0 },
+  SignPost:    { color: '#9a7030', shape: 'diamond', baseSize: 1.8 },
+  Bench:       { color: '#7a5a3a', shape: 'rect', baseSize: 2.0 },
+  Boulder:     { color: '#6a6a6a', shape: 'circle', baseSize: 3.5 },
+  Rock:        { color: '#7a7a7a', shape: 'circle', baseSize: 1.8 },
+  Shrub:       { color: '#5a8a3a', shape: 'circle', baseSize: 2.5 },
+  Wildflower:  { color: '#9a6aaa', shape: 'dot', baseSize: 1.5 },
+  GrassClump:  { color: '#6a9a5a', shape: 'dot', baseSize: 1.2 },
+};
+
+function renderDecorations(ctx, decorations, tx, ty, ts) {
+  for (const dec of decorations) {
+    const style = DECORATION_STYLES[dec.type];
+    if (!style) continue;
+
+    const x = tx(dec.position.x);
+    const y = ty(dec.position.y);
+    const s = ts(style.baseSize * dec.scale * 0.5);
+
+    ctx.fillStyle = style.color;
+    ctx.strokeStyle = darkenColor(style.color.padEnd(7, '0'), 0.2);
+    ctx.lineWidth = 0.5;
+
+    switch (style.shape) {
+      case 'circle':
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(s, 1), 0, Math.PI * 2);
+        ctx.fill();
+        if (s > 2) ctx.stroke();
+        break;
+
+      case 'square':
+        ctx.fillRect(x - s, y - s, s * 2, s * 2);
+        break;
+
+      case 'rect':
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(dec.angle);
+        ctx.fillRect(-s * 1.5, -s * 0.5, s * 3, s);
+        ctx.restore();
+        break;
+
+      case 'diamond':
+        ctx.beginPath();
+        ctx.moveTo(x, y - s);
+        ctx.lineTo(x + s * 0.7, y);
+        ctx.lineTo(x, y + s);
+        ctx.lineTo(x - s * 0.7, y);
+        ctx.closePath();
+        ctx.fill();
+        break;
+
+      case 'line':
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(dec.angle);
+        ctx.strokeStyle = style.color;
+        ctx.lineWidth = Math.max(ts(0.8), 0.5);
+        ctx.beginPath();
+        ctx.moveTo(-s * 1.5, 0);
+        ctx.lineTo(s * 1.5, 0);
+        ctx.stroke();
+        ctx.restore();
+        break;
+
+      case 'dot':
+        ctx.globalAlpha = 0.7;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(s * 0.6, 0.8), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        break;
     }
   }
 }

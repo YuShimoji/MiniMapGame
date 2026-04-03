@@ -98,6 +98,9 @@
       <input type="checkbox" id="opt-terrain" checked> <label for="opt-terrain">Terrain</label>
     </div>
     <div class="toggle">
+      <input type="checkbox" id="opt-decorations" checked> <label for="opt-decorations">Decorations</label>
+    </div>
+    <div class="toggle">
       <input type="checkbox" id="opt-stats" checked> <label for="opt-stats">Stats</label>
     </div>
     <div class="sep"></div>
@@ -145,6 +148,7 @@
         showLabels: document.getElementById('opt-labels').checked,
         showGrid: document.getElementById('opt-grid').checked,
         showTerrain: document.getElementById('opt-terrain').checked,
+        showDecorations: document.getElementById('opt-decorations').checked,
         showStats: document.getElementById('opt-stats').checked,
       };
     }
@@ -154,7 +158,7 @@
       const t0 = performance.now();
       Renderer.renderMap(canvas, currentMap, getOptions());
       const dt = (performance.now() - t0).toFixed(1);
-      statusEl.textContent = `Rendered in ${dt}ms | ${currentMap.nodes.length} nodes, ${currentMap.edges.length} edges, ${currentMap.buildings.length} buildings`;
+      statusEl.textContent = `Rendered in ${dt}ms | ${currentMap.nodes.length} nodes, ${currentMap.edges.length} edges, ${currentMap.buildings.length} buildings, ${currentMap.decorations.length} decorations`;
     }
 
     function generate() {
@@ -184,7 +188,7 @@
     });
 
     // Re-render on toggle changes
-    ['opt-nodes', 'opt-labels', 'opt-grid', 'opt-terrain', 'opt-stats'].forEach(id => {
+    ['opt-nodes', 'opt-labels', 'opt-grid', 'opt-terrain', 'opt-decorations', 'opt-stats'].forEach(id => {
       document.getElementById(id).addEventListener('change', render);
     });
 

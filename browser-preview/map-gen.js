@@ -2,6 +2,7 @@
 // Direct port of C# Assets/Scripts/{Core,MapGen,Data}/ to JavaScript
 // Phase A: Road network + Buildings
 // Phase B: Terrain (hills/elevation) + Water (rivers/coasts)
+// Phase C: Decorations (street furniture, vegetation, terrain scatter)
 
 // ============================================================
 // Data Types
@@ -1336,6 +1337,209 @@ function applyWaterCarving(elevMap, waterBodies, preset) {
 }
 
 // ============================================================
+// Phase C: DecorationPlacer
+// ============================================================
+
+function makeDecoration(pos, type, angle, scale, lodLevel) {
+  return { position: pos, type, angle, scale, lodLevel, width: scale * 2, height: scale * 2 };
+}
+
+function placeDecorations(nodes, edges, analysis, buildings, rng, preset, elevMap, terrain) {
+  const decorations = [];
+  const hash = new SpatialHash(20);
+  const buildingHash = new SpatialHash(40);
+  for (const b of buildings) buildingHash.insert(b);
+
+  function tryPlace(dec) {
+    if (hash.overlaps(dec) || buildingHash.overlaps(dec)) return false;
+    hash.insert(dec);
+    decorations.push(dec);
+    return true;
+  }
+
+  // --- PlaceAlongRoads ---
+  const isRuralOrMountain = preset.generatorType === 'Rural' || preset.generatorType === 'Mountain';
+
+  for (const edge of edges) {
+    if (edge.layer !== 0) continue;
+    const ti = Math.min(Math.max(edge.tier, 0), 2);
+    const na = nodes[edge.nodeA];
+    const nb = nodes[edge.nodeB];
+    const d = dist(na.position, nb.position);
+    if (d < 25) continue;
+
+    const direction = dir(na.position, nb.position);
+    const perpDir = perp(direction);
+
+    // Street lights: tier 0-1
+    if (ti <= 1) {
+      const spacing = 35 + rng.next() * 10;
+      const count = Math.floor(d / spacing);
+      for (let i = 0; i < count; i++) {
+        if (rng.next() > preset.decorationDensity) continue;
+        const t = (i + 0.5) / count;
+        const bp = bezierPoint(na.position, edge.controlPoint, nb.position, t);
+        const side = rng.next() > 0.5 ? 1 : -1;
+        const offset = (ti === 0 ? 10 : 6) * side;
+        tryPlace(makeDecoration(
+          vec2(bp.x + perpDir.x * offset, bp.y + perpDir.y * offset),
+          'StreetLight', Math.atan2(direction.y, direction.x), 1.5, 1));
+      }
+    }
+
+    // Trees: tier 0 only
+    if (ti === 0) {
+      const spacing = 20 + rng.next() * 10;
+      const count = Math.floor(d / spacing);
+      for (let i = 0; i < count; i++) {
+        if (rng.next() > preset.decorationDensity * 0.8) continue;
+        const t = (i + 0.3) / count;
+        const bp = bezierPoint(na.position, edge.controlPoint, nb.position, t);
+        const side = rng.next() > 0.5 ? 1 : -1;
+        const pos = vec2(bp.x + perpDir.x * 8 * side, bp.y + perpDir.y * 8 * side);
+        const treeAngle = rng.next() * Math.PI * 2;
+        const treeScale = 1.8 + rng.next() * 1.2;
+        const placed = tryPlace(makeDecoration(pos, 'Tree', treeAngle, treeScale, 2));
+
+        // Stump near trees (Rural only, 20%)
+        if (placed && preset.generatorType === 'Rural' && rng.next() < 0.2) {
+          const sa = rng.next() * Math.PI * 2;
+          const so = 4 + rng.next() * 3;
+          tryPlace(makeDecoration(
+            vec2(pos.x + Math.cos(sa) * so, pos.y + Math.sin(sa) * so),
+            'Stump', rng.next() * Math.PI * 2, 0.5 + rng.next() * 0.3, 2));
+        }
+      }
+    }
+
+    // Fence: tier 1-2, Rural/Mountain only
+    if (ti >= 1 && isRuralOrMountain && rng.next() < preset.decorationDensity * 0.4) {
+      const spacing = 25 + rng.next() * 10;
+      const count = Math.floor(d / spacing);
+      const fenceSide = rng.next() > 0.5 ? 1 : -1;
+      for (let i = 0; i < count; i++) {
+        if (rng.next() > preset.decorationDensity * 0.6) continue;
+        const t = (i + 0.5) / count;
+        const bp = bezierPoint(na.position, edge.controlPoint, nb.position, t);
+        const offset = (ti === 1 ? 8 : 5) * fenceSide;
+        tryPlace(makeDecoration(
+          vec2(bp.x + perpDir.x * offset, bp.y + perpDir.y * offset),
+          'Fence', Math.atan2(direction.y, direction.x), 1.0, 1));
+      }
+    }
+  }
+
+  // --- PlaceAtNodes ---
+  for (const idx of analysis.intersectionIndices) {
+    if (rng.next() > preset.decorationDensity) continue;
+    const node = nodes[idx];
+    const isPlaza = analysis.plazaIndices.includes(idx);
+    const bollardCount = isPlaza ? 6 : 3;
+    const radius = isPlaza ? 8 : 5;
+
+    for (let i = 0; i < bollardCount; i++) {
+      const angle = (i / bollardCount) * Math.PI * 2 + rng.next() * 0.5;
+      tryPlace(makeDecoration(
+        vec2(node.position.x + Math.cos(angle) * radius, node.position.y + Math.sin(angle) * radius),
+        'Bollard', angle, 0.8, 2));
+    }
+
+    // SignPost at Rural/Mountain intersections
+    if (isRuralOrMountain && rng.next() < preset.decorationDensity * 0.5) {
+      const spAngle = rng.next() * Math.PI * 2;
+      tryPlace(makeDecoration(
+        vec2(node.position.x + Math.cos(spAngle) * (radius + 2),
+             node.position.y + Math.sin(spAngle) * (radius + 2)),
+        'SignPost', spAngle, 1.2, 1));
+    }
+  }
+
+  // Benches at dead ends
+  for (const idx of analysis.deadEndIndices) {
+    if (rng.next() > preset.decorationDensity * 1.2) continue;
+    const node = nodes[idx];
+    const angle = rng.next() * Math.PI * 2;
+    tryPlace(makeDecoration(
+      vec2(node.position.x + Math.cos(angle) * 5, node.position.y + Math.sin(angle) * 5),
+      'Bench', angle, 1.2, 2));
+  }
+
+  // --- PlaceOnTerrain ---
+  if (elevMap && terrain) {
+    const w = preset.worldWidth;
+    const h = preset.worldHeight;
+    const density = Math.max(preset.decorationDensity, 0.1);
+    const cellSize = 15 / density;
+    const xCells = Math.ceil(w / cellSize);
+    const yCells = Math.ceil(h / cellSize);
+
+    for (let gx = 0; gx < xCells; gx++) {
+      for (let gy = 0; gy < yCells; gy++) {
+        const px = (gx + rng.next()) * cellSize;
+        const py = (gy + rng.next()) * cellSize;
+        if (px < 20 || px > w - 20 || py < 20 || py > h - 20) continue;
+
+        const pos = vec2(px, py);
+        if (isInsideCoast(pos, terrain.waterBodies)) continue;
+
+        const elev = elevMap.sample(pos);
+        const slope = elevMap.sampleSlope(pos);
+        const waterDist = minDistToWater(pos, terrain.waterBodies);
+
+        const result = selectTerrainDecoration(rng, elev, slope, waterDist, density);
+        if (!result) continue;
+
+        tryPlace(makeDecoration(pos, result.type,
+          rng.next() * Math.PI * 2, result.scale, result.lodLevel));
+      }
+    }
+  }
+
+  return decorations;
+}
+
+function selectTerrainDecoration(rng, elev, slope, waterDist, density) {
+  const roll = rng.next();
+
+  if (elev > 5 && slope > 0.5) {
+    if (roll < 0.4 * density) {
+      if (slope > 1.0) return { type: 'Boulder', scale: 1.5 + rng.next() * 1.5, lodLevel: 1 };
+      return { type: 'Rock', scale: 0.8 + rng.next() * 0.7, lodLevel: 2 };
+    }
+    return null;
+  }
+
+  if (elev > 2 && elev < 8 && slope > 0.2 && slope < 0.8) {
+    if (roll < 0.3 * density) return { type: 'Shrub', scale: 1.0 + rng.next() * 1.0, lodLevel: 1 };
+    return null;
+  }
+
+  if (elev < 2 && waterDist < 60 && waterDist > 10) {
+    if (roll < 0.35 * density) return { type: 'Wildflower', scale: 0.6 + rng.next() * 0.6, lodLevel: 2 };
+    return null;
+  }
+
+  if (elev < 3 && slope < 0.15) {
+    if (roll < 0.25 * density) return { type: 'GrassClump', scale: 0.5 + rng.next() * 0.5, lodLevel: 2 };
+    return null;
+  }
+
+  return null;
+}
+
+function minDistToWater(pos, waterBodies) {
+  if (!waterBodies) return Infinity;
+  let minD = Infinity;
+  for (const wb of waterBodies) {
+    for (const pt of wb.pathPoints) {
+      const d = dist(pos, pt);
+      if (d < minD) minD = d;
+    }
+  }
+  return minD;
+}
+
+// ============================================================
 // Main Generation Pipeline
 // ============================================================
 
@@ -1376,7 +1580,10 @@ function generateMap(seed, generatorType = 'Organic') {
   // Analyze
   const analysis = analyze(nodes, edges);
 
-  return { nodes, edges, buildings, analysis, terrain, elevMap, preset, seed, generatorType };
+  // Decorations (Phase C)
+  const decorations = placeDecorations(nodes, edges, analysis, buildings, rng, preset, elevMap, terrain);
+
+  return { nodes, edges, buildings, decorations, analysis, terrain, elevMap, preset, seed, generatorType };
 }
 
 // Export for renderer
