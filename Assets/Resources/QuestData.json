@@ -10,7 +10,8 @@
       ],
       "reward": { "value": 10, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q002",
@@ -22,7 +23,8 @@
       ],
       "reward": { "value": 30, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q003",
@@ -34,7 +36,8 @@
       ],
       "reward": { "value": 25, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q004",
@@ -46,7 +49,8 @@
       ],
       "reward": { "value": 50, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q005",
@@ -58,7 +62,8 @@
       ],
       "reward": { "value": 40, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q006",
@@ -70,7 +75,8 @@
       ],
       "reward": { "value": 35, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q007",
@@ -82,7 +88,8 @@
       ],
       "reward": { "value": 100, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q008",
@@ -94,7 +101,8 @@
       ],
       "reward": { "value": 25, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q009",
@@ -106,7 +114,8 @@
       ],
       "reward": { "value": 30, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q010",
@@ -119,7 +128,8 @@
       ],
       "reward": { "value": 75, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q011",
@@ -131,7 +141,8 @@
       ],
       "reward": { "value": 60, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q012",
@@ -143,7 +154,8 @@
       ],
       "reward": { "value": 80, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q013",
@@ -156,7 +168,8 @@
       ],
       "reward": { "value": 45, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q014",
@@ -168,7 +181,8 @@
       ],
       "reward": { "value": 55, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q015",
@@ -180,7 +194,8 @@
       ],
       "reward": { "value": 50, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q016",
@@ -192,7 +207,8 @@
       ],
       "reward": { "value": 35, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q017",
@@ -205,7 +221,8 @@
       ],
       "reward": { "value": 120, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q018",
@@ -217,7 +234,8 @@
       ],
       "reward": { "value": 40, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q019",
@@ -233,7 +251,8 @@
       ],
       "reward": { "value": 90, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
     },
     {
       "id": "Q020",
@@ -246,7 +265,141 @@
       ],
       "reward": { "value": 150, "unlockId": "" },
       "prerequisites": [],
-      "isRepeatable": false
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q021",
+      "title": "Harbor District",
+      "description": "Explore 4 buildings near the waterfront.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 4, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Organic"]
+    },
+    {
+      "id": "Q022",
+      "title": "Grid Block Sweep",
+      "description": "Enter 6 buildings in the grid district.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 6, "current": 0 }
+      ],
+      "reward": { "value": 45, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Grid"]
+    },
+    {
+      "id": "Q023",
+      "title": "Mountain Lodge",
+      "description": "Find 3 documents in mountain buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 2, "current": 0 },
+        { "type": 1, "target": "Document", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 40, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Mountain"]
+    },
+    {
+      "id": "Q024",
+      "title": "Rural Homestead",
+      "description": "Enter 3 residential buildings in the countryside.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Residential", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 30, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Rural"]
+    },
+    {
+      "id": "Q025",
+      "title": "Urban Density",
+      "description": "Fully explore 2 buildings in a dense grid layout.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "*", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 70, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Grid"]
+    },
+    {
+      "id": "Q026",
+      "title": "Coastal Treasures",
+      "description": "Find 2 rare items along the coast.",
+      "questType": 3,
+      "objectives": [
+        { "type": 4, "target": "Rare", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 130, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Organic"]
+    },
+    {
+      "id": "Q027",
+      "title": "Highland Survey",
+      "description": "Visit 8 floors in mountain buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 2, "target": "*", "count": 8, "current": 0 }
+      ],
+      "reward": { "value": 45, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Mountain"]
+    },
+    {
+      "id": "Q028",
+      "title": "Country Notes",
+      "description": "Collect 4 notes in rural buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Note", "count": 4, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Rural"]
+    },
+    {
+      "id": "Q029",
+      "title": "Industrial Complex",
+      "description": "Fully explore an industrial building and find 5 containers.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "Industrial", "count": 1, "current": 0 },
+        { "type": 1, "target": "Container", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 85, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Grid", "Organic"]
+    },
+    {
+      "id": "Q030",
+      "title": "Total Coverage",
+      "description": "Enter 10 buildings and visit 15 floors.",
+      "questType": 2,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 10, "current": 0 },
+        { "type": 2, "target": "*", "count": 15, "current": 0 }
+      ],
+      "reward": { "value": 100, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
     }
   ]
 }

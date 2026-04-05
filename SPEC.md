@@ -984,9 +984,15 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
   - クラスタ中心+方向矢印、丘楕円輪郭、装飾位置ドット
   - MapControlUI にクラスタ・装飾統計情報追加
 
+### SP-040: マップビジュアルディレクション
+
+マップ描画の上位方針文書。北極星として **hybrid orthophoto relief** を採用。
+五原則（位相主権 / network / field / edge object / compositing surface）、5層レンダリングアーキテクチャ、道路確認性基準、モバイル予算戦略、完了条件を定める。
+SP-032 を含む全ビジュアル仕様の親文書。詳細は `docs/specs/map-visual-direction.md` を参照。
+
 ### SP-032: 地表合成レンダリングパイプライン (Slice 1-4 実装済み)
 
-Ground carrier mesh + CPU semantic masks + compositing shader で地表を航空地図風に表現。
+SP-040 の下位実装仕様。Ground carrier mesh + CPU semantic masks + compositing shader で地表を航空地図風に表現。
 道路・水面・建物の独立メッシュはそのまま維持し、地表側に hillshade/contour/moisture/influence 等の補助表現を合成する。
 
 - **GroundSemanticMaskBaker**: CPU前処理で2枚のRGBA8テクスチャを生成

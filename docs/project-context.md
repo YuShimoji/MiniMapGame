@@ -6,15 +6,13 @@
 - 環境: Unity 6.3 LTS (6000.3.6f1) / C# / URP 17.3.0 / InputSystem 1.18.0
 - ブランチ戦略: trunk-based (master のみ)
 - 現フェーズ: α (地形/道路/水面/Interior 実装完了 → 体験ループ構築中)
-- 直近の状態 (2026-03-26 session 9 nightshift):
-  - MiniGame 7ファイル完全削除 (1186行根絶) + SceneBootstrapper参照除去
-  - SP-001 Phase 1 全実装完了: QuestData/QuestManager/QuestLogUI/QuestEvents + 手書き10件JSON + SaveData永続化 + GameSession統計連携 + BuildingEnteredEvent
-  - BuildingInteraction: FindAnyObjectByType 3箇所をキャッシュ化
-  - 未使用using削除 (AnalysisVisualizer, CommercialFloorPlan, SpecialFloorPlan)
-  - SPEC.md §12/§18 + spec-index (SP-017 deprecated, SP-033 merged) 整合修正
+- 直近の状態 (2026-04-05 session 10):
+  - SP-040 (マップビジュアルディレクション) 新規作成: 北極星(hybrid orthophoto relief)、五原則、5層アーキテクチャ、モバイル予算、完了条件
+  - SP-001 Phase 2 完了: プリセット別フィルタ実装 (allowedPresets + MapManager参照)、クエスト30件に拡充 (20件universal + 10件preset-specific)
+  - SP-040 → SP-032 上位参照リンク確立、SPEC.md/CLAUDE.md/spec-index 同期
   - Unity Editor 手動検証未実施
-  - spec-index: 38エントリ (done 23 / partial 9 / deprecated 1 / legacy 1 / merged 2 / todo 3)
-  - 次の作業: Unity PlayMode検証 → SP-001 Phase 2 (クエスト拡充+HUD)
+  - spec-index: 39エントリ (done 23 / partial 10 / deprecated 1 / legacy 1 / merged 2 / todo 3)
+  - 次の作業: Unity PlayMode検証 (SP-001 Phase 2 + SP-032 Slice 5 + SP-060/061/062)
 
 ---
 
@@ -37,11 +35,11 @@
 
 ## CURRENT SLICE
 
-- スライス名: SP-001 Phase 2 (クエスト拡充+HUD)
-- ユーザー操作列: 起動 → タイトル → PLAY → マップ生成 → WASD探索 → 建物進入 → Discovery収集 → クエスト進捗自動追跡 → Qキーでクエストログ → タイマー0 → 結果画面
-- 成功状態: 20-30件クエスト + QuestHUD (画面端ミニ表示) + プリセット別フィルタ + SaveDataクエスト永続化
-- このスライスで必要な基盤能力: QuestManager (実装済み), QuestLogUI (実装済み), MapEventBus (既存)
-- このスライスから抽出されるツール要求: クエスト定義 JSON の拡充
+- スライス名: Unity PlayMode 検証ゲート
+- ユーザー操作列: Unity Bootstrap → マップ生成 → WASD探索 → 建物進入 → クエスト進捗確認 → SP-032地表検証 → Interior統合検証
+- 成功状態: SP-001 Phase 2 / SP-032 Slice 5 / SP-060/061/062 の統合検証完了
+- このスライスで必要な基盤能力: 全て実装済み。検証のみ
+- このスライスから抽出されるツール要求: なし (Unity Editor 手動操作)
 - 今回はやらないこと: プロシージャルクエスト生成 (Phase 3), オーディオ (SP-021), 追跡者
 
 ---
@@ -94,9 +92,9 @@
 ## HANDOFF SNAPSHOT
 
 - 現在の主レーン: Experience Slice + Runtime Core
-- 現在のスライス: SP-001 Phase 2 (クエスト拡充+HUD)
-- 今回変更した対象: MiniGame全削除(1186行), Quest基盤新規4ファイル(728行), BuildingInteractionリファクタ, SPEC.md §12/§18更新, spec-index整合修正
-- 次回最初に確認すべきファイル: QuestManager.cs, QuestLogUI.cs (Unity PlayMode検証)
-- 未確定の設計論点: 最終成果物像 (ゲーム単体 vs 動画制作Pipeline)
-- 今は触らない範囲: SP-032手動検証、オーディオ、パフォーマンス最適化
+- 現在のスライス: Unity PlayMode 検証ゲート
+- 今回変更した対象: SP-040新規作成(430行), プリセット別フィルタ実装(QuestData.allowedPresets+QuestManager.mapManager), クエスト30件に拡充(+10件), SP-032逆リンク追加, SPEC.md/CLAUDE.md/spec-index/runtime-state同期
+- 次回最初に確認すべきファイル: Unity Editor PlayMode (BootstrapTestScene)
+- 未確定の設計論点: 最終成果物像 (ゲーム単体 vs 動画制作Pipeline)、SP-040北極星用語の最終承認
+- 今は触らない範囲: 木漏れ日/建物陰影の実装(方向性メモ止まり)、オーディオ、パフォーマンス最適化
 - 記録債務: なし

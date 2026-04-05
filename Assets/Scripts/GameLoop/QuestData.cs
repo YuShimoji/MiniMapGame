@@ -65,6 +65,12 @@ namespace MiniMapGame.GameLoop
         public QuestReward reward = new();
         public List<string> prerequisites = new();
         public bool isRepeatable;
+
+        /// <summary>
+        /// Generator types this quest is valid for. Empty = all presets (universal).
+        /// Values are GeneratorType names: "Organic", "Grid", "Mountain", "Rural".
+        /// </summary>
+        public List<string> allowedPresets = new();
     }
 
     /// <summary>

@@ -237,12 +237,12 @@ Quest (ScriptableObject or JSON)
 11. ~~GameSessionManager にクエスト統計連携~~ [DONE]
 12. ~~InteriorController から BuildingEnteredEvent 発行~~ [DONE]
 
-### Phase 2: クエスト拡充 + HUD
+### Phase 2: クエスト拡充 + HUD [DONE]
 
-1. クエスト20-30件に拡充
-2. QuestHUD (画面端ミニ表示)
-3. プリセット別クエストフィルタ
-4. SaveData にクエスト状態保存
+1. ~~クエスト20-30件に拡充~~ [DONE] — 30件 (20件universal + 10件preset-specific)
+2. ~~QuestHUD (画面端ミニ表示)~~ [DONE] — session 9 で実装済み
+3. ~~プリセット別クエストフィルタ~~ [DONE] — QuestDefinition.allowedPresets + QuestManager.mapManager参照で GeneratorType 別フィルタ
+4. ~~SaveData にクエスト状態保存~~ [DONE] — Phase 1 で実装済み
 
 ### Phase 3: プロシージャルクエスト + チェーン
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MiniMapGame.Interior;
+using MiniMapGame.Runtime;
 
 namespace MiniMapGame.GameLoop
 {
@@ -12,6 +13,7 @@ namespace MiniMapGame.GameLoop
     {
         [Header("References")]
         public MapEventBus eventBus;
+        public MapManager mapManager;
 
         [Header("Quest Data")]
         [Tooltip("JSON TextAsset containing quest definitions")]
@@ -90,14 +92,27 @@ namespace MiniMapGame.GameLoop
                 _defLookup[def.id] = def;
             }
 
-            // Phase 1: activate all quests (no prerequisite filtering)
+            // Filter by current preset's generator type
+            string currentGenerator = "";
+            if (mapManager != null && mapManager.activePreset != null)
+                currentGenerator = mapManager.activePreset.generatorType.ToString();
+
+            int filtered = 0;
             foreach (var def in _definitions)
             {
+                if (def.allowedPresets != null && def.allowedPresets.Count > 0
+                    && !string.IsNullOrEmpty(currentGenerator)
+                    && !def.allowedPresets.Contains(currentGenerator))
+                {
+                    filtered++;
+                    continue;
+                }
+
                 var state = new QuestState(def);
                 _activeQuests[def.id] = state;
             }
 
-            Debug.Log($"[QuestManager] Loaded {_definitions.Count} quests, {_activeQuests.Count} active.");
+            Debug.Log($"[QuestManager] Loaded {_definitions.Count} quests, {_activeQuests.Count} active, {filtered} filtered out (preset: {currentGenerator}).");
         }
 
         // ════════════════════════════════════════

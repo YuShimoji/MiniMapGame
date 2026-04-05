@@ -10,7 +10,7 @@ React/Canvasプロトタイプから C#/Unity へ移植済み。
 → 詳細は `docs/project-context.md` を参照
 
 現フェーズ: α (体験ループ構築中)
-直近の状態 (2026-03-26 session 9 nightshift): MiniGame全削除(1186行根絶)+Quest基盤実装完了(QuestData/Manager/LogUI/Events+10件JSON+SaveData永続化+GameSession統計)。BuildingInteractionリファクタ。SPEC.md/spec-index整合修正。Phase 1実装完了・Unity検証待ち。
+直近の状態 (2026-04-05 session 10): SP-040(マップビジュアルディレクション)新規作成。SP-001 Phase 2完了(プリセット別フィルタ+30件クエスト)。全実装完了・Unity PlayMode検証待ち。
 
 ## DECISION LOG
 
@@ -135,7 +135,8 @@ Assets/
 - 装飾: DecorationPlacer/Spawner (StreetLight/Tree/Bench/Bollard) + LOD 3段階
 - 海岸: 4方向ランダム, 丘陵は海岸・道路ノード回避
 - セーブ/ロード: JSON → `Application.persistentDataPath/save.json`
-- 地表: SP-032 mask-driven compositing (CPU bake 2xRGBA8 → GridGround.shader 13段階合成, ThemeManager lifecycle管理)
+- マップビジュアル方針: SP-040 (hybrid orthophoto relief — 上位方針、五原則、5層アーキテクチャ、モバイル予算、完了条件)
+- 地表: SP-032 mask-driven compositing (CPU bake 2xRGBA8 → GridGround.shader 13段階合成, ThemeManager lifecycle管理) — SP-040の下位実装仕様
 
 ## ALERT FILTER
 - CRITICAL: ビルドエラー、データ不整合、セキュリティ
