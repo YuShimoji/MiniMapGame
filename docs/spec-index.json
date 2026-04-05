@@ -288,6 +288,15 @@
     "summary": "マップ描画の上位方針文書。北極星(hybrid orthophoto relief)、五原則、ネガティブ定義、5層レンダリングアーキテクチャ、道路確認性基準、モバイル予算戦略、木漏れ日/建物陰影比較、3層ロードマップ、完了条件。SP-032の上位に位置する"
   },
   {
+    "id": "SP-041",
+    "title": "Observed Surface Synthesis",
+    "status": "partial",
+    "pct": 15,
+    "cat": "system",
+    "file": "docs/specs/observed-surface-synthesis.md",
+    "summary": "relief の延長では出ない『上空観測密度』を扱う子仕様。Field / Grammar / Glyph 方式。Phase A の4段階試行 (shader直訳/レイヤー分離/glyph散布/surface classification) は全て不採用。ImageData操作 → Canvas 2D パス描画 API による patch/glyph 構造転換が次ステップ"
+  },
+  {
     "id": "SP-032",
     "title": "地表合成レンダリングパイプライン",
     "status": "partial",
