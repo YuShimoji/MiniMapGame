@@ -1,8 +1,15 @@
-# MiniMapGame — Technical Specification
+# MiniMapGame — Legacy Aggregate Technical Specification
 
 > Version: 3.1.0
 > Date: 2026-03-13
 > Reference: map-generator-v3.jsx (React/Canvas prototype, 793 lines)
+
+> Status: legacy aggregate specification.
+> This file is not a normal resume entrypoint, not current project status, and
+> not a next-work authority. Use it only when `docs/spec-index.json`
+> explicitly points to a legacy entry or when migrating old specifications.
+> Current position lives in `docs/project-context.md`; active work and
+> task-specific authority live in `docs/spec-index.json` and `docs/specs/*.md`.
 
 ---
 
@@ -18,11 +25,10 @@
 2. ランドマーク建物に接近 → インテリアマップ自動生成 → 内部探索
 3. 発見物の収集（配置ロジックは再設計予定）
 
-> **凍結中の機能** (コード残存・開発対象外):
-> - エンカウントシステム（EncounterZone: チョークポイント自動ダメージ）
-> - 脱出判断システム（ExtractionPoint）
-> - HPシステム（PlayerStats）
-> - 将来候補: 追跡者（対処不可能な敵）による探索の緊張感
+> **旧GameLoopの扱い**:
+> - 旧タクティカル/脱出ゲーム用の HP・エンカウント・脱出系コードは削除済み。
+> - 現行のゲームループ実装は SP-001 の GameSession / Quest 系に集約されている。
+> - 追跡者などの緊張感要素は未定義の将来候補であり、現行の受け入れ基準ではない。
 
 ---
 
@@ -896,7 +902,7 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 
 ---
 
-## 18. 実装済み機能一覧 (2026-03-18 時点)
+## 18. 主要実装状態
 
 ### Phase A-D: 基盤 (完了)
 - データ構造全種、SeededRng、SpatialHash
@@ -905,7 +911,7 @@ Vector3 ToWorldPosition(Vector2 jsxCoord, MapPreset preset)
 - GameLoop — SP-001で GameSessionManager ベースに再設計済み (旧11クラス削除)
 - ミニゲーム3種 — **削除済み** (探索ゲーム転換に伴いフロー切断、7ファイル根絶)
 
-### Phase E: ビジュアル (完了)
+### Phase E: ビジュアル基盤 (実装済み、最終品質は未成立)
 - ライティング/ポストプロセス/フォグ/パーティクル
 - GridGround shader (グリッド線 + 高度色 + 斜面色)
 - テーマシステム (Dark/Parchment)
@@ -1093,19 +1099,26 @@ SP-040 の下位実装仕様。Ground carrier mesh + CPU semantic masks + compos
 
 ---
 
-## 21. 今後の方針・ユーザー要望
+## 21. Legacy Backlog Notes
+
+This section is historical backlog material. It must not be used to select
+next work, override current non-goals, or define acceptance targets.
 
 ### 開発方針
-- **速度重視**: テスト最小限、実装優先
-- **自律実行**: 推奨選択肢・改善提案を順次実行。意思決定またはテストが必要になるまで前進
+- **運用規約**: エージェントの作業規約は `docs/ai/AGENT_RULES.md` を参照
+- **現在地**: 作業軸と禁止される自動復帰先は `docs/project-context.md` を参照
 - **日本語**: コミュニケーションは日本語
 - **並列処理**: 可能な限りタスクを並列実行
 
-### 未実装・次期候補
-- **SP-001 ゲームループ再設計**: Sandbox + Quest。探索の目的と報酬体系 (draft/0%)
+### Legacy backlog entries
+
+The entries below are not next actions. Check `docs/spec-index.json` and
+`docs/project-context.md` before opening any of them.
+
+- **SP-001 ゲームループ再設計**: Sandbox + Quest。Phase0-2実装済み、残りは Unity 検証と Phase3 候補
 - **SP-020 Layer 2**: マップ上の探索可視化 (建物マーカー、ミニマップ連携)
-- **SP-021 オーディオ**: 環境音、BGM、SE (todo/0%)
-- **SP-022 UIメニュー**: ポーズ、設定画面 (todo/0%)
-- **SP-019 パフォーマンス最適化**: メッシュ結合、GPU instancing、オブジェクトプール
+- **SP-021 オーディオ**: 環境音、BGM、SE (postponed/0%)
+- **SP-022 UIメニュー**: ポーズ、設定画面 (postponed/0%)
+- **SP-019 パフォーマンス最適化**: メッシュ結合、GPU instancing、オブジェクトプール (postponed/0%)
 - **SP-025 W-4/W-6/W-7**: 浜辺遷移帯、河口デルタ、水辺配置システム
 - **SP-026 style拡張**: InteriorStyle → 生成バイアス

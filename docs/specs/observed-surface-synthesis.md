@@ -284,7 +284,7 @@ grammar と glyph が必須になる。
   - ただし「森の見え方」を担当させない
 
 - `BuildingPlacer`
-  - footprint は hard edge の正本
+  - footprint は hard edge の基準データ
   - observed surface 側では roof cluster / parcel clutter の密度源に使う
 
 ---

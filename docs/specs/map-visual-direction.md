@@ -2,7 +2,7 @@
 
 **Status**: partial
 **Category**: system
-**上位参照元**: SPEC.md, CLAUDE.md Key Decisions
+**上位参照元**: docs/project-context.md, docs/spec-index.json
 **下位実装仕様**: SP-032 (地表合成レンダリングパイプライン), SP-041 (Observed Surface Synthesis)
 
 ---

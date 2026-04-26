@@ -164,11 +164,11 @@
   {
     "id": "SP-019",
     "title": "パフォーマンス最適化",
-    "status": "todo",
+    "status": "postponed",
     "pct": 0,
     "cat": "infra",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "メッシュ結合、GPU instancing、オブジェクトプール"
+    "file": "SPEC.md#21-legacy-backlog-notes",
+    "summary": "旧SPEC由来の将来候補。現在の active visual path の verified blocker になるまで通常再開・次作業候補にしない"
   },
   {
     "id": "SP-020",
@@ -182,20 +182,20 @@
   {
     "id": "SP-021",
     "title": "オーディオシステム",
-    "status": "todo",
+    "status": "postponed",
     "pct": 0,
     "cat": "system",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "環境音、BGM、SE"
+    "file": "SPEC.md#21-legacy-backlog-notes",
+    "summary": "旧SPEC由来の将来候補。現在の非ゴール。明示依頼なしに通常再開・次作業候補にしない"
   },
   {
     "id": "SP-022",
     "title": "UIシステム拡張",
-    "status": "todo",
+    "status": "postponed",
     "pct": 0,
     "cat": "ui",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "ポーズメニュー、設定画面、カメラプリセット"
+    "file": "SPEC.md#21-legacy-backlog-notes",
+    "summary": "旧SPEC由来の将来候補。現在の非ゴール。明示依頼なしに通常再開・次作業候補にしない"
   },
   {
     "id": "SP-023",

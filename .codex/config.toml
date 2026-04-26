@@ -1,6 +1,6 @@
 # Minimal Codex project config scaffold.
 # Keep this file short and project-specific.
-# Canonical behavioral rules live in docs/ai/*.md and AGENTS.md.
+# Canonical behavioral rules live in docs/ai/AGENT_RULES.md.
 
 model = "gpt-5-codex"
 approval_policy = "on-request"

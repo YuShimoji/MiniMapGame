@@ -1,6 +1,19 @@
 # Invariants
 
-破ってはいけない条件・責務境界・UX不変量を保持する正本。
+Status: supplemental
+
+This file is not a normal resume entrypoint and must not be treated as the
+project source of truth. Normal resume uses only the chain in
+`docs/ai/AGENT_RULES.md`.
+
+Use this file as a task-specific invariant catalog only when the active task
+touches deterministic generation, pipeline ordering, rendering/data
+separation, UX invariants, or when a task spec explicitly points here.
+If this file conflicts with `docs/ai/AGENT_RULES.md`,
+`docs/project-context.md`, `docs/runtime-state.md`, `docs/spec-index.json`,
+or an active task-specific spec, fix the conflict before relying on this file.
+
+破ってはいけない条件・責務境界・UX不変量を保持する補助カタログ。
 
 ## Architecture Invariants
 
