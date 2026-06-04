@@ -1,7 +1,7 @@
 # SP-001: ゲームループ再設計 — Sandbox + Quest
 
 status: partial
-pct: 30
+pct: 90
 cat: core
 
 ## 概要
@@ -9,6 +9,9 @@ cat: core
 ゲームのコアループを「Sandbox型 + クエストシステム」として再定義する。
 旧来のタクティカル/脱出ゲーム用GameLoop (HP, エンカウント, 脱出) を廃止し、
 自由探索を軸にクエスト駆動の目的・報酬を段階的に追加していく設計。
+
+この文書は SP-001 の実装状態と局所受け入れ条件を扱う。最終成果物像や
+プロジェクト全体の受け入れ基準はここでは定義しない。
 
 ### 設計哲学
 
@@ -198,7 +201,7 @@ Quest (ScriptableObject or JSON)
 
 ### Phase 0: タイマーセッション基盤 [DONE] ✓
 
-5分間の閉じた体験ループ。クエストシステムなしで「探索→発見→スコア」の最小ループを成立させる。
+固定長セッションの実装基盤。クエストシステムなしで「探索→発見→スコア」の最小ループを成立させる。
 
 実装済みコンポーネント:
 - `GameSessionManager` — セッションライフサイクル (Title/Playing/Paused/Results)
@@ -208,14 +211,14 @@ Quest (ScriptableObject or JSON)
 
 フロー:
 ```
-タイトル画面 → PLAY → マップ生成 → 5分タイマー開始
+タイトル画面 → PLAY → マップ生成 → タイマー開始
   → WASD探索 → 建物進入 → Discovery収集 → HUDカウンタ更新
   → ESC → ポーズ → Resume / Restart / Quit
   → タイマー0 → 結果画面 (入場建物数/完全探索数/発見数)
   → Play Again → タイトルへ
 ```
 
-受け入れ条件:
+SP-001 Phase 0 の局所受け入れ条件:
 1. タイトル画面からPLAYで開始できる
 2. HUDにタイマー(M:SS)と進捗カウンタが表示される
 3. ESCでポーズ/リジューム/リスタート/終了ができる
@@ -228,18 +231,21 @@ Quest (ScriptableObject or JSON)
 2. ~~GameState 簡素化 (encounterCount/PlayerStats除去)~~ [DONE]
 3. ~~SaveManager から GameLoopController 参照除去~~ [DONE]
 4. ~~SceneBootstrapper から旧GameLoop関連コード除去~~ [DONE]
-5. ~~MiniGameCompletedEvent を MiniGame namespace に移動~~ [DONE]
-6. QuestData / QuestObjective / QuestState データクラス作成
-7. QuestManager 最小実装 (MapEventBus購読 → 目標進捗追跡)
-8. 手書きクエスト10件 (JSON)
-9. QuestLogUI (Tabメニュー内タブ)
+5. ~~MiniGameCompletedEvent を MiniGame namespace に移動~~ [DONE] → MiniGame全削除済み
+6. ~~QuestData / QuestObjective / QuestState データクラス作成~~ [DONE]
+7. ~~QuestManager 最小実装 (MapEventBus購読 → 目標進捗追跡)~~ [DONE]
+8. ~~手書きクエスト10件 (JSON)~~ [DONE]
+9. ~~QuestLogUI (Qキートグル)~~ [DONE]
+10. ~~SaveData にクエスト状態保存~~ [DONE]
+11. ~~GameSessionManager にクエスト統計連携~~ [DONE]
+12. ~~InteriorController から BuildingEnteredEvent 発行~~ [DONE]
 
-### Phase 2: クエスト拡充 + HUD
+### Phase 2: クエスト拡充 + HUD [DONE]
 
-1. クエスト20-30件に拡充
-2. QuestHUD (画面端ミニ表示)
-3. プリセット別クエストフィルタ
-4. SaveData にクエスト状態保存
+1. ~~クエスト20-30件に拡充~~ [DONE] — 30件 (20件universal + 10件preset-specific)
+2. ~~QuestHUD (画面端ミニ表示)~~ [DONE] — session 9 で実装済み
+3. ~~プリセット別クエストフィルタ~~ [DONE] — QuestDefinition.allowedPresets + QuestManager.mapManager参照で GeneratorType 別フィルタ
+4. ~~SaveData にクエスト状態保存~~ [DONE] — Phase 1 で実装済み
 
 ### Phase 3: プロシージャルクエスト + チェーン
 

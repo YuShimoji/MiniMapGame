@@ -13,7 +13,7 @@ using MiniMapGame.Data;
 using MiniMapGame.GameLoop;
 using MiniMapGame.UI;
 using MiniMapGame.Interior;
-using MiniMapGame.MiniGame;
+
 
 namespace MiniMapGame.EditorTools
 {
@@ -272,8 +272,8 @@ namespace MiniMapGame.EditorTools
             // 14b. Interior Feedback UI (toast + floor indicator)
             SetupInteriorFeedbackUI(canvas);
 
-            // 15. MiniGame System
-            SetupMiniGameSystem();
+            // 15. Quest System
+            SetupQuestSystem(canvas);
 
             // 16. Save Manager
             SetupSaveManager(mapManager);
@@ -395,6 +395,7 @@ namespace MiniMapGame.EditorTools
             sessionMgr.eventBus = eventBus;
             sessionMgr.explorationProgress = explorationProgress;
             sessionMgr.mapControlUI = Object.FindAnyObjectByType<MapControlUI>();
+            sessionMgr.questManager = Object.FindAnyObjectByType<QuestManager>();
 
             var uiGo = FindOrCreate("GameSessionUI", canvas.transform);
             var sessionUI = EnsureComponent<GameSessionUI>(uiGo);
@@ -1002,6 +1003,7 @@ namespace MiniMapGame.EditorTools
             var explorationMgr = EnsureComponent<ExplorationProgressManager>(explorationGo);
             explorationMgr.eventBus = eventBus;
             controller.explorationProgress = explorationMgr;
+            controller.eventBus = eventBus;
 
             // BuildingMarkerManager (SP-020 Layer 2)
             var markerMgrGo = FindOrCreate("BuildingMarkerManager");
@@ -1049,59 +1051,77 @@ namespace MiniMapGame.EditorTools
             EditorUtility.SetDirty(explorationMenu);
         }
 
-        // ── MiniGame System ──
+        // ── Quest System ──
 
-        private static void SetupMiniGameSystem()
+        private static void SetupQuestSystem(Canvas canvas)
         {
-            // Canvas for mini-game UI (separate overlay)
-            var canvasGo = FindOrCreate("MiniGameCanvas");
-            var canvas = EnsureComponent<Canvas>(canvasGo);
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 10;
-            EnsureComponent<CanvasScaler>(canvasGo);
-            EnsureComponent<GraphicRaycaster>(canvasGo);
-            canvasGo.SetActive(false);
-
-            // UI Root (full-screen RectTransform)
-            var uiRootGo = FindOrCreate("MiniGameUIRoot", canvasGo.transform);
-            var uiRoot = uiRootGo.GetComponent<RectTransform>();
-            if (uiRoot == null) uiRoot = uiRootGo.AddComponent<RectTransform>();
-            uiRoot.anchorMin = Vector2.zero;
-            uiRoot.anchorMax = Vector2.one;
-            uiRoot.sizeDelta = Vector2.zero;
-
-            // MiniGameManager
-            var managerGo = FindOrCreate("MiniGameManager");
-            var manager = EnsureComponent<MiniGameManager>(managerGo);
-            manager.miniGameCanvas = canvas;
-            manager.uiRoot = uiRoot;
-
-            // EventBus
             var eventBus = AssetDatabase.LoadAssetAtPath<MapEventBus>("Assets/Resources/MapEventBus.asset");
-            manager.eventBus = eventBus;
 
-            // Register game instances
-            manager.RegisterGame(new TimingCombatGame());
-            manager.RegisterGame(new MemoryMatchGame());
-            manager.RegisterGame(new TrapDodgeGame());
+            // QuestManager
+            var questMgrGo = FindOrCreate("QuestManager");
+            var questMgr = EnsureComponent<QuestManager>(questMgrGo);
+            questMgr.eventBus = eventBus;
 
-            // Wire into InteriorRenderer
-            var intRenderer = Object.FindAnyObjectByType<InteriorRenderer>();
-            if (intRenderer != null)
-            {
-                intRenderer.miniGameManager = manager;
-                EditorUtility.SetDirty(intRenderer);
-            }
+            // Load quest data from Resources
+            var questData = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Resources/QuestData.json");
+            questMgr.questDataAsset = questData;
 
-            // Wire into InteriorController
-            var intController = Object.FindAnyObjectByType<InteriorController>();
-            if (intController != null)
-            {
-                intController.miniGameManager = manager;
-                EditorUtility.SetDirty(intController);
-            }
+            // QuestLogUI (Q key toggle)
+            var questLogGo = FindOrCreate("QuestLogUI");
+            var questLogUI = EnsureComponent<QuestLogUI>(questLogGo);
+            questLogUI.questManager = questMgr;
+            questLogUI.eventBus = eventBus;
 
-            EditorUtility.SetDirty(manager);
+            var logPanelGo = FindOrCreate("QuestLogPanel", canvas.transform);
+            RemoveComponentIfPresent<TextMeshProUGUI>(logPanelGo);
+            RemoveComponentIfPresent<Image>(logPanelGo);
+            SetRectFromCenter(logPanelGo, 0f, 0f, 600f, 500f);
+
+            var logBgGo = FindOrCreate("Background", logPanelGo.transform);
+            var logBg = EnsureComponent<Image>(logBgGo);
+            logBg.color = new Color(0.03f, 0.05f, 0.08f, 0.92f);
+            var logOutline = EnsureComponent<Outline>(logBgGo);
+            logOutline.effectColor = new Color(0.42f, 0.35f, 0.18f, 0.45f);
+            logOutline.effectDistance = new Vector2(2f, -2f);
+            SetRect(logBgGo, Vector2.zero, Vector2.one);
+
+            var logTextGo = FindOrCreate("Text", logPanelGo.transform);
+            var logTmp = EnsureComponent<TextMeshProUGUI>(logTextGo);
+            logTmp.alignment = TextAlignmentOptions.TopLeft;
+            logTmp.fontSize = 16f;
+            logTmp.color = new Color(0.92f, 0.97f, 1f, 0.96f);
+            logTmp.richText = true;
+            logTmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRect(logTextGo, new Vector2(0.04f, 0.04f), new Vector2(0.96f, 0.96f));
+
+            questLogUI.logPanel = logPanelGo;
+            questLogUI.logText = logTmp;
+            logPanelGo.SetActive(false);
+
+            // QuestHUD (always-visible mini display, top-right)
+            var questHudGo = FindOrCreate("QuestHUD");
+            var questHUD = EnsureComponent<QuestHUD>(questHudGo);
+            questHUD.questManager = questMgr;
+            questHUD.eventBus = eventBus;
+
+            var hudTextGo = FindOrCreate("QuestHUDText", canvas.transform);
+            var hudTmp = EnsureComponent<TextMeshProUGUI>(hudTextGo);
+            hudTmp.alignment = TextAlignmentOptions.TopRight;
+            hudTmp.fontSize = 14f;
+            hudTmp.color = new Color(0.82f, 0.87f, 0.92f, 0.85f);
+            hudTmp.richText = true;
+            hudTmp.textWrappingMode = TextWrappingModes.Normal;
+            SetRectFromTopRight(hudTextGo, 15f, 15f, 280f, 120f);
+            questHUD.hudText = hudTmp;
+
+            var hudShadow = hudTextGo.AddComponent<Shadow>();
+            hudShadow.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            hudShadow.effectDistance = new Vector2(1f, -1f);
+
+            EditorUtility.SetDirty(questMgr);
+            EditorUtility.SetDirty(questLogUI);
+            EditorUtility.SetDirty(questHUD);
+            Debug.Log("[SceneBootstrapper] Quest system set up.");
         }
 
         // ── Save Manager ──
@@ -1115,6 +1135,10 @@ namespace MiniMapGame.EditorTools
             var explorationMgr = Object.FindAnyObjectByType<ExplorationProgressManager>();
             if (explorationMgr != null)
                 sm.explorationProgress = explorationMgr;
+
+            var questMgr = Object.FindAnyObjectByType<QuestManager>();
+            if (questMgr != null)
+                sm.questManager = questMgr;
 
             // Wire into MapControlUI
             var controlUI = Object.FindAnyObjectByType<MapControlUI>();

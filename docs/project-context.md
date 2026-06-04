@@ -1,111 +1,121 @@
 # Project Context
 
-## PROJECT CONTEXT
+## Current Position
 
-- プロジェクト名: MiniMapGame
-- 環境: Unity 6.3 LTS (6000.3.6f1) / C# / URP 17.3.0 / InputSystem 1.18.0
-- ブランチ戦略: trunk-based (master のみ)
-- 現フェーズ: α (地形/道路/水面/Interior 実装完了 → ブラウザプレビュー構築中)
-- 直近の状態 (2026-04-02 session 9):
-  - 方向転換: Unity の高度な体験ループ構築 → シンプルなブラウザ鳥瞰図プレビューを優先
-  - browser-preview/ 新設: C# パイプラインを JS に移植した開発プレビューツール
-  - Phase A (道路網+建物) + Phase B (地形+水域) 完了。4 Generator + 建物 + 丘陵 + 川 + 海岸
-  - Phase C (装飾) 未着手
-  - INVARIANTS.md を実内容化 (Architecture / Visual Iteration 原則)
-  - 「5分間遊んで楽しいか」が AI session 7 起源と判明。ユーザー未承認の可能性
-  - spec-index: 38エントリ (done 23 / partial 10 / legacy 1 / merged 1 / todo 3)
-  - 次の作業: Phase C (装飾移植) or パラメータ UI or 最終成果物像の再定義
+- Project: MiniMapGame
+- Environment: Unity 6.3 LTS (6000.3.6f1) / C# / URP 17.3.0 / InputSystem 1.18.0
+- Branch strategy: trunk-based (`master`)
+- Active lane: Rendering Model Reassessment
+- Active slice: SP-041 patch/glyph structure transition
+- Active artifact: browser-preview observed surface layer, then Unity runtime transfer if the visual model proves useful
+- Current bottleneck: the map visual model still lacks convincing observed-surface density; more implementation on the old ImageData path does not address that bottleneck
 
----
+## Canonical Resume Chain
 
-## CURRENT DEVELOPMENT AXIS
+Normal resume uses only this chain:
 
-- 主軸: 体験ループ構築 (SP-001 体験プロトタイプ → クエスト基盤)
-- この軸を優先する理由: 3セッション整備偏重 (refresh-2026-03-19 で drift 検出)。エンジン基盤は成熟。「なぜ探索するか」の回答が最大の欠落
-- 今ここで避けるべき脱線: docs 整備のみの作業ブロック、新規エンジン機能追加、コンテンツ執筆
+1. `docs/ai/AGENT_RULES.md`
+2. `docs/project-context.md`
+3. `docs/runtime-state.md`
+4. `docs/spec-index.json`
+5. Task-specific spec files referenced by `docs/spec-index.json`
 
----
+Session notes, refresh notes, audit reports, delegation prompts, and archived
+decision logs are historical material. Do not use them as active resume
+entrypoints.
 
-## CURRENT LANE
+## Document Authority Guardrails
 
-- 主レーン: Experience Slice + Runtime Core
-- 副レーン: なし (旧GameLoop整理は完了)
-- 今このレーンを優先する理由: SP-001 Phase 1 後半 (Quest基盤) で体験を閉じる
-- いまは深入りしないレーン: Acceptance (手動検証は Unity Editor 依存)
+- `SPEC.md` is a legacy aggregate specification. It may be opened only when
+  `docs/spec-index.json` points to a legacy entry or when performing
+  historical/spec migration work. It does not define current position,
+  next work, final product scope, or acceptance targets.
+- `docs/INVARIANTS.md` is a supplemental invariant catalog, not a resume
+  entrypoint. Read it only for tasks touching deterministic generation,
+  pipeline ordering, rendering/data separation, or when a task spec points to
+  it.
+- `docs/delegation-prompts.md` is an inert utility. Its task descriptions and
+  read order are not active instructions unless regenerated from the current
+  resume chain.
+- Specs with `legacy`, `merged`, `deprecated`, or `postponed` status in
+  `docs/spec-index.json` are not active work sources.
 
----
+## Active Context
 
-## CURRENT SLICE
+- SP-040 remains the visual north star.
+- SP-041 defines the observed-surface layer below SP-040.
+- Four ImageData-based attempts have been rejected as implementation direction:
+  shader translation, separated alpha layers, unguided glyph scatter, and enum
+  surface classification.
+- Next visual direction: field-driven patch/glyph synthesis using Canvas 2D path
+  operations such as `Path2D`, `clip`, `createPattern`, and
+  `globalCompositeOperation`.
+- `browser-preview` is a fast direction probe. It is not the final quality gate
+  and not a shader implementation source of truth.
+- Unity PlayMode/manual verification is still needed for final runtime behavior,
+  but it is not the active lane until the visual model is clarified.
 
-- スライス名: SP-001 Phase 1 後半 (最小クエスト基盤)
-- ユーザー操作列: 起動 → タイトル → PLAY → マップ生成 → WASD探索 → 建物進入 → Discovery収集 → クエスト進捗自動追跡 → Qキーでクエストログ → タイマー0 → 結果画面
-- 成功状態: Phase 0 の受け入れ条件5項目 + 最低10件クエストがアクティブ + クエストログで確認可能
-- このスライスで必要な基盤能力: GameSessionManager (実装済み), QuestManager/QuestData (未実装), MapEventBus連携 (既存)
-- このスライスから抽出されるツール要求: クエスト定義 JSON のオーサリング支援
-- 今回はやらないこと: プロシージャルクエスト生成 (Phase 3), オーディオ (SP-021), 追跡者
+## Recovered Local Context
 
----
+- The merged local branch carried `df0e0c3`, which ports C# `DecorationPlacer`
+  behavior into `browser-preview/map-gen.js` and draws generated decoration
+  details from `browser-preview/renderer.js`.
+- That decoration work is preserved as browser-preview detail, but it does not
+  override the active SP-041 direction. The next useful visual move is still
+  field-driven patch/glyph structure, not more ImageData tuning.
+- The same local commit carried an older note that the final deliverable was
+  both browser preview and Unity game. That note is retained here only as
+  historical context; the current canonical final product definition remains
+  undefined until the user defines it explicitly.
+- Local preview screenshots from the Phase C decoration pass are retained under
+  `browser-preview/preview-*.png`. Treat them as stale evidence predating the
+  SP-041 direction change, not as proof that the current observed-surface model
+  is acceptable.
 
-## FINAL DELIVERABLE IMAGE
+## Current Non-Goals
 
-- 最終成果物: **両方並行** — (1) ブラウザ鳥瞰図プレビューツール (マップ生成結果の即時確認・パラメータ反復調整) + (2) Unity 手続き型マップ探索ゲーム (プロシージャル都市の探索・建物内部での発見体験)
-- 最終的なユーザーワークフロー:
-  - ブラウザ: seed 指定 → 生成 → 目視確認 → パラメータ調整 → 再生成
-  - Unity: タイトル → プリセット選択 → マップ生成 → 自由探索 + クエスト → 結果 → リプレイ
-- 受け入れ基準: **未定** (マップ生成の完成度を優先。「5分間遊んで楽しいか」は AI session 7 起源・ユーザー未承認のため保留)
-- 現時点で未確定な要素:
-  - 受け入れ基準の正式定義
-  - 動画制作者向け Pipeline (撮影用カメラ、シーン制御、書き出し) — 要件未定義
-  - 手動介入 vs 自動化の境界 — 要件未定義
-  - 追跡者システムの導入判断
-  - 累積報酬 / メタ進行の設計
+Do not automatically return to these areas without a fresh explicit request or
+a verified blocker on the active visual path:
 
----
+- Quest expansion or SP-001 Phase 3 work
+- Interior integration/manual verification
+- Unity manual verification as a substitute for visual-model repair
+- Existing ImageData-based surface classification tuning
+- Audio, menus, new gameplay systems, or production pipeline work
 
-## DECISION LOG
+## Final Deliverable
 
-最新の決定のみ保持。古い決定は `docs/archive/decision-log-archive.md` を参照。
+The final product definition is currently undefined and requires explicit user
+definition before it is used as an acceptance target.
 
-| 日付 | 決定事項 | 選択肢 | 決定理由 |
-|------|----------|--------|----------|
-| 2026-04-03 | 最終成果物: ブラウザプレビュー + Unity ゲームの両方並行 | Unity のみ / ブラウザのみ / 両方並行 | ユーザー選択 (session 10) |
-| 2026-04-03 | 受け入れ基準は後回し。マップ生成完成度を優先 | 採用 / 別基準 / 後回し | 「5分間遊んで楽しいか」は AI 起源。ユーザーは基準定義を後回しにして完成度を優先する判断 (session 10) |
-| 2026-04-02 | ブラウザ鳥瞰図プレビューを開発ツールとして構築 | Unity のみ / ブラウザ追加 / ブラウザ移行 | Unity 起動が重く反復が遅い。C# パイプラインの JS 移植でブラウザ即時確認を実現 |
-| 2026-03-26 | GameState.cs 完全削除 (デッドコード) | 削除 / 簡素化維持 | collectedValue/collectedItemIds は外部から一切参照なし。DiscoveryはInteriorSessionState経由。SaveDataからもフィールド削除 |
-| 2026-03-26 | SceneBootstrapper #if false ブロック完全削除 (旧GameLoopUI+PlayerHUD ~230行) | 削除 / 凍結維持 | Unity再コンパイル不要。参照先クラス (GameLoopUI/GameLoopController/PlayerHUD) は既に削除済み |
-| 2026-03-23 | 旧GameLoop 11クラス完全削除 (SP-001 Phase 1) | 削除 / 凍結維持 / 段階的移行 | GameSessionManagerが完全に代替。凍結コードの保守負債を解消 |
-| 2026-03-22 | 体験プロトタイプ方針D採択: 5分タイマーセッション | A:SP-001設計 / B:手動検証117 / C:探索FBループ / D:体験プロトタイプ | 3セッション整備偏重からの脱却。最小閉じた体験ループを最優先 |
-| 2026-03-18 | Discoveryテキスト方針を全面変更: 空間客観描写 | 旧:ポストアポカリプス陰謀 / 新:空間環境断片 | 人間要素・固有名詞・時間軸・主観知覚を排除 |
-| 2026-03-18 | 建物近接フィードバックを色変化+emission方式に決定 | A:アウトライン / B:色変化 / C:パーティクル / D:テキストのみ | shader追加不要で低コスト |
-| 2026-03-11 | 操作モデルをWASD三人称に変更 + NavMesh削除 | WASD / クリック維持 / 両対応 | 探索ゲームにはWASD/スティックが自然。228秒フリーズ原因を根本除去 |
-| 2026-03-08 | ジャンルを「探索・発見ゲーム」に再定義 | タクティカル / 探索・発見 / リスク管理 | コア体験は未知マップの探索 |
+Do not use prior session language about a fixed session length or a closed game
+loop as an active acceptance criterion. Existing timer or quest code may remain
+as implementation state, but it does not define the final product target.
 
----
+## Effective Decision Log
 
-## IDEA POOL
+| Date | Decision | Status | Reason |
+|------|----------|--------|--------|
+| 2026-04-27 | Tighten documentation authority boundaries | active | Prevent old aggregate specs, supplemental invariant catalogs, merged plans, and delegation templates from acting as hidden resume or next-work sources |
+| 2026-04-06 | Use `browser-preview` as a fast visual direction probe before Unity transfer | active | Iteration speed is needed for palette, layering, and readability decisions; Unity remains the final runtime check |
+| 2026-04-06 | Reject the current ImageData-based observed-surface direction | active | The attempts reduce visual density to per-pixel color decisions and lose patch structure, anisotropy, and internal detail |
+| 2026-04-06 | Move SP-041 toward field-driven patch/glyph synthesis | active | Observed-surface density needs fields, grammars, and repeated marks rather than scalar surface classes |
+| 2026-04-06 | Keep SP-040 as the parent visual direction and SP-041 as the observed-surface child spec | active | SP-040 owns visual goals and layer responsibilities; SP-041 owns the surface-density method |
+| 2026-03-26 | Remove the old tactical GameLoop implementation and use SP-001/GameSession-based code as the replacement path | active | HP, encounter, extraction, and old UI code no longer match the exploration direction |
+| 2026-03-26 | Remove the MiniGame subsystem | active | The subsystem was disconnected from the current exploration flow |
+| 2026-03-18 | Keep Discovery text as objective spatial/environmental description | active | Text should avoid human actors, proper nouns, timeline claims, and subjective perception |
+| 2026-03-11 | Use WASD third-person movement and no NavMesh movement path | active | Exploration control is direct movement; the old NavMesh model caused editor/runtime friction |
 
-| ID | アイデア | 状態 | 関連領域 | 再訪トリガー |
-|----|----------|------|----------|--------------|
-| IP-001 | 追跡者 (対処不可能な敵) | hold | core/SP-001 | Sandbox+クエストの基本体験が安定した時 |
-| IP-002 | プロシージャルクエスト生成 | hold | core/SP-001 Phase 3 | Phase 2 のクエスト拡充が完了した時 |
-| IP-003 | 動画制作者向け Pipeline (撮影カメラ・シーン制御) | hold | tooling | 最終成果物像の「動画制作者」要件が定義された時 |
-| IP-004 | 累積報酬 / メタ進行 | hold | core/SP-020 L3 | SP-001 Phase 2 完了時 |
-| IP-005 | SP-032 Ideal段階 (MacroNoiseTex・GridMode) | hold | system | MVP手動検証完了時 |
-| IP-006 | MiniGame 7ファイルの処遇 (削除 vs Quest統合) | hold | core/SP-017 | SP-001 Quest基盤完成時に判断 |
+## Handoff Snapshot
 
----
-
-## HANDOFF SNAPSHOT
-
-- 現在の主レーン: Advance (ブラウザ鳥瞰図プレビュー構築)
-- 現在のスライス: browser-preview Phase A+B 完了、Phase C (装飾) 未着手
-- 今回変更した対象: browser-preview/ 新設 (map-gen.js, renderer.js, index.html), INVARIANTS.md 実内容化, USER_REQUEST_LEDGER.md 実内容化
-- 次回最初に確認すべきファイル: browser-preview/index.html (ブラウザで開いて動作確認)
-- 未確定の設計論点:
-  - 「5分間遊んで楽しいか」がユーザー本来の意図か (AI session 7 起源)
-  - ブラウザプレビューと Unity 版の最終的な関係
-  - SP-001 Quest 基盤の優先度 (方向転換後)
-- 今は触らない範囲: Unity 側の Quest 基盤、SP-032手動検証、オーディオ
-- 記録債務:
-  - SPEC.md §12 (旧ゲームループインターフェース) の本文が旧内容のまま → 削除済みを反映する
-  - OPERATOR_WORKFLOW.md がテンプレのまま
+- Main lane: Rendering Model Reassessment
+- Current slice: SP-041 patch/glyph structure transition
+- Next useful implementation target: Canvas 2D patch/glyph structure drawing in
+  `browser-preview`
+- First task-specific spec to read: `docs/specs/observed-surface-synthesis.md`
+- Reference implementation file: `browser-preview/observed-surface.js`, retained as
+  context but not as a successful model
+- Recovered implementation file: `browser-preview/map-gen.js` now includes
+  generated decorations from the local Phase C work
+- Open design points: patch extraction algorithm, archetype-specific glyph
+  placement rules, final product definition

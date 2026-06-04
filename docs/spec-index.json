@@ -3,10 +3,10 @@
     "id": "SP-001",
     "title": "ゲームループ — Sandbox + Quest",
     "status": "partial",
-    "pct": 30,
+    "pct": 90,
     "cat": "core",
     "file": "docs/specs/game-loop-sandbox-quest.md",
-    "summary": "Phase0(タイマーセッション基盤)+Phase1前半(旧GameLoop11クラス削除+GameState簡素化+SaveManager改修)完了。残: QuestData/QuestManager/QuestLogUI。Phase2: クエスト拡充+HUD。Phase3: プロシージャル生成+チェーン"
+    "summary": "Phase0+Phase1+Phase2実装完了。Quest基盤+QuestHUD+CompleteBuilding型+トースト通知+30件JSON+SaveData永続化+GameSession統計+プリセット別フィルタ(allowedPresets)。残: Unity検証。Phase3: プロシージャル生成+チェーン"
   },
   {
     "id": "SP-002",
@@ -96,7 +96,7 @@
     "pct": 100,
     "cat": "core",
     "file": "SPEC.md#11-インテリアマップシステム",
-    "summary": "v1 BSP部屋分割 + InteriorController + ミニゲーム連携。SP-026 (v2) で置換予定"
+    "summary": "v1 BSP部屋分割 + InteriorController。SP-026 (v2) で置換済み。InteriorControllerは現役だがv2アーキテクチャ下で動作"
   },
   {
     "id": "SP-012",
@@ -145,12 +145,12 @@
   },
   {
     "id": "SP-017",
-    "title": "ミニゲームシステム（凍結検討中）",
-    "status": "done",
-    "pct": 100,
+    "title": "ミニゲームシステム（削除済み）",
+    "status": "deprecated",
+    "pct": 0,
     "cat": "core",
     "file": "SPEC.md#18-実装済み機能一覧",
-    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種。探索ゲームでの位置づけは再検討予定"
+    "summary": "TimingCombat/MemoryMatch/TrapDodge 3種+MiniGameManager+RoomTrigger全7ファイル削除済み。探索ゲームへのジャンル転換によりフロー切断、デッドコードとして根絶"
   },
   {
     "id": "SP-018",
@@ -164,11 +164,11 @@
   {
     "id": "SP-019",
     "title": "パフォーマンス最適化",
-    "status": "todo",
+    "status": "postponed",
     "pct": 0,
     "cat": "infra",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "メッシュ結合、GPU instancing、オブジェクトプール"
+    "file": "SPEC.md#21-legacy-backlog-notes",
+    "summary": "旧SPEC由来の将来候補。現在の active visual path の verified blocker になるまで通常再開・次作業候補にしない"
   },
   {
     "id": "SP-020",
@@ -182,20 +182,20 @@
   {
     "id": "SP-021",
     "title": "オーディオシステム",
-    "status": "todo",
+    "status": "postponed",
     "pct": 0,
     "cat": "system",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "環境音、BGM、SE"
+    "file": "SPEC.md#21-legacy-backlog-notes",
+    "summary": "旧SPEC由来の将来候補。現在の非ゴール。明示依頼なしに通常再開・次作業候補にしない"
   },
   {
     "id": "SP-022",
     "title": "UIシステム拡張",
-    "status": "todo",
+    "status": "postponed",
     "pct": 0,
     "cat": "ui",
-    "file": "SPEC.md#21-今後の方針・ユーザー要望",
-    "summary": "ポーズメニュー、設定画面、カメラプリセット"
+    "file": "SPEC.md#21-legacy-backlog-notes",
+    "summary": "旧SPEC由来の将来候補。現在の非ゴール。明示依頼なしに通常再開・次作業候補にしない"
   },
   {
     "id": "SP-023",
@@ -279,6 +279,24 @@
     "summary": "HTTPS + GCM の認証経路、push失敗時の確認手順、既知エラーの切り分けを整理"
   },
   {
+    "id": "SP-040",
+    "title": "マップビジュアルディレクション",
+    "status": "partial",
+    "pct": 40,
+    "cat": "system",
+    "file": "docs/specs/map-visual-direction.md",
+    "summary": "マップ描画の上位方針文書。北極星(hybrid orthophoto relief)、五原則、ネガティブ定義、5層レンダリングアーキテクチャ、道路確認性基準、モバイル予算戦略、木漏れ日/建物陰影比較、3層ロードマップ、完了条件。SP-032の上位に位置する"
+  },
+  {
+    "id": "SP-041",
+    "title": "Observed Surface Synthesis",
+    "status": "partial",
+    "pct": 15,
+    "cat": "system",
+    "file": "docs/specs/observed-surface-synthesis.md",
+    "summary": "relief の延長では出ない『上空観測密度』を扱う子仕様。Field / Grammar / Glyph 方式。Phase A の4段階試行 (shader直訳/レイヤー分離/glyph散布/surface classification) は全て不採用。ImageData操作 → Canvas 2D パス描画 API による patch/glyph 構造転換が次ステップ"
+  },
+  {
     "id": "SP-032",
     "title": "地表合成レンダリングパイプライン",
     "status": "partial",
@@ -289,12 +307,12 @@
   },
   {
     "id": "SP-033",
-    "title": "SP-032 MVP実装計画",
-    "status": "partial",
-    "pct": 85,
+    "title": "SP-032 MVP実装計画（SP-032に統合）",
+    "status": "merged",
+    "pct": 0,
     "cat": "system",
     "file": "docs/specs/ground-surface-mvp-implementation-plan.md",
-    "summary": "Slice 1-4完了(Infrastructure/CPU Baker/Shader/Theme)、SPEC.md・debug-setup.md同期済み。Slice 5残: ground + water 色パレット確認・4preset x 2theme手動検証"
+    "summary": "SP-032の実装計画ドキュメント。内容・検証条件・進捗がSP-032と完全同一のためmerged"
   },
   {
     "id": "SP-034",

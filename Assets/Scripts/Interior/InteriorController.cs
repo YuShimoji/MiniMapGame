@@ -2,6 +2,7 @@ using UnityEngine;
 using MiniMapGame.Runtime;
 using MiniMapGame.Player;
 using MiniMapGame.Data;
+using MiniMapGame.GameLoop;
 
 namespace MiniMapGame.Interior
 {
@@ -29,6 +30,9 @@ namespace MiniMapGame.Interior
         [Header("Exploration")]
         public ExplorationProgressManager explorationProgress;
 
+        [Header("Events")]
+        public MapEventBus eventBus;
+
         [Header("Interior Camera")]
         public float interiorCameraHeight = 40f;
         public float interiorOrthoMargin = 5f;
@@ -38,6 +42,7 @@ namespace MiniMapGame.Interior
         private BuildingInteraction _currentBuilding;
         private Vector3 _savedPlayerPosition;
         private PlayerMovement _playerMovement;
+        private Runtime.BuildingMarkerManager _cachedMarkerMgr;
 
         void Start()
         {
@@ -92,9 +97,17 @@ namespace MiniMapGame.Interior
             if (explorationProgress != null)
                 explorationProgress.OnBuildingEntered(building.buildingId, data);
 
+            // Publish building entered event for quest tracking
+            eventBus?.Publish(new BuildingEnteredEvent
+            {
+                buildingId = building.buildingId,
+                buildingCategory = building.context.category.ToString()
+            });
+
             // Update building marker (SP-020 Layer 2)
-            var markerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
-            markerMgr?.OnBuildingEntered(building.buildingId);
+            if (_cachedMarkerMgr == null)
+                _cachedMarkerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
+            _cachedMarkerMgr?.OnBuildingEntered(building.buildingId);
 
             // Switch camera to building view (perspective, no ortho switch)
             float maxDist = CalculateInteriorExtent(data);
@@ -136,8 +149,20 @@ namespace MiniMapGame.Interior
                     }
 
                     // SP-020 Layer 2 marker update
-                    var markerMgr2 = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
-                    markerMgr2?.OnProgressChanged(exitBuildingId);
+                    if (_cachedMarkerMgr == null)
+                        _cachedMarkerMgr = FindAnyObjectByType<Runtime.BuildingMarkerManager>();
+                    _cachedMarkerMgr?.OnProgressChanged(exitBuildingId);
+
+                    // Publish completion event if building is fully explored
+                    var exitRecord = explorationProgress.GetRecord(exitBuildingId);
+                    if (exitRecord != null && exitRecord.IsComplete && _currentBuilding != null)
+                    {
+                        eventBus?.Publish(new BuildingCompletedEvent
+                        {
+                            buildingId = exitBuildingId,
+                            buildingCategory = _currentBuilding.context.category.ToString()
+                        });
+                    }
                 }
             }
 

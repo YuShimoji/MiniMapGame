@@ -24,6 +24,7 @@ namespace MiniMapGame.GameLoop
         [Header("Optional")]
         [Tooltip("Hide during gameplay")]
         public MapControlUI mapControlUI;
+        public QuestManager questManager;
 
         [Header("Session Settings")]
         public float sessionDuration = 300f;
@@ -191,6 +192,8 @@ namespace MiniMapGame.GameLoop
                 buildingsEntered = _buildingsEntered,
                 buildingsCompleted = CountCompletedBuildings(),
                 totalDiscoveries = _totalDiscoveries,
+                questsCompleted = questManager != null ? questManager.CompletedCount : 0,
+                questsTotal = questManager != null ? questManager.Definitions.Count : 0,
                 timedOut = timedOut
             };
 

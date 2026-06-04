@@ -98,7 +98,8 @@ namespace MiniMapGame.GameLoop
                 $"Time Played: {minutes}:{seconds:D2}\n\n" +
                 $"Buildings Entered: {stats.buildingsEntered}\n" +
                 $"Fully Explored: {stats.buildingsCompleted}\n" +
-                $"Discoveries: {stats.totalDiscoveries}";
+                $"Discoveries: {stats.totalDiscoveries}\n" +
+                $"Quests: {stats.questsCompleted}/{stats.questsTotal}";
         }
 
         // ════════════════════════════════════════

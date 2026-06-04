@@ -9,6 +9,7 @@ namespace MiniMapGame.UI
     /// <summary>
     /// Lightweight overlay for Gate-1 manual verification.
     /// Keeps the current preset/theme/seed visible while the user checks render quality.
+    /// Deletion condition: SP-032 Slice 5 (4preset x 2theme手動検証) 完了後に削除可。
     /// </summary>
     public class VerificationChecklistUI : MonoBehaviour
     {

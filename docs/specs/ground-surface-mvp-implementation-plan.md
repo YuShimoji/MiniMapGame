@@ -1,13 +1,20 @@
 # SP-033: SP-032 MVP実装計画
 
-**Status**: partial
+**Status**: merged into SP-032
 **Category**: system
-**実装率**: 85% (Slice 1-4 実装済み、仕様同期済み。Slice 5残: 色パレット調整・手動検証)
+**Active authority**: `docs/specs/ground-surface-compositing.md`
+
+This document is retained only as historical implementation-planning context.
+Do not use it as an active work source, resume target, or acceptance authority.
+If this document differs from SP-032 or `docs/project-context.md`, follow those
+files and update or archive this document.
+
+**旧実装率記録**: 85% (Slice 1-4 実装済み、仕様同期済み。Slice 5残: 色パレット調整・手動検証)
 
 ## 目的
 
-`SP-032` を Gate-1 完了後すぐ着手できる粒度まで分解する。
-本書は「何をどの順番で実装するか」「どのファイルをどう触るか」「どこまでを MVP とするか」を固定する。
+`SP-032` を Gate-1 完了後すぐ着手できる粒度まで分解するための旧計画。
+現在は SP-032 に統合済みであり、「何をどの順番で実装するか」「どのファイルをどう触るか」「どこまでを MVP とするか」は固定しない。
 
 > Gate-1 は art direction 依存で保留。SP-032 MVP は先行着手し Slice 1-4 完了。
 

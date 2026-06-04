@@ -11,6 +11,8 @@ namespace MiniMapGame.GameLoop
         public int buildingsEntered;
         public int buildingsCompleted;
         public int totalDiscoveries;
+        public int questsCompleted;
+        public int questsTotal;
         public bool timedOut;
     }
 }

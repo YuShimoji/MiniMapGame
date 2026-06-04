@@ -1,0 +1,405 @@
+{
+  "quests": [
+    {
+      "id": "Q001",
+      "title": "First Steps",
+      "description": "Enter any building to begin your exploration.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 10, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q002",
+      "title": "Commercial Survey",
+      "description": "Explore 3 commercial buildings in the district.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Commercial", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 30, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q003",
+      "title": "Industrial Sweep",
+      "description": "Investigate 2 industrial facilities.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Industrial", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 25, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q004",
+      "title": "Document Collector",
+      "description": "Collect 5 documents scattered across buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Document", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 50, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q005",
+      "title": "Scavenger",
+      "description": "Collect 10 discoveries of any kind.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "*", "count": 10, "current": 0 }
+      ],
+      "reward": { "value": 40, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q006",
+      "title": "Floor Walker",
+      "description": "Visit 5 different floors across any buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 2, "target": "*", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q007",
+      "title": "Rare Find",
+      "description": "Discover a rare item hidden deep within.",
+      "questType": 3,
+      "objectives": [
+        { "type": 4, "target": "Rare", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 100, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q008",
+      "title": "Residential Tour",
+      "description": "Enter 3 residential buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Residential", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 25, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q009",
+      "title": "Photo Album",
+      "description": "Find 3 photos left behind in abandoned buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Photo", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 30, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q010",
+      "title": "Thorough Explorer",
+      "description": "Enter 5 buildings and collect 15 discoveries.",
+      "questType": 2,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 5, "current": 0 },
+        { "type": 1, "target": "*", "count": 15, "current": 0 }
+      ],
+      "reward": { "value": 75, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q011",
+      "title": "Completionist",
+      "description": "Fully explore one building — all floors, all items.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "*", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 60, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q012",
+      "title": "Commercial Mastery",
+      "description": "Fully explore 2 commercial buildings.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "Commercial", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 80, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q013",
+      "title": "Public Records",
+      "description": "Enter 2 public buildings and find 3 documents.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Public", "count": 2, "current": 0 },
+        { "type": 1, "target": "Document", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 45, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q014",
+      "title": "Uncommon Finds",
+      "description": "Discover 3 uncommon items.",
+      "questType": 3,
+      "objectives": [
+        { "type": 4, "target": "Uncommon", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 55, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q015",
+      "title": "High Rise",
+      "description": "Visit 10 different floors across buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 2, "target": "*", "count": 10, "current": 0 }
+      ],
+      "reward": { "value": 50, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q016",
+      "title": "Note Gatherer",
+      "description": "Find 5 handwritten notes.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Note", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q017",
+      "title": "Special Investigation",
+      "description": "Enter a special building and find a rare item inside.",
+      "questType": 3,
+      "objectives": [
+        { "type": 0, "target": "Special", "count": 1, "current": 0 },
+        { "type": 4, "target": "Rare", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 120, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q018",
+      "title": "Container Search",
+      "description": "Open 5 containers found in various buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Container", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 40, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q019",
+      "title": "District Survey",
+      "description": "Enter at least one building of every category.",
+      "questType": 2,
+      "objectives": [
+        { "type": 0, "target": "Residential", "count": 1, "current": 0 },
+        { "type": 0, "target": "Commercial", "count": 1, "current": 0 },
+        { "type": 0, "target": "Industrial", "count": 1, "current": 0 },
+        { "type": 0, "target": "Public", "count": 1, "current": 0 },
+        { "type": 0, "target": "Special", "count": 1, "current": 0 }
+      ],
+      "reward": { "value": 90, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q020",
+      "title": "Grand Explorer",
+      "description": "Fully explore 3 buildings and collect 25 discoveries.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "*", "count": 3, "current": 0 },
+        { "type": 1, "target": "*", "count": 25, "current": 0 }
+      ],
+      "reward": { "value": 150, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    },
+    {
+      "id": "Q021",
+      "title": "Harbor District",
+      "description": "Explore 4 buildings near the waterfront.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 4, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Organic"]
+    },
+    {
+      "id": "Q022",
+      "title": "Grid Block Sweep",
+      "description": "Enter 6 buildings in the grid district.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 6, "current": 0 }
+      ],
+      "reward": { "value": 45, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Grid"]
+    },
+    {
+      "id": "Q023",
+      "title": "Mountain Lodge",
+      "description": "Find 3 documents in mountain buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 2, "current": 0 },
+        { "type": 1, "target": "Document", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 40, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Mountain"]
+    },
+    {
+      "id": "Q024",
+      "title": "Rural Homestead",
+      "description": "Enter 3 residential buildings in the countryside.",
+      "questType": 0,
+      "objectives": [
+        { "type": 0, "target": "Residential", "count": 3, "current": 0 }
+      ],
+      "reward": { "value": 30, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Rural"]
+    },
+    {
+      "id": "Q025",
+      "title": "Urban Density",
+      "description": "Fully explore 2 buildings in a dense grid layout.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "*", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 70, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Grid"]
+    },
+    {
+      "id": "Q026",
+      "title": "Coastal Treasures",
+      "description": "Find 2 rare items along the coast.",
+      "questType": 3,
+      "objectives": [
+        { "type": 4, "target": "Rare", "count": 2, "current": 0 }
+      ],
+      "reward": { "value": 130, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Organic"]
+    },
+    {
+      "id": "Q027",
+      "title": "Highland Survey",
+      "description": "Visit 8 floors in mountain buildings.",
+      "questType": 0,
+      "objectives": [
+        { "type": 2, "target": "*", "count": 8, "current": 0 }
+      ],
+      "reward": { "value": 45, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Mountain"]
+    },
+    {
+      "id": "Q028",
+      "title": "Country Notes",
+      "description": "Collect 4 notes in rural buildings.",
+      "questType": 1,
+      "objectives": [
+        { "type": 1, "target": "Note", "count": 4, "current": 0 }
+      ],
+      "reward": { "value": 35, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Rural"]
+    },
+    {
+      "id": "Q029",
+      "title": "Industrial Complex",
+      "description": "Fully explore an industrial building and find 5 containers.",
+      "questType": 2,
+      "objectives": [
+        { "type": 3, "target": "Industrial", "count": 1, "current": 0 },
+        { "type": 1, "target": "Container", "count": 5, "current": 0 }
+      ],
+      "reward": { "value": 85, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": ["Grid", "Organic"]
+    },
+    {
+      "id": "Q030",
+      "title": "Total Coverage",
+      "description": "Enter 10 buildings and visit 15 floors.",
+      "questType": 2,
+      "objectives": [
+        { "type": 0, "target": "*", "count": 10, "current": 0 },
+        { "type": 2, "target": "*", "count": 15, "current": 0 }
+      ],
+      "reward": { "value": 100, "unlockId": "" },
+      "prerequisites": [],
+      "isRepeatable": false,
+      "allowedPresets": []
+    }
+  ]
+}
