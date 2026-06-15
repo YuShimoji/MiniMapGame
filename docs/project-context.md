@@ -96,6 +96,8 @@ as implementation state, but it does not define the final product target.
 
 | Date | Decision | Status | Reason |
 |------|----------|--------|--------|
+| 2026-06-15 | Do not pin Codex models or generated environment versions in project-local config | active | Model/version selection belongs to the Codex app or global settings; project-local pins caused startup fragility |
+| 2026-06-15 | Use MkDocs Material under the `docs/` boundary for local document review | active | Enables tree-pane browsing and browser translation without copying, translating, summarizing, or moving canonical Markdown |
 | 2026-04-27 | Tighten documentation authority boundaries | active | Prevent old aggregate specs, supplemental invariant catalogs, merged plans, and delegation templates from acting as hidden resume or next-work sources |
 | 2026-04-06 | Use `browser-preview` as a fast visual direction probe before Unity transfer | active | Iteration speed is needed for palette, layering, and readability decisions; Unity remains the final runtime check |
 | 2026-04-06 | Reject the current ImageData-based observed-surface direction | active | The attempts reduce visual density to per-pixel color decisions and lose patch structure, anisotropy, and internal detail |
@@ -117,5 +119,7 @@ as implementation state, but it does not define the final product target.
   context but not as a successful model
 - Recovered implementation file: `browser-preview/map-gen.js` now includes
   generated decorations from the local Phase C work
+- Local documentation review entrypoint: `python -m mkdocs serve`, then open
+  `http://127.0.0.1:8000/`; this view is not a new source of truth
 - Open design points: patch extraction algorithm, archetype-specific glyph
   placement rules, final product definition

@@ -66,6 +66,10 @@ Thumbs.db
 # AI tools
 .claude/
 .serena/
+.codex/environments/
+
+# Local documentation preview
+/site/
 
 # Windows artifacts
 nul

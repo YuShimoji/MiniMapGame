@@ -1,9 +1,9 @@
 # Minimal Codex project config scaffold.
-# Keep this file short and project-specific.
+# Keep this file short and avoid project-local model or Codex version pins.
 # Canonical behavioral rules live in docs/ai/AGENT_RULES.md.
+# Use the Codex app/global model selection instead of pinning a model here.
 
-model = "gpt-5-codex"
-approval_policy = "on-request"
+approval_policy = "never"
 sandbox_mode = "workspace-write"
 
-# Add project-specific hooks or tool restrictions here if needed.
+# Add project-specific hooks or tool restrictions here only when unavoidable.

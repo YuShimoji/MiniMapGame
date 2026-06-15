@@ -1,0 +1,46 @@
+site_name: MiniMapGame Local Docs
+site_description: Local Markdown review and browser-translation entrypoint for MiniMapGame.
+docs_dir: docs
+site_dir: site
+use_directory_urls: true
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+
+nav:
+  - Overview:
+      - Local Documentation View: index.md
+      - Project Context: project-context.md
+      - Agent Rules: ai/AGENT_RULES.md
+      - Invariants: INVARIANTS.md
+  - Runtime State:
+      - Runtime State: runtime-state.md
+  - Specs:
+      - SP-001 Game Loop Sandbox Quest: specs/game-loop-sandbox-quest.md
+      - SP-020 Exploration Experience Polish: specs/exploration-experience-polish.md
+      - SP-025 Water Generation Enhancements: specs/water-generation-enhancements.md
+      - SP-026 Interior System v2: specs/interior-system-v2.md
+      - SP-029 Pre-Gate Spec Refinement: specs/pre-gate-spec-refinement.md
+      - SP-030 Road Width Table Audit: specs/road-width-table-audit.md
+      - SP-032 Ground Surface Compositing: specs/ground-surface-compositing.md
+      - SP-033 Ground Surface MVP Implementation Plan: specs/ground-surface-mvp-implementation-plan.md
+      - SP-035 Preset Expansion Balance: specs/preset-expansion-balance.md
+      - SP-040 Map Visual Direction: specs/map-visual-direction.md
+      - SP-041 Observed Surface Synthesis: specs/observed-surface-synthesis.md
+      - SP-060 Interior Interaction: specs/interior-interaction.md
+      - SP-061 Exploration Progress: specs/exploration-progress.md
+      - SP-062 Floor Navigation Interaction: specs/floor-navigation-interaction.md
+      - Discovery Text Policy: specs/discovery-text-policy.md
+  - Development Notes:
+      - Debug Setup: debug-setup.md
+      - Git Auth Troubleshooting: git-auth-troubleshooting.md
+      - Delegation Prompt Examples: delegation-prompts.md
+  - Artifacts:
+      - Road P4 Gate Runbook: verification/road-p4-gate-runbook.md
+      - Road P4 Gate Results: verification/road-p4-gate-results.md
+      - Decision Log Archive: archive/decision-log-archive.md
