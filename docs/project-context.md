@@ -113,6 +113,25 @@ entrypoints.
 - External project views derive from these canonical files; they do not own a
   separately maintained copy of current status.
 
+## Creative Exploration Candidates
+
+These candidates preserve the current conversation context. They are not
+implementation approval and must pass the creative checkpoint before becoming
+an active delivery slice.
+
+- **SP-041 canopy grammar comparison**: use the same seed, preset, theme, and
+  viewport to compare three structurally different forest probes: canopy mass
+  with holes, ridge-aligned anisotropy, and managed-path/clearing scars. Limit
+  the probe to one archetype before expanding the full observed-surface system.
+- **Field Survey Notebook**: compare a Tab layout with roughly 68% map and 32%
+  contextual notebook, using the existing Noto Sans asset and key-based
+  Japanese/English text. Do not add Unity Localization or another dependency
+  until the low-cost content/layout probe is selected.
+- **Cartographic discovery language**: compare Parchment charcoal/vermilion and
+  Dark blue-gray/amber tokens with a one-shot 180-240 ms trace/glyph reveal.
+  Tie the motion to generated survey contracts such as confluence, canopy-gap,
+  or roof-density observations; avoid continuous decorative animation.
+
 ## Current Non-Goals
 
 Do not automatically return to these areas without a fresh explicit request or

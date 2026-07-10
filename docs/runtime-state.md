@@ -52,6 +52,7 @@
 - patch extraction algorithm: unresolved
 - archetype-specific glyph placement rules: unresolved
 - external Project Hub: whether to add pinned documentation dependencies, GitHub Actions deployment, and enable GitHub Pages
+- creative checkpoint: canopy grammar, Field Survey Notebook, and cartographic discovery language are preserved as non-approved candidates in project-context; choose a low-cost probe before production work
 
 ## Repository Maintenance Handoff
 
