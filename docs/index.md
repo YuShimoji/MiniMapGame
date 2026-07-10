@@ -1,18 +1,19 @@
-# MiniMapGame Local Documentation View
+# MiniMapGame Project Hub
 
-This page is a local browsing entrypoint for reviewing the existing Markdown
-documents in a browser tree pane. It is for audit and temporary browser-side
-translation only; it is not a translated, summarized, or reorganized source of
-truth.
+This hub renders the existing Markdown documents for browser navigation. It is
+a derived view of repository content, not another project-state source of
+truth. The same structure can be served locally or published without copying
+status into a separately edited Wiki.
 
-## Purpose
+## 現在地への入口
 
-- Browse the existing documents under `docs/` with the MkDocs Material side
-  navigation.
-- Open `http://127.0.0.1:8000/` locally and use Chrome, Edge, or the DeepL
-  extension for temporary page translation while reviewing.
-- Keep the original Markdown documents as the authoritative files. Do not treat
-  browser translation output as repository content.
+- [Project Context](project-context.md): active lane、active slice、現在有効な判断
+- [Runtime State](runtime-state.md): 次セッション用の短い継続状態と最新の検証
+- [Specification Index](spec-index.json): 各 spec の lifecycle、進捗、参照先
+- [Agent Rules](ai/AGENT_RULES.md): 監修AI・開発AIが共有する作業ルール
+
+active lane や進捗率をこのページへ再記載しない。上記の正本を更新すれば、
+この hub の表示も同じ commit から更新される。
 
 ## Local Start
 
@@ -36,4 +37,6 @@ http://127.0.0.1:8000/
   `SPEC.md` remain in place and are not copied into this view.
 - Navigation categories are practical review buckets, not a new specification
   hierarchy.
+- `README`, GitHub Pages, Wiki, Issues, and Projects must link to or derive from
+  the canonical documents rather than own another copy of current status.
 - Permanent translation files are intentionally not generated.

@@ -1,13 +1,10 @@
-# MiniMapGame 委譲タスク用プロンプト
+# 監修AIから開発AIへ渡す Development Packet
 
-Status: archived utility examples
+Status: supplemental template
 
-This file is not a resume entrypoint, not a task queue, and not current
-delegation authority. The prompt bodies below are retained only as examples of
-older delegation shape.
-
-Do not hand these prompts to a new session verbatim. Regenerate any delegation
-prompt from the current normal resume chain:
+This file is not a resume entrypoint, task queue, or current delegation
+authority. It defines a reusable packet shape only. Every packet must be
+regenerated from the current normal resume chain:
 
 1. `docs/ai/AGENT_RULES.md`
 2. `docs/project-context.md`
@@ -15,125 +12,103 @@ prompt from the current normal resume chain:
 4. `docs/spec-index.json`
 5. The task-specific spec file referenced by `docs/spec-index.json`
 
-If a prompt below conflicts with the current chain, the prompt is stale.
-If a prompt names a task that `docs/project-context.md` lists as a non-goal or
-postponed area, do not run it without a fresh explicit user request.
+If a generated packet conflicts with that chain, the packet is stale. Never
+resume an old packet by replacing only its date, commit, or task title.
 
----
+## 適切な作業単位
 
-## Archived Example A: 建物内部 (Interior) 開発
+Development Packet は、長い Prompt と短い Prompt の中間を狙うものではない。
+単位は **ユーザーが一つの判断を下せる成果物** とする。
 
-```
-MiniMapGame (Unity 6.3 / URP) の建物内部表示を開発してください。
+| 粒度 | 例 | 扱い |
+|------|----|------|
+| 小さすぎる | import 追加、docs 更新、単独の色調整 | 承認済み slice 内の関連修正として同じ batch に含める |
+| 適切 | 同一 seed の forest grammar 3案を比較可能にする | 一つの方向判断に必要な実装・証拠・同期が閉じる |
+| 大きすぎる | observed surface 全 archetype を完成させる | 低コスト比較と方向選択を先に切り出す |
 
-### 現状
-- Interior系は Assets/Scripts/Interior/ に独立実装済み
-- InteriorMapGenerator: 間取り生成 (Commercial/Industrial/Residential/Special)
-- InteriorRenderer: 2Dオルソグラフィック描画
-- InteriorController: 建物クリック → カメラモード切替
-- FloorPlanFactory + IFloorPlanGenerator: 建物カテゴリ別の間取り戦略
-- InteriorDebugSpawner: テスト用の即時インテリア生成
+## Packet テンプレート
 
-### 改善方向
-1. 間取り品質の向上 (部屋配置の自然さ、通路接続)
-2. 家具/オブジェクト配置の改善 (FurnitureType enum は定義済み)
-3. 描画品質 (壁・床のテクスチャ、ドアの視覚表現)
-4. カテゴリ別の個性 (商業/住宅/工業で見た目が異なる)
+以下を埋めて、そのまま開発AIへ渡す。ファイル一覧や実装手順を過剰に固定せず、
+成果・境界・証拠を固定する。
 
-### 制約
-- `docs/ai/AGENT_RULES.md` と task-specific spec の制約に従うこと
-- namespace: MiniMapGame.Interior
-- 外部パッケージ追加禁止 (Unity built-ins only)
-- 全生成は int seed で決定論的
-- InteriorPreset は ScriptableObject
+```text
+MiniMapGame Development Packet: <短い packet 名>
 
-### 接続ポイント
-- InteriorController.EnterInterior(MapBuilding) が外部からの呼び出し口
-- CameraController.SetInteriorMode() / ResetToFollowMode() でカメラ切替
-- BuildingInteraction.cs が建物クリック検出を担当
-```
+現在地
+- source commit: <監修時の commit>
+- branch: <branch>
+- active lane / slice: <project-context と一致>
+- task spec: <SP 番号と path>
+- 解く bottleneck: <今回の成果が直接変える一つの詰まり>
 
----
+今回、判断可能にするもの
+<ユーザーが何を見て、何を選べる／合否判断できるようになるかを1段落で書く>
 
-## Archived Example B: 水辺ビジュアル改善
+対象範囲
+- 含む: <実装、関連修正、比較、必要な正本更新>
+- 含まない: <非ゴール、別の creative direction、将来拡張>
+- 触らない境界: <保存互換、API、既存 SSOT など>
 
-```
-MiniMapGame (Unity 6.3 / URP) の水辺レンダリングを改善してください。
+開発AIの裁量
+- 承認なしで継続: slice 内の可逆な技術判断、発見した関連バグ修正、
+  リファクタ、ローカル検証、証拠生成、正本同期
+- 停止して確認: 破壊的変更、依存追加、保存・認証・API契約変更、
+  正本競合、未承認の最終成果物定義、方向を変える creative judgment
+- 合理的な既定値: <未指定時に採る可逆な既定値と理由>
 
-### 現状
-- WaterRenderer.cs: 河川 (リボンメッシュ), 海岸/湖 (ファンメッシュ)
-- Water.shader: Transparent queue, depth/roughness対応, テーマ色駆動
-- WaterGenerator.cs: 勾配降下方式の川流路 + 海岸4方向
-- WaterTerrainInteraction.cs: 河川→地形彫り込み (carving)
-- ThemeManager.cs: ApplyWater() でシェーダーパラメータ設定
+比較と証拠
+- 同条件: <seed、preset、theme、viewport など>
+- 比較対象: <2〜3案。単なる強度違いではなく構造的に異なる案>
+- 自動検証: <tools/validate-project.ps1 など>
+- 視覚・実行証拠: <スクリーンショット、PlayMode、数値、ログ>
+- 合否軸: <spec の acceptance criteria に接続する観察可能な条件>
 
-### 確認済みの課題
-1. Dark テーマで水面色が暗すぎる (riverColor 0.08,0.13,0.19)
-   → 地面色 (0.28,0.33,0.24) との差別化が不十分
-2. Grid/Mountain プリセットに水体がない (hasRiver=0, hasCoast=0)
-   → 全プリセットで水辺を楽しめるようにしたい
-3. Water.shader の depth 補間が正しく視覚化されているか未検証
-4. waterYOffset は 0.02→0.15 に修正済み (Z-fighting対応)
+同じ batch で閉じること
+- 選んだ成果物または比較プローブ
+- 発見した in-scope blocker の修正
+- ローカル自動検証
+- 必要な手動確認を一つの coherent gate に集約
+- project-context / runtime-state / task spec / spec-index のうち、
+  実際に意味が変わった正本だけを同期
 
-### 修正方針
-- Theme_Dark.asset / Theme_Parchment.asset の水色調整
-- Preset_Grid.asset / Preset_Mountain.asset で hasRiver=true に変更
-  (Mountain は渓流、Grid は運河が自然)
-- Water.shader のdepth→色グラデーション検証
-
-### 制約
-- テーマ色はコード変更なし (SO のフィールド値調整のみ)
-- プリセット変更時は WaterProfile SO との整合を確認
-- WaterProfile が null のプリセットは CreateDefaultFallback() 使用
+完了時に返す内容
+ファイルを開かなくても、何が変わり、何が判断可能になり、どの証拠で
+確認し、何が未確定かが伝わる自然文にする。次の入口は異なる bottleneck を
+解く2〜4案とし、各案で次に何が可能になるかを添える。
 ```
 
----
+## Creative checkpoint
 
-## Archived Example C: プリセット拡充・数値調整
+layout、visual grammar、色、font、motion、language、content expansion のように
+ユーザーの感性判断が支配的な作業では、production 実装前に checkpoint を置く。
 
-```
-MiniMapGame (Unity 6.3 / URP) のマップ生成プリセットを拡充してください。
+- 同じ seed / preset / viewport で 2〜3 の異なる方向を比べる。
+- 推奨案を一つ示すが、推奨理由、失うもの、実装コストを併記する。
+- mock、thumbnail、one-archetype probe、token sample など、捨てやすい忠実度にする。
+- ユーザー選択後にだけ、選択された方向の production batch を作る。
+- 選択は、明記した方向と忠実度だけを承認する。最終製品全体の承認へ拡張しない。
 
-### 現状
-- 4プリセット: Coastal, Rural, Grid, Mountain
-- Assets/Resources/Presets/ に ScriptableObject として配置
-- Editor/MapPresetCreator.cs でメニューから新規作成可能
-- GeneratorType: Organic, Grid, Mountain, Rural (IMapGenerator実装)
+同じ抽象モデルが 2 回連続で NG なら、そのモデルの微調整を止める。色、半径、
+opacity だけを動かす次案ではなく、入力データ、構造、評価軸のどれを変えるかを
+比較してから再開する。
 
-### MapPreset 主要フィールド
-- worldWidth/worldHeight: ワールドサイズ
-- generatorType: 使用するジェネレータ
-- nodeCount, edgeMultiplier: グラフ密度
-- buildingDensity: 建物密度 (0-1)
-- hasCoast, hasRiver: 水体生成フラグ
-- maxElevation: 最大標高
-- hillCount, hillRadiusMin/Max: 丘陵パラメータ
-- roadProfile: RoadProfile SO (道路の見た目)
-- waterProfile: WaterProfile SO (水面の見た目)
+## 監修AI・開発AI・自動化の担当
 
-### 拡充方向
-1. 既存4プリセットの数値バランス調整
-   - 各プリセットで F2 俯瞰ビューから見て特徴が明確に出るか
-   - 建物密度・道路密度のバランス
-2. 新プリセット候補 (新GeneratorTypeは不要、既存typeの組合せで)
-   - Island: Organic + hasCoast全方向 + 小さいworldSize
-   - Downtown: Grid + 高buildingDensity + 小maxElevation
-   - Valley: Mountain + hasRiver + 狭い通路
+| 担当 | 主な責任 | 担当しないこと |
+|------|----------|----------------|
+| 監修AI | bottleneck と判断可能な成果を定義し、高曖昧度では低コスト比較を設計する | reversible な実装詳細を一問ずつ承認すること |
+| 開発AI | slice を実装し、関連修正、検証、証拠、正本同期まで閉じる | 未承認の最終製品像や感性判断を既成事実にすること |
+| ユーザー | 優先順位、感性、不可逆な方向、最終受入を決める | ローカルで自動検証できる技術詳細を逐次判断すること |
+| 自動化 | canonical docs の検証・公開、反復可能な smoke check を担う | 独立した status 正本を持つこと |
 
-### 制約
-- 新プリセットは Resources/Presets/ に .asset として追加
-- 既存コード変更は不要 (MapControlUI にボタン追加する場合は別途)
-- MapPresetCreator (Editor) で作成し、Inspector で値を調整
-```
+## Prompt を分割し直す条件
 
----
+次の場合だけ、新しい Packet に分ける。
 
-## 使い方
+- ユーザーが判断する成果物が別になる。
+- 別 spec / 別 active lane へ移る。
+- 依存、契約、保存互換、最終製品像など新しい権限が必要になる。
+- 比較 checkpoint で方向が選ばれ、probe から production へ fidelity が変わる。
 
-新しいエージェントセッションへ渡すプロンプトは、このファイルからではなく、
-現在の normal resume chain から作り直す。
-必ず `docs/runtime-state.md` を含め、active lane / active slice / current
-non-goals を反映する。
-
-作業完了後の統合・commit・push は、現在の branch strategy と
-`docs/ai/AGENT_RULES.md`、およびユーザーの明示指示に従う。
+compile error、同じ slice の軽微な UI 修正、検証、スクリーンショット、docs 同期を
+理由に Packet を細切れにしない。

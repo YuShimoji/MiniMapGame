@@ -267,7 +267,7 @@ namespace MiniMapGame.EditorTools
             SetupVerificationChecklistUI(canvas, mapManager);
 
             // 13. Interior System
-            SetupInteriorSystem(mapManager, camCtrl, playerGo.transform, canvas);
+            SetupInteriorSystem(mapManager, buildingSpawner, camCtrl, playerGo.transform, canvas);
 
             // 14b. Interior Feedback UI (toast + floor indicator)
             SetupInteriorFeedbackUI(canvas);
@@ -928,7 +928,8 @@ namespace MiniMapGame.EditorTools
         // ── Interior System ──
 
         private static void SetupInteriorSystem(MapManager mapManager,
-            CameraController cameraController, Transform playerTransform, Canvas canvas)
+            BuildingSpawner buildingSpawner, CameraController cameraController,
+            Transform playerTransform, Canvas canvas)
         {
             var rendererGo = FindOrCreate("InteriorRenderer");
             var renderer = EnsureComponent<InteriorRenderer>(rendererGo);

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MiniMapGame.Data;
 using MiniMapGame.Interior;
+using MiniMapGame.UI;
 
 namespace MiniMapGame.Runtime
 {

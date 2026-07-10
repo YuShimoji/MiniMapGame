@@ -1,12 +1,14 @@
-site_name: MiniMapGame Local Docs
-site_description: Local Markdown review and browser-translation entrypoint for MiniMapGame.
+site_name: MiniMapGame Project Hub
+site_description: Canonical project context, runtime handoff, specifications, and development guidance for MiniMapGame.
+repo_url: https://github.com/YuShimoji/MiniMapGame
+repo_name: YuShimoji/MiniMapGame
 docs_dir: docs
 site_dir: site
 use_directory_urls: true
 
 theme:
   name: material
-  language: en
+  language: ja
   features:
     - navigation.sections
     - navigation.top
@@ -14,12 +16,13 @@ theme:
 
 nav:
   - Overview:
-      - Local Documentation View: index.md
+      - Project Hub: index.md
       - Project Context: project-context.md
-      - Agent Rules: ai/AGENT_RULES.md
-      - Invariants: INVARIANTS.md
-  - Runtime State:
       - Runtime State: runtime-state.md
+      - Agent Rules: ai/AGENT_RULES.md
+  - Active Direction:
+      - SP-040 Map Visual Direction: specs/map-visual-direction.md
+      - SP-041 Observed Surface Synthesis: specs/observed-surface-synthesis.md
   - Specs:
       - SP-001 Game Loop Sandbox Quest: specs/game-loop-sandbox-quest.md
       - SP-020 Exploration Experience Polish: specs/exploration-experience-polish.md
@@ -30,17 +33,16 @@ nav:
       - SP-032 Ground Surface Compositing: specs/ground-surface-compositing.md
       - SP-033 Ground Surface MVP Implementation Plan: specs/ground-surface-mvp-implementation-plan.md
       - SP-035 Preset Expansion Balance: specs/preset-expansion-balance.md
-      - SP-040 Map Visual Direction: specs/map-visual-direction.md
-      - SP-041 Observed Surface Synthesis: specs/observed-surface-synthesis.md
       - SP-060 Interior Interaction: specs/interior-interaction.md
       - SP-061 Exploration Progress: specs/exploration-progress.md
       - SP-062 Floor Navigation Interaction: specs/floor-navigation-interaction.md
       - Discovery Text Policy: specs/discovery-text-policy.md
-  - Development Notes:
+  - Development Workflow:
+      - Development Packet Template: delegation-prompts.md
       - Debug Setup: debug-setup.md
       - Git Auth Troubleshooting: git-auth-troubleshooting.md
-      - Delegation Prompt Examples: delegation-prompts.md
-  - Artifacts:
+  - Reference And History:
+      - Invariants (Supplemental): INVARIANTS.md
       - Road P4 Gate Runbook: verification/road-p4-gate-runbook.md
       - Road P4 Gate Results: verification/road-p4-gate-results.md
-      - Decision Log Archive: archive/decision-log-archive.md
+      - Decision Log Archive (Historical): archive/decision-log-archive.md

@@ -2,6 +2,35 @@
 
 ## Quick Start
 
+### 0. Automated Preflight
+
+Unity Editor を開く前に、リポジトリルートから次を実行する。
+
+```powershell
+.\tools\validate-project.ps1
+```
+
+この一回で、MkDocs strict build、`browser-preview` の JavaScript 構文、canonical
+lane/slice と spec 参照の整合、Unity Asset の `.meta` 完備、
+`ProjectVersion.txt` と同じ Unity Editor による import / script compile を検証する。Unity の詳細ログは
+`Logs/project-validation-unity.log` に出力される。
+
+特定の層だけを調べる場合は `-SkipDocs`、`-SkipBrowser`、`-SkipUnity` を使う。
+これらは原因切り分け用であり、delivery batch の完了確認では既定の全検証を使う。
+
+browser preview の比較画像は任意の証拠生成として次を使う。既定出力は ignored な
+`Logs/browser-preview/` で、追跡済み baseline を更新するときだけ
+`--update-baselines` を明示する。
+
+```powershell
+node .\browser-preview\screenshot.js
+```
+
+この画像生成は、ローカルで利用可能な Playwright とインストール済み Chrome
+channel だけを使い、実行時の自動取得は行わない。別の Chromium channel は
+`--channel msedge` などで指定できる。Playwright または対象 browser がない環境では
+失敗を明示し、依存追加の判断を別に行う。
+
 ### 1. Bootstrap Test Scene
 
 1. Unity Editor を開く

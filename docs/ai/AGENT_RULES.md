@@ -1,5 +1,5 @@
 # AGENT_RULES.md
-Ruleset-Version: v20
+Ruleset-Version: v21
 Status: canonical
 
 ## Purpose
@@ -65,6 +65,33 @@ section. Fix that document before relying on it.
   is usable only after re-reading the normal resume chain including
   `docs/runtime-state.md`.
 
+## Delivery Slice Protocol
+
+- One delegation prompt should define one decision-bearing slice: one outcome
+  the user can evaluate, not an entire subsystem and not one trivial edit.
+- Regenerate the prompt from the canonical resume chain. Use
+  `docs/delegation-prompts.md` only as a packet template, never as current
+  authority.
+- Keep implementation, in-scope related fixes, automated verification,
+  evidence capture, and canonical state updates in the same delivery batch.
+  Do not create follow-up prompts just for documentation, commit preparation,
+  or minor corrections discovered inside the approved slice.
+- Continue through reversible technical choices inside the slice and record
+  material assumptions. Stop only for destructive change, dependency addition,
+  persistence/authentication/API contract change, canonical specification
+  conflict, or unapproved human-owned product or creative direction.
+- Batch any required questions at the earliest meaningful decision point. Do
+  not turn each implementation detail into a separate approval gate.
+- Before production-scale work with high visual or product ambiguity, present
+  two or three low-cost, genuinely different directions under comparable
+  conditions. Selection authorizes only the selected direction and stated
+  fidelity, not an unstated final-product definition.
+- If the same visual or conceptual model receives two consecutive user NG
+  results, stop micro-tuning it. Revisit the model, inputs, or evaluation axis
+  before producing another variant.
+- Report at the initial snapshot, at a decision-changing evidence checkpoint,
+  and at close. Avoid status chatter that does not change user understanding.
+
 ## Questions And Ownership
 
 - Before asking, verify whether the answer is already in the canonical chain.
@@ -82,6 +109,16 @@ section. Fix that document before relying on it.
 - Do not substitute documentation for observation when the question is about
   actual runtime behavior.
 
+## External Project Views
+
+- README, GitHub Pages, Wiki, Issues, and Projects are entrypoints or derived
+  views, never project-state sources of truth.
+- Do not manually duplicate active lane, slice, progress, or next work into an
+  external surface. Link to or publish the canonical documents instead.
+- Prefer automated publication from `docs/` over a separately edited Wiki.
+  Publication failure must be visible, but does not block product development
+  unless external delivery is the requested slice.
+
 ## Write Safety
 
 - If a write fails, a readback mismatch occurs, or tool output is uncertain in
@@ -92,6 +129,8 @@ section. Fix that document before relying on it.
 
 ## Manual Verification And Reporting
 
+- Run all available automated checks before requesting manual verification,
+  and consolidate remaining checks into one coherent gate.
 - Put manual verification items in normal text.
 - Ask only for `OK / NG` or a short result code when requesting manual
   verification.

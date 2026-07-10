@@ -9,6 +9,7 @@
 - Active slice: SP-041 patch/glyph structure transition
 - Active artifact: browser-preview observed surface layer, then Unity runtime transfer if the visual model proves useful
 - Current bottleneck: the map visual model still lacks convincing observed-surface density; more implementation on the old ImageData path does not address that bottleneck
+- Repository readiness: local Unity import/script compilation is green after the 2026-07-10 preflight repair; runtime visual acceptance remains separate
 
 ## Canonical Resume Chain
 
@@ -72,6 +73,46 @@ entrypoints.
   SP-041 direction change, not as proof that the current observed-surface model
   is acceptable.
 
+## Development Readiness (2026-07-10)
+
+- `origin/master` was fetched and pulled at `da37e60`; local and remote were
+  ahead/behind `0/0` before this readiness batch began.
+- A Unity 6000.3.6f1 batch import exposed three compile blockers: a missing UI
+  namespace import, a missing LINQ import, and a missing `BuildingSpawner`
+  parameter in `SceneBootstrapper`. All three were repaired, and the final
+  batch import/script compile exited with code 0.
+- Unity generated 17 previously missing `.meta` files. Asset metadata coverage
+  is now complete; these files must travel with the source changes so a fresh
+  clone does not generate new GUIDs.
+- `tools/validate-project.ps1` now runs the MkDocs strict build, browser-preview
+  JavaScript checks, canonical lane/slice/spec-reference consistency, Unity
+  `.meta` coverage, and project-version Unity compile as one preflight.
+- The browser screenshot path rendered seed 42 for Organic, Grid, Mountain, and
+  Rural through the installed Chrome channel. This proves the preview opens and
+  renders; it does not make the stale SP-041 visual direction acceptable.
+- There are no project-owned EditMode or PlayMode test assemblies. Player
+  build, PlayMode behavior, and current SP-041 visual acceptance remain
+  unverified and must not be inferred from compile success.
+- Before this batch, the public GitHub repository had no README, deployed Pages
+  site, or initialized Wiki. This delivery adds a thin README entrypoint;
+  GitHub Pages from the existing MkDocs source remains the recommended external
+  view but is not yet enabled.
+
+## Collaboration Workflow
+
+- A supervisor-to-developer prompt carries one decision-bearing slice, not an
+  entire subsystem and not a chain of trivial edits.
+- The developer closes implementation, in-scope fixes, automated verification,
+  evidence, and canonical state synchronization in the same batch.
+- Reversible technical decisions continue without incremental approval. The
+  hard stops are destructive change, dependency addition, persistence/auth/API
+  contract change, canonical conflict, and unapproved human-owned direction.
+- High-ambiguity visual or product work uses two or three comparable low-cost
+  directions before production work. Two consecutive NG results on the same
+  model trigger a model/evaluation reset instead of another micro-tuning pass.
+- External project views derive from these canonical files; they do not own a
+  separately maintained copy of current status.
+
 ## Current Non-Goals
 
 Do not automatically return to these areas without a fresh explicit request or
@@ -96,6 +137,9 @@ as implementation state, but it does not define the final product target.
 
 | Date | Decision | Status | Reason |
 |------|----------|--------|--------|
+| 2026-07-10 | Use one decision-bearing slice per Development Packet and close code, related fixes, verification, evidence, and state sync together | active | Prevents both subsystem-sized blind implementation and follow-up prompt fragmentation |
+| 2026-07-10 | Gate high-ambiguity creative work with comparable low-cost directions; reset the model after two consecutive NG results | active | Preserves human creative authority and prevents production-scale rework from collapsing into endless micro-adjustments |
+| 2026-07-10 | Treat external project views as derived publication of canonical docs, not a hand-maintained Wiki/status copy | active | Removes update drift while keeping repository-external visibility possible |
 | 2026-06-15 | Do not pin Codex models or generated environment versions in project-local config | active | Model/version selection belongs to the Codex app or global settings; project-local pins caused startup fragility |
 | 2026-06-15 | Use MkDocs Material under the `docs/` boundary for local document review | active | Enables tree-pane browsing and browser translation without copying, translating, summarizing, or moving canonical Markdown |
 | 2026-04-27 | Tighten documentation authority boundaries | active | Prevent old aggregate specs, supplemental invariant catalogs, merged plans, and delegation templates from acting as hidden resume or next-work sources |
@@ -119,7 +163,11 @@ as implementation state, but it does not define the final product target.
   context but not as a successful model
 - Recovered implementation file: `browser-preview/map-gen.js` now includes
   generated decorations from the local Phase C work
+- Local preflight entrypoint: `tools/validate-project.ps1`; the latest Unity
+  6000.3.6f1 batch import/script compile completed with exit code 0
 - Local documentation review entrypoint: `python -m mkdocs serve`, then open
   `http://127.0.0.1:8000/`; this view is not a new source of truth
+- External Project Hub: README entrypoint included; GitHub Pages deployment is
+  recommended but not configured
 - Open design points: patch extraction algorithm, archetype-specific glyph
-  placement rules, final product definition
+  placement rules, final product definition, external Project Hub activation
