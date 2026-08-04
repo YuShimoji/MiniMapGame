@@ -1,9 +1,4 @@
 # Minimal Codex project config scaffold.
-# Keep this file short and avoid project-local model or Codex version pins.
+# Keep this file short and project-specific.
 # Canonical behavioral rules live in docs/ai/AGENT_RULES.md.
-# Use the Codex app/global model selection instead of pinning a model here.
-
-approval_policy = "never"
-sandbox_mode = "workspace-write"
-
-# Add project-specific hooks or tool restrictions here only when unavoidable.
+# Thread/runtime settings are intentionally inherited.
